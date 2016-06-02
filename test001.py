@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pyuff
 
-uff_file = pyuff.UFF('C:\BMs\Initialize-Simufact\RefResult-UNV\Tet157.unv')
+uff_file = pyuff.UFF('data/simufact_tet_elements.unv')
 
 datasets_in_uff = uff_file.get_set_types()
 print('datasets in uff:')
