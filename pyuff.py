@@ -1,5 +1,5 @@
 
-# Copyright (C) 2014-2017 Matjaž Mršnik, Primož Ogrinec, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
+# Copyright (C) 2014-2017 Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
 # 
 # This file is part of pyuff.
 # 

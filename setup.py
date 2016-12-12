@@ -1,5 +1,5 @@
 
-# Copyright (C) 2014-2017 Matjaž Mršnik, Primož Ogrinec, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
+# Copyright (C) 2014-2017 Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
 # 
 # This file is part of pyuff.
 # 
@@ -30,8 +30,8 @@ For a showcase see: https://github.com/openmodal/pyuff/blob/master/pyuff%20Showc
 from setuptools import setup
 setup(name='pyuff',
       version='1.0.0',
-      author='Primož Čermelj',
-      author_email='primoz.cermelj@gmail.com',
+      author='Primož Čermelj et al.',
+      author_email='primoz.cermelj@gmail.com, janko.slavic@fs.uni-lj.si',
       url='https://github.com/openmodal/pyuff',
       py_modules=['pyuff'],
       long_description=desc,
