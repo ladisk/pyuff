@@ -39,7 +39,7 @@ more information about the UFF format.
 This module also provides an exception handler class, ``UFFException``.
 
 Sources:
-    .. [1] http://www.sdrl.uc.edu/uff/SDRChelp/LANG/English/unv_ug/book.htm
+    .. [1] http://www.sdrl.uc.edu/sdrl/referenceinfo/universalfileformats/file-format-storehouse
     .. [2] Matlab's ``readuff`` and ``writeuff`` functions:
        http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6395
 
@@ -84,7 +84,7 @@ import string
 import time
 import numpy as num
 
-_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164']
+_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411']
 
 
 class UFFException(Exception):
@@ -274,6 +274,17 @@ class UFF:
         * ``<<'n_data_per_node'>>``-- *number of data per node (DOFs)*
         * ``<<'data_type'>>``      -- *data type number; 2 = real data,
           5 = complex data*
+          
+    **Data-set 2411 (points data) - Double Precision**:
+        
+        * ``'type'``               -- *type number = 2411*
+        * ``'node_nums'``          -- *list of n node numbers*
+        * ``'x'``                  -- *x-coordinates of the n nodes* (double precision)
+        * ``'y'``                  -- *y-coordinates of the n nodes* (double precision)
+        * ``'z'``                  -- *z-coordinates of the n nodes* (double precision)
+        * ``<'def_cs'>``           -- *n deformation cs numbers*
+        * ``<'disp_cs'>``          -- *n displacement cs numbers*
+        * ``<'color'>``            -- *n color numbers*
     """
     def __init__(self, fileName):
         """
@@ -1049,7 +1060,7 @@ class UFF:
     
     def _extract2411(self,blockData):
         # Extract coordinate data - data-set 15.
-        dset = {'type':15}
+        dset = {'type':2411}
         try:
             # Body
             splitData = blockData.splitlines(True)      # Keep the line breaks!
@@ -1064,7 +1075,7 @@ class UFF:
             dset['y'] =         values[5::7].copy()
             dset['z'] =         values[6::7].copy()
         except:
-            raise UFFException('Error reading data-set #15')
+            raise UFFException('Error reading data-set #2411')
         return dset
     
     def _extract18(self,blockData):
