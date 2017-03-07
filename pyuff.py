@@ -836,7 +836,8 @@ class UFF:
                              'ordinate_spec_data_type':0,\
                              'orddenom_spec_data_type':0,\
                              'z_axis_spec_data_type':0,\
-                             'version_num':0}
+                             'version_num':0,
+                             'abscissa_spacing':0}
             dset = self._opt_fields(dset,dict)
             # Write strings to the file - always in double precision => ord_data_type = 2
             # for real data and 6 for complex data
@@ -852,7 +853,12 @@ class UFF:
                 dset['ord_data_type'] = 6
                 nBytes = numPts*8
                 ordDataType = 6
-            isEven = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
+
+            isEven = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
+
+            # handling abscissa spacing automatically
+            # isEven = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
+
             dset['abscissa_min'] = dset['x'][0]
             dx = dset['x'][1] - dset['x'][0]
             fh.write('%6i\n%6i' % (-1,58))
