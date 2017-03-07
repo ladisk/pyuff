@@ -82,8 +82,9 @@ Example:
 import os, sys, struct
 import string
 import time
-import numpy as num
+import numpy as np
 
+__version__ = '1.1'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164']
 
 
@@ -114,7 +115,7 @@ class UFF:
     externally. If the file is changed externally, the ``UFF.refresh()`` should
     be invoked before any reading or writing.
     
-    All array-type data are read/written using numpy's ``num.array`` module.
+    All array-type data are read/written using numpy's ``np.array`` module.
     
     Appendix
     --------
@@ -291,8 +292,8 @@ class UFF:
         self._blockInd = []                # an array of block indices: start-end pairs in rows
         self._refreshed = False
         self._nSets = 0                    # number of sets found in file     
-        self._setTypes = num.array(())     # list of set-type numbers
-        self._setFormats = num.array(())   # list of set-format numbers (0=ascii,1=binary)
+        self._setTypes = np.array(())     # list of set-type numbers
+        self._setFormats = np.array(())   # list of set-format numbers (0=ascii,1=binary)
         # Refresh
         self.refresh()
         
@@ -366,20 +367,20 @@ class UFF:
                     ind = data.find('    -1',ind+1)
                     if ind == -1: break
                     blockInd.append(ind)
-                blockInd = num.asarray(blockInd, dtype='int')
+                blockInd = np.asarray(blockInd, dtype='int')
 
                 # Constructs block indices of start and end values; each pair
                 # points to start and end offset of the data-set (block) data,
                 # but, the start '    -1' tag is included while the end one is
                 # excluded.
-                nBlocks = int(num.floor(len(blockInd)/2.0))
+                nBlocks = int(np.floor(len(blockInd) / 2.0))
                 if nBlocks == 0:
                     # No valid blocks found but the file is still considered
                     # being refreshed
                     fh.close()
                     self._refreshed = True
                     return self._refreshed
-                self._blockInd = num.zeros((nBlocks,2), dtype='int')
+                self._blockInd = np.zeros((nBlocks, 2), dtype='int')
                 self._blockInd[:,0] = blockInd[:-1:2].copy()
                 self._blockInd[:,1] = blockInd[1::2].copy()-1
                 
@@ -387,8 +388,8 @@ class UFF:
                 # type and the property whether the data-set is in binary
                 # or ascii format
                 self._nSets = nBlocks
-                self._setTypes = num.zeros(nBlocks)
-                self._setFormats = num.zeros(nBlocks)
+                self._setTypes = np.zeros(nBlocks)
+                self._setFormats = np.zeros(nBlocks)
                 for ii in range(0,self._nSets):
                     si = self._blockInd[ii,0]
                     ei = self._blockInd[ii,1]
@@ -465,7 +466,7 @@ class UFF:
 ##            raise UFFException('Error when reading '+str(ii)+'-th data-set')
 ##        return dset        
 
-    def write_sets(self, dsets, mode='add'):    
+    def write_sets(self, dsets, mode='add'):
         """
         Writes several UFF data-sets to the file.  The mode can be
         either 'add' (default) or 'overwrite'. The dsets is a
@@ -574,6 +575,10 @@ class UFF:
             except:
                 fh.close()
                 raise UFFException('Data-set\'s dictionary is missing the required \'type\' key')
+            # handle nan or inf
+            if 'data' in dset.keys():
+                dset['data'] = np.nan_to_num(dset['data'])
+
             if setType   == 15:     self._write15(fh,dset)
             elif setType == 82:     self._write82(fh,dset)
             elif setType == 151:    self._write151(fh,dset)
@@ -597,9 +602,9 @@ class UFF:
         try:
             n = len(dset['node_nums'])
             # handle optional fields
-            dset = self._opt_fields(dset,{'def_cs':num.asarray([0 for ii in range(0,n)],'i'),\
-                             'disp_cs':num.asarray([0 for ii in range(0,n)],'i'),\
-                             'color':num.asarray([0 for ii in range(0,n)],'i')})
+            dset = self._opt_fields(dset, {'def_cs':np.asarray([0 for ii in range(0, n)], 'i'),\
+                             'disp_cs':np.asarray([0 for ii in range(0, n)], 'i'),\
+                             'color':np.asarray([0 for ii in range(0, n)], 'i')})
             # write strings to the file
             fh.write('%6i\n%6i%74s\n' % (-1,15,' '))
             for ii in range(0,n):
@@ -719,9 +724,9 @@ class UFF:
                 dset = self._opt_fields(dset,\
                                 {'modal_b':0.0+0.0j,\
                                  'modal_a':0.0+0.0j})
-                if not num.iscomplexobj(dset['modal_a']):
+                if not np.iscomplexobj(dset['modal_a']):
                     dset['modal_a'] = dset['modal_a'] + 0.j
-                if not num.iscomplexobj(dset['modal_b']):
+                if not np.iscomplexobj(dset['modal_b']):
                     dset['modal_b'] = dset['modal_b'] + 0.j
             elif dset['analysis_type'] == 5:
                 # frequency response
@@ -734,7 +739,7 @@ class UFF:
 #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
             if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
                 nDataPerNode = 6
-            if num.iscomplexobj(dset['r1']):
+            if np.iscomplexobj(dset['r1']):
                 nDataPerNode = 3
                 dataType = 5
             # Write strings to the file
@@ -842,7 +847,7 @@ class UFF:
             # Write strings to the file - always in double precision => ord_data_type = 2
             # for real data and 6 for complex data
             numPts = len(dset['data'])
-            isR = not num.iscomplexobj(dset['data'])
+            isR = not np.iscomplexobj(dset['data'])
             if isR:
                 # real data
                 dset['ord_data_type'] = 4
@@ -899,16 +904,16 @@ class UFF:
                 if isEven:
                     data = dset['data'].copy()
                 else:
-                    data = num.zeros(2*numPts,'d')
+                    data = np.zeros(2 * numPts, 'd')
                     data[0:-1:2] = dset['x']
                     data[1::2] = dset['data']
             else:
                 if isEven:
-                    data = num.zeros(2*numPts,'d')
+                    data = np.zeros(2 * numPts, 'd')
                     data[0:-1:2] = dset['data'].real
                     data[1::2] = dset['data'].imag
                 else:
-                    data = num.zeros(3*numPts,'d')
+                    data = np.zeros(3 * numPts, 'd')
                     data[0:-2:3] = dset['x']
                     data[1:-1:3] = dset['data'].real
                     data[2::3] = dset['data'].imag
@@ -1041,7 +1046,7 @@ class UFF:
             dset['z'] =         second_three[2::3]
 #             lineData = ''.join(splitData[2:]) 
 #             values = [lineData[i*13:(i+1)*13] for i in range(int(len(lineData)/13))]
-#             values = num.asarray([float(str) for str in splitData],'d')
+#             values = np.asarray([float(str) for str in splitData],'d')
 #             dset['node_nums'] = values[::7].copy()
 #             dset['def_cs'] =    values[1::7].copy()
 #             dset['disp_cs'] =   values[2::7].copy()
@@ -1061,7 +1066,7 @@ class UFF:
             splitData = blockData.splitlines(True)      # Keep the line breaks!
             splitData = ''.join(splitData[2:])   # ..as they are again needed
             splitData = splitData.split()
-            values = num.asarray([float(str) for str in splitData],'d')
+            values = np.asarray([float(str) for str in splitData], 'd')
             dset['node_nums'] = values[::7].copy()
             dset['def_cs'] =    values[1::7].copy()
             dset['disp_cs'] =   values[2::7].copy()
@@ -1080,7 +1085,7 @@ class UFF:
             splitData = blockData.splitlines()
             
             # -- Get Record 1
-            rec_1 = num.array(list(map(float, ''.join(splitData[2::4]).split())))
+            rec_1 = np.array(list(map(float, ''.join(splitData[2::4]).split())))
                 
             dset['cs_num'] = rec_1[::5]
             # removed - clutter
@@ -1094,25 +1099,25 @@ class UFF:
                         
             # -- Get Record 31 and 32
             # ... these are the origins of cs defined in ref
-#             rec_31 = num.array(list(map(float, ''.join(splitData[4::4]).split())))
+#             rec_31 = np.array(list(map(float, ''.join(splitData[4::4]).split())))
             lineData = ''.join(splitData[4::4])
             rec_31 = [float(lineData[i*13:(i+1)*13]) for i in range(int(len(lineData)/13))]
-            dset['ref_o'] = num.vstack((num.array(rec_31[::6]),  \
-                                       num.array(rec_31[1::6]), \
-                                       num.array(rec_31[2::6]))).transpose()
+            dset['ref_o'] = np.vstack((np.array(rec_31[::6]), \
+                                       np.array(rec_31[1::6]), \
+                                       np.array(rec_31[2::6]))).transpose()
             
             # ... these are points on the x axis of cs defined in ref
-            dset['x_point'] = num.vstack((num.array(rec_31[3::6]), \
-                                         num.array(rec_31[4::6]), \
-                                         num.array(rec_31[5::6]))).transpose()
+            dset['x_point'] = np.vstack((np.array(rec_31[3::6]), \
+                                         np.array(rec_31[4::6]), \
+                                         np.array(rec_31[5::6]))).transpose()
             
             # ... these are the points on the xz plane
             lineData = ''.join(splitData[5::4])
             rec_32 = [float(lineData[i*13:(i+1)*13]) for i in range(int(len(lineData)/13))]
-#             rec_32 = num.array(list(map(float, ''.join(splitData[5::4]).split())))
-            dset['xz_point'] = num.vstack((num.array(rec_32[::3]),  \
-                                          num.array(rec_32[1::3]), \
-                                          num.array(rec_32[2::3]))).transpose()
+#             rec_32 = np.array(list(map(float, ''.join(splitData[5::4]).split())))
+            dset['xz_point'] = np.vstack((np.array(rec_32[::3]), \
+                                          np.array(rec_32[1::3]), \
+                                          np.array(rec_32[2::3]))).transpose()
         except:
             raise UFFException('Error reading data-set #18')
         return dset
@@ -1145,8 +1150,8 @@ class UFF:
         row3 = list(map(float, ''.join(splitData[8::6]).split()))
         # !! Row 4 left out for now - usually zeros ...
 #            row4 = map(float, splitData[7::6].split())
-        dset['CS_matrices'] = [num.vstack((row1[i:(i+3)],row2[i:(i+3)],row3[i:(i+3)])) \
-                               for i in num.arange(0,len(row1),3)]
+        dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)])) \
+                               for i in np.arange(0, len(row1), 3)]
 #        except:
 #            raise UFFException('Error reading data-set #2420')
         return dset  
@@ -1160,7 +1165,7 @@ class UFF:
             dset.update( self._parse_header_line(splitData[3],1,[80],[1],['id']) )
             splitData = ''.join(splitData[4:])
             splitData = splitData.split()
-            dset['lines'] = num.asarray([float(str) for str in splitData])
+            dset['lines'] = np.asarray([float(str) for str in splitData])
         except:
             raise UFFException('Error reading data-set #82')
         return dset        
@@ -1239,7 +1244,7 @@ class UFF:
                     ['freq','','','','','']) )                
             # Body
             splitData = ''.join(splitData[10:])
-            values = num.asarray([float(str) for str in splitData.split()],'d')
+            values = np.asarray([float(str) for str in splitData.split()], 'd')
             if dset['data_type'] == 2:
                 # real data
                 if dset['n_data_per_node'] == 3:
@@ -1310,10 +1315,10 @@ class UFF:
                 else: bo = '>'
                 if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                     # single precision - 4 bytes
-                    values = num.asarray( struct.unpack('%c%sf' % (bo,int(len(splitData)/4)), splitData),'d' )
+                    values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(splitData) / 4)), splitData), 'd')
                 else:
                     # double precision - 8 bytes
-                    values = num.asarray( struct.unpack('%c%sd' % (bo,int(len(splitData)/8)), splitData),'d' )
+                    values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(splitData) / 8)), splitData), 'd')
             else:
                 splitData = splitData.split()
                 # TODO: This is not a good implementation -- sometimes there is no space
@@ -1328,8 +1333,8 @@ class UFF:
                         values.append(float(''.join([pieces[1][3:], 'e', pieces[2]])))
                     else:
                         values.append(float(val))
-                values = num.asarray(values)
-                # values = num.asarray([float(str) for str in splitData],'d')
+                values = np.asarray(values)
+                # values = np.asarray([float(str) for str in splitData],'d')
             if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
                 # Non-complex ordinate data
                 if (dset['abscissa_spacing'] == 0):
@@ -1341,7 +1346,7 @@ class UFF:
                     nVal = len(values)
                     minVal = dset['abscissa_min']
                     d = dset['abscissa_inc']
-                    dset['x'] = num.arange(minVal,minVal+nVal*d,d)
+                    dset['x'] = np.arange(minVal, minVal + nVal * d, d)
                     dset['data'] = values.copy()
             elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
                 # Complex ordinate data
@@ -1354,7 +1359,7 @@ class UFF:
                     nVal = len(values)/2
                     minVal = dset['abscissa_min']
                     d = dset['abscissa_inc']
-                    dset['x'] = num.arange(minVal,minVal+nVal*d,d)
+                    dset['x'] = np.arange(minVal, minVal + nVal * d, d)
                     dset['data'] = values[0:-1:2] + 1.j*values[1::2]
             del values
         except:
