@@ -27,15 +27,14 @@ Read from and write of data-set types **151, 15, 55, 58, 58b, 82, 164** is suppo
 For a showcase see: https://github.com/openmodal/pyuff/blob/master/pyuff%20Showcase.ipynb
 """
 
-from pyuff import __version__
 from setuptools import setup
 setup(name='pyuff',
-      version=__version__,
+      version='1.11',
       author='Primož Čermelj et al.',
       author_email='primoz.cermelj@gmail.com, janko.slavic@fs.uni-lj.si',
       description='UFF (Universal File Format) read/write.',
       url='https://github.com/openmodal/pyuff',
       py_modules=['pyuff'],
       long_description=desc,
-      requires=['numpy']
+      install_requires=['numpy']
       )
