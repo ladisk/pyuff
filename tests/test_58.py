@@ -22,7 +22,7 @@ def prepare_58():
     print()
     binary = [0,1,0]
     for i in range(3):
-        print(f'Adding point {i+1}')
+        print('Adding point {}'.format(i+1))
         response_node = 1
         response_direction = 1
         reference_node = i + 1
