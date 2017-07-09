@@ -11,12 +11,12 @@ import pyuff
 
 def prepare_58():
     # delete prior existing files
-    if os.path.exists('../data/measurement.uff'):
-        os.remove('../data/measurement.uff')
+    if os.path.exists('./data/measurement.uff'):
+        os.remove('./data/measurement.uff')
     uff_dataset = []
-    measurement_point_1 = np.genfromtxt('../data/meas_point_1.txt', dtype=complex)
-    measurement_point_2 = np.genfromtxt('../data/meas_point_2.txt', dtype=complex)
-    measurement_point_3 = np.genfromtxt('../data/meas_point_3.txt', dtype=complex)
+    measurement_point_1 = np.genfromtxt('./data/meas_point_1.txt', dtype=complex)
+    measurement_point_2 = np.genfromtxt('./data/meas_point_2.txt', dtype=complex)
+    measurement_point_3 = np.genfromtxt('./data/meas_point_3.txt', dtype=complex)
     #measurement_point_1[0] = np.nan * (1 + 1.j) #addina np.nan for testing (should be handled ok)
     measurement = [measurement_point_1, measurement_point_2, measurement_point_3]
     print()
@@ -47,13 +47,13 @@ def prepare_58():
                 'ordinate_spec_data_type': 12,
                 'orddenom_spec_data_type': 13}
         uff_dataset.append(data.copy())
-        uffwrite = pyuff.UFF('../data/measurement.uff')
+        uffwrite = pyuff.UFF('./data/measurement.uff')
         uffwrite._write_set(data, 'add')
     return uff_dataset
 
 def test_write_read_58():
     uff_dataset_origin = prepare_58()
-    uff_read = pyuff.UFF('../data/measurement.uff')
+    uff_read = pyuff.UFF('./data/measurement.uff')
     uff_dataset_read = uff_read.read_sets()
 
     string_keys = ['id1', 'rsp_ent_name', 'ref_ent_name']
@@ -67,9 +67,9 @@ def test_write_read_58():
             np.testing.assert_string_equal(a[k], b[k])
 
 def test_read_58b_binary_vs_58_ascii():
-    uff_ascii = pyuff.UFF('../data/Sample_UFF58_ascii.uff')
+    uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
     a = uff_ascii.read_sets(0)
-    uff_bin = pyuff.UFF('../data/Sample_UFF58b_bin.uff')
+    uff_bin = pyuff.UFF('./data/Sample_UFF58b_bin.uff')
     b = uff_bin.read_sets(0)
     #print(uff_ascii.read_sets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],b['id1'])

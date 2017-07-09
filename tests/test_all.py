@@ -10,7 +10,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_58_ascii():
-    uff_ascii = pyuff.UFF('../data/Sample_UFF58_ascii.uff')
+    uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
     a = uff_ascii.read_sets(0)
     #print(uff_ascii.read_sets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],'Mic 01.0Scalar')
@@ -24,9 +24,9 @@ def test_read_58_ascii():
     np.testing.assert_array_equal(first_last,np.array([-1.47553E-02,-4.31469E-03]))
 
 def test_read_58b_binary_vs_58_ascii():
-    uff_ascii = pyuff.UFF('../data/Sample_UFF58_ascii.uff')
+    uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
     a = uff_ascii.read_sets(0)
-    uff_bin = pyuff.UFF('../data/Sample_UFF58b_bin.uff')
+    uff_bin = pyuff.UFF('./data/Sample_UFF58b_bin.uff')
     b = uff_bin.read_sets(0)
     #print(uff_ascii.read_sets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],b['id1'])
