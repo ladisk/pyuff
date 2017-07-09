@@ -97,5 +97,6 @@ ENV/
 .ropeproject
 
 
+measurement.uff
 data/measurement.uff
 .idea/
