@@ -524,7 +524,7 @@ class UFF:
                 ei = self._blockInd[n][1]  # end offset
                 fh.seek(si)
                 if self._setTypes[int(n)] == 58:
-                    blockData = fh.read(ei-si+1)#decoding is handling later in _extract58
+                    blockData = fh.read(ei-si+1)#decoding is handled later in _extract58
                 else:
                     blockData = fh.read(ei-si+1).decode('ascii')
             except:
@@ -1029,45 +1029,17 @@ class UFF:
         dset = {'type':15}
         try:
             # Body
-            splitData = blockData.splitlines(True)      # Keep the line breaks!
-            splitData = ''.join(splitData[2:])   # ..as they are again needed
-#             splitData = splitData.split()
+            split_data = blockData.splitlines()
+            split_data = ''.join(split_data[2:]).split()
+            split_data = [float(_) for _ in split_data]
             
-            # TODO: Reduce rules to one line!
-            lofl = [splitData[i*81:int(i*81+0.5*80)] for i in range(int(len(splitData)/81.0))]
-#             listofstrings = [item for sublist in lofl for item in sublist]
-            first_three = ' '.join(lofl).split()
-            first_three_1 = [float(item) for item in first_three]
-            first_three = first_three_1
-            
-#             first_three = [float(item) for item in listofstrings]
-            dset['node_nums'] = first_three[::4]
-            dset['def_cs'] =    first_three[1::4]
-            dset['disp_cs'] =   first_three[2::4]
-            dset['color'] =     first_three[3::4]
-            
-            lofl = [splitData[int(i*81+0.5*80):(i+1)*81] for i in range(int(len(splitData)/81))]
-            lofl_2 = [[float(item[:13]), float(item[13:26]), float(item[26:])] for item in lofl]
-            second_three = [item for sublist in lofl_2 for item in sublist]
-#             second_three = ' '.join(lofl).split()
-#             a = ['']
-#             a.extend(second_three)
-#             second_three = '  '.join(a)
-#             second_three = [float(second_three[i*13:(i+1)*13]) for i in range(int(len(second_three)/13))]
-#             second_three = [float(item) for item in second_three]
-            dset['x'] =         second_three[::3]
-            dset['y'] =         second_three[1::3]
-            dset['z'] =         second_three[2::3]
-#             lineData = ''.join(splitData[2:]) 
-#             values = [lineData[i*13:(i+1)*13] for i in range(int(len(lineData)/13))]
-#             values = np.asarray([float(str) for str in splitData],'d')
-#             dset['node_nums'] = values[::7].copy()
-#             dset['def_cs'] =    values[1::7].copy()
-#             dset['disp_cs'] =   values[2::7].copy()
-#             dset['color'] =     values[3::7].copy()
-#             dset['x'] =         values[4::7].copy()
-#             dset['y'] =         values[5::7].copy()
-#             dset['z'] =         values[6::7].copy()
+            dset['node_nums'] = split_data[::7]
+            dset['def_cs'] = split_data[1::7]
+            dset['disp_cs'] = split_data[2::7]
+            dset['color'] = split_data[3::7]
+            dset['x'] = split_data[4::7]
+            dset['y'] = split_data[5::7]
+            dset['z'] = split_data[6::7]
         except:
             raise UFFException('Error reading data-set #15')
         return dset
@@ -1439,48 +1411,6 @@ class UFF:
                 else: fieldsOut.update({key:0.0})
         return fieldsOut
 
-def prepare_58_test():
-    # delete prior existing files
-    if os.path.exists('./data/measurement.uff'):
-        os.remove('./data/measurement.uff')
-    uff_dataset = []
-    measurement_point_1 = np.genfromtxt('./data/meas_point_1.txt', dtype=complex)
-    measurement_point_2 = np.genfromtxt('./data/meas_point_2.txt', dtype=complex)
-    measurement_point_3 = np.genfromtxt('./data/meas_point_3.txt', dtype=complex)
-    #measurement_point_1[0] = np.nan * (1 + 1.j) #addina np.nan for testing (should be handled ok)
-    measurement = [measurement_point_1, measurement_point_2, measurement_point_3]
-    print()
-    binary = [1,0,0]
-    for i in range(3):
-        print(f'Adding point {i+1}')
-        response_node = 1
-        response_direction = 1
-        reference_node = i + 1
-        reference_direction = 1
-        acceleration_complex = measurement[i]
-        frequency = np.arange(0, 1001)
-        name = 'TestCase'
-        data = {'type': 58,
-                'binary': binary[i],
-                'func_type': 4,
-                'rsp_node': response_node,
-                'rsp_dir': response_direction,
-                'ref_dir': reference_direction,
-                'ref_node': reference_node,
-                'data': acceleration_complex,
-                'x': frequency,
-                'id1': 'id1',
-                'rsp_ent_name': name,
-                'ref_ent_name': name,
-                'abscissa_spacing': 1,
-                'abscissa_spec_data_type': 18,
-                'ordinate_spec_data_type': 12,
-                'orddenom_spec_data_type': 13}
-        uff_dataset.append(data.copy())
-        uffwrite = UFF('./data/measurement.uff')
-        uffwrite._write_set(data, 'add')
-    return uff_dataset
-
-
 if __name__ == '__main__':
-    prepare_58_test()
+    uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
+    a = uff_ascii.read_sets(0)
