@@ -359,12 +359,12 @@ class UFF:
             try:
                 # Parses the entire file for '    -1' tags and extracts
                 # the corresponding indices
-                data = fh.read().decode('ascii')
+                data = fh.read()
                 dataLen = len(data)
                 ind = -1
                 blockInd = []
                 while True:
-                    ind = data.find('    -1',ind+1)
+                    ind = data.find(b'    -1',ind+1)
                     if ind == -1: break
                     blockInd.append(ind)
                 blockInd = np.asarray(blockInd, dtype='int')
@@ -523,7 +523,10 @@ class UFF:
                 si = self._blockInd[n][0]  # start offset
                 ei = self._blockInd[n][1]  # end offset
                 fh.seek(si)
-                blockData = fh.read(ei-si+1).decode('ascii')
+                if self._setTypes[int(n)] == 58:
+                    blockData = fh.read(ei-si+1)#decoding is handling later in _extract58
+                else:
+                    blockData = fh.read(ei-si+1).decode('ascii')
             except:
                 fh.close()
                 raise UFFException('Error reading data-set #: '+int(n))
@@ -584,7 +587,7 @@ class UFF:
             elif setType == 151:    self._write151(fh,dset)
             elif setType == 164:    self._write164(fh,dset)
             elif setType == 55:     self._write55(fh,dset)
-            elif setType == 58:     self._write58(fh,dset)
+            elif setType == 58:     self._write58(fh,dset,mode)
             elif setType == 2411:   self._write2411(fh,dset)
             elif setType == 2420:   self._write2420(fh,dset)
             else:
@@ -779,13 +782,13 @@ class UFF:
                 else:
                     for k in range(0,n):
                         fh.write('%10i\n' % dset['node_nums'][k])
-                        fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' % 
+                        fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' %
                             (dset['r1'][k],dset['r2'][k],dset['r3'][k],dset['r4'][k],dset['r5'][k],dset['r6'][k]))
             elif dataType == 5:
                 # Complex data; n_data_per_node is assumed being 3
                 for k in range(0,n):
                     fh.write('%10i\n' % dset['node_nums'][k])
-                    fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' % 
+                    fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' %
                         (dset['r1'][k].real,dset['r1'][k].imag,dset['r2'][k].real,dset['r2'][k].imag,dset['r3'][k].real,dset['r3'][k].imag))
             else:
                 raise UFFException('Unsupported data type')
@@ -795,7 +798,7 @@ class UFF:
         except:
             raise UFFException('Error writing data-set #55')
 
-    def _write58(self,fh,dset):
+    def _write58(self,fh,dset, mode='add'):
         # Writes function at nodal DOF - data-set 58 - to an open file fh.
         try:
             if not (dset['func_type'] in [1,2,3,4,6]):
@@ -878,7 +881,7 @@ class UFF:
             fh.write('%-80s\n' % dset['id3'])
             fh.write('%-80s\n' % dset['id4'])
             fh.write('%-80s\n' % dset['id5'])
-            fh.write('%5i%10i%5i%10i %10s%10i%4i %10s%10i%4i\n' % 
+            fh.write('%5i%10i%5i%10i %10s%10i%4i %10s%10i%4i\n' %
                 (dset['func_type'],dset['func_id'],dset['ver_num'],dset['load_case_id'],
                 dset['rsp_ent_name'],dset['rsp_node'],dset['rsp_dir'],dset['ref_ent_name'],
                 dset['ref_node'],dset['ref_dir']))
@@ -919,10 +922,21 @@ class UFF:
                     data[2::3] = dset['data'].imag
             # always write data in double precision
             if dset['binary']:
+                fh.close()
+                if mode.lower() == 'overwrite':
+                    fh = open(self._fileName, 'wb')
+                elif mode.lower() == 'add':
+                    fh = open(self._fileName, 'ab')
+                #write data
                 if bo == 1:
                     [fh.write(struct.pack('<d', datai)) for datai in data]
                 else:
                     [fh.write(struct.pack('>d', datai)) for datai in data]
+                fh.close()
+                if mode.lower() == 'overwrite':
+                    fh = open(self._fileName, 'wt')
+                elif mode.lower() == 'add':
+                    fh = open(self._fileName, 'at')
             else:
                 n4Blocks = int(len(data)/4)
                 remVals = len(data)%4
@@ -1007,9 +1021,9 @@ class UFF:
             fh.write('%6i\n' % -1)
         except:
             raise UFFException('Error writing data-set #2420')
-        
 
-        
+
+
     def _extract15(self,blockData):
         # Extract coordinate data - data-set 15.
         dset = {'type':15}
@@ -1281,54 +1295,54 @@ class UFF:
         dset = {'type':58, 'binary':0}
         try:
             binary = False
-            splitData = blockData.splitlines(True)
-            if len(splitData[1]) >= 7:
-                if splitData[1][6].lower()=='b':
+            split_header = b''.join(blockData.splitlines(True)[:13]).decode('ascii').splitlines(True)
+            if len(split_header[1]) >= 7:
+                if split_header[1][6].lower()=='b':
                     # Read some addititional fields from the header section
                     binary = True
                     dset['binary'] = 1
-                    dset.update( self._parse_header_line(splitData[1],6,[6,1,6,6,12,12,6,6,12,12],
+                    dset.update( self._parse_header_line(split_header[1],6,[6,1,6,6,12,12,6,6,12,12],
                     [-1,-1,2,2,2,2,-1,-1,-1,-1],
                     ['','','byte_ordering','fp_format','n_ascii_lines','n_bytes','','','','']) )
-            dset.update( self._parse_header_line(splitData[2],1,[80],[1],['id1']) )
-            dset.update( self._parse_header_line(splitData[3],1,[80],[1],['id2']) )
-            dset.update( self._parse_header_line(splitData[4],1,[80],[1],['id3']) )  # usually for the date
-            dset.update( self._parse_header_line(splitData[5],1,[80],[1],['id4']) )
-            dset.update( self._parse_header_line(splitData[6],1,[80],[1],['id5']) )
-            dset.update( self._parse_header_line(splitData[7],1,[5,10,5,10,11,10,4,11,10,4],[2,2,2,2,1,2,2,1,2,2],
+            dset.update( self._parse_header_line(split_header[2],1,[80],[1],['id1']) )
+            dset.update( self._parse_header_line(split_header[3],1,[80],[1],['id2']) )
+            dset.update( self._parse_header_line(split_header[4],1,[80],[1],['id3']) )  # usually for the date
+            dset.update( self._parse_header_line(split_header[5],1,[80],[1],['id4']) )
+            dset.update( self._parse_header_line(split_header[6],1,[80],[1],['id5']) )
+            dset.update( self._parse_header_line(split_header[7],1,[5,10,5,10,11,10,4,11,10,4],[2,2,2,2,1,2,2,1,2,2],
                 ['func_type','func_id','ver_num','load_case_id','rsp_ent_name','rsp_node','rsp_dir','ref_ent_name',
                  'ref_node','ref_dir']) )
-            dset.update( self._parse_header_line(splitData[8],6,[10,10,10,13,13,13],[2,2,2,3,3,3],
+            dset.update( self._parse_header_line(split_header[8],6,[10,10,10,13,13,13],[2,2,2,3,3,3],
                 ['ord_data_type','num_pts','abscissa_spacing','abscissa_min','abscissa_inc','z_axis_value']) )
-            dset.update( self._parse_header_line(splitData[9],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
+            dset.update( self._parse_header_line(split_header[9],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
                 ['abscissa_spec_data_type','abscissa_len_unit_exp','abscissa_force_unit_exp','abscissa_temp_unit_exp','abscissa_axis_lab','abscissa_axis_units_lab']) )
-            dset.update( self._parse_header_line(splitData[10],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
+            dset.update( self._parse_header_line(split_header[10],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
                 ['ordinate_spec_data_type','ordinate_len_unit_exp','ordinate_force_unit_exp','ordinate_temp_unit_exp','ordinate_axis_lab','ordinate_axis_units_lab']) )
-            dset.update( self._parse_header_line(splitData[11],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
+            dset.update( self._parse_header_line(split_header[11],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
                 ['orddenom_spec_data_type','orddenom_len_unit_exp','orddenom_force_unit_exp','orddenom_temp_unit_exp','orddenom_axis_lab','orddenom_axis_units_lab']) )                
-            dset.update( self._parse_header_line(splitData[12],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
+            dset.update( self._parse_header_line(split_header[12],4,[10,5,5,5,21,21],[2,2,2,2,1,1],
                 ['z_axis_spec_data_type','z_axis_len_unit_exp','z_axis_force_unit_exp','z_axis_temp_unit_exp','z_axis_axis_lab','z_axis_axis_units_lab']) )                
             # Body
-            splitData = ''.join(splitData[13:])
+            #splitData = ''.join(splitData[13:])
             if binary:
+                split_data = b''.join(blockData.splitlines(True)[13:])
                 if dset['byte_ordering']==1: bo = '<'
                 else: bo = '>'
                 if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                     # single precision - 4 bytes
-                    values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(splitData) / 4)), splitData), 'd')
+                    values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
                 else:
                     # double precision - 8 bytes
-                    values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(splitData) / 8)), splitData), 'd')
+                    values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
             else:
-                splitData = splitData.split()
+                split_data = ''.join(blockData.decode('ascii').splitlines(True)[13:]).split()
                 # TODO: This is not a good implementation -- sometimes there is no space
                 # between values and we get '2.99110e-02-10.00000e-05'. The string should
                 # be split by number of characters!24
-                values_pre = [str for str in splitData]
                 values = []
-                for i, val in enumerate(values_pre):
+                for i, val in enumerate(split_data):
                     if len(val) > 23:
-                        pieces = val.split('e')
+                        pieces = val.replace('E','e').split('e')
                         values.append(float(''.join([pieces[0], 'e', pieces[1][:3]])))
                         values.append(float(''.join([pieces[1][3:], 'e', pieces[2]])))
                     else:
@@ -1363,7 +1377,7 @@ class UFF:
                     dset['data'] = values[0:-1:2] + 1.j*values[1::2]
             del values
         except:
-            raise UFFException('Error reading data-set #58')
+            raise UFFException('Error reading data-set #58b')
         return dset 
                          
     def _opt_fields(self, dict, fieldsDict):
@@ -1424,3 +1438,49 @@ class UFF:
                 elif types[n]==2: fieldsOut.update({key:0})
                 else: fieldsOut.update({key:0.0})
         return fieldsOut
+
+def prepare_58_test():
+    # delete prior existing files
+    if os.path.exists('./data/measurement.uff'):
+        os.remove('./data/measurement.uff')
+    uff_dataset = []
+    measurement_point_1 = np.genfromtxt('./data/meas_point_1.txt', dtype=complex)
+    measurement_point_2 = np.genfromtxt('./data/meas_point_2.txt', dtype=complex)
+    measurement_point_3 = np.genfromtxt('./data/meas_point_3.txt', dtype=complex)
+    #measurement_point_1[0] = np.nan * (1 + 1.j) #addina np.nan for testing (should be handled ok)
+    measurement = [measurement_point_1, measurement_point_2, measurement_point_3]
+    print()
+    binary = [1,0,0]
+    for i in range(3):
+        print(f'Adding point {i+1}')
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        acceleration_complex = measurement[i]
+        frequency = np.arange(0, 1001)
+        name = 'TestCase'
+        data = {'type': 58,
+                'binary': binary[i],
+                'func_type': 4,
+                'rsp_node': response_node,
+                'rsp_dir': response_direction,
+                'ref_dir': reference_direction,
+                'ref_node': reference_node,
+                'data': acceleration_complex,
+                'x': frequency,
+                'id1': 'id1',
+                'rsp_ent_name': name,
+                'ref_ent_name': name,
+                'abscissa_spacing': 1,
+                'abscissa_spec_data_type': 18,
+                'ordinate_spec_data_type': 12,
+                'orddenom_spec_data_type': 13}
+        uff_dataset.append(data.copy())
+        uffwrite = UFF('./data/measurement.uff')
+        uffwrite._write_set(data, 'add')
+    return uff_dataset
+
+
+if __name__ == '__main__':
+    prepare_58_test()
