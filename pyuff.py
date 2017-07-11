@@ -44,7 +44,7 @@ Sources:
        http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6395
 
 Acknowledgement:
-    * This source was first written in 2007, 2008 by Primoz Cermelj (primoz.cermelj@gmail.com)
+    * This source (py2.7) was first written in 2007, 2008 by Primoz Cermelj (primoz.cermelj@gmail.com)
     * As part of the www.openmodal.com project the first source was adopted for Python 3 by
       Matjaz Mrsnik  <matjaz.mrsnik@gmail.com>
 
@@ -84,7 +84,7 @@ import string
 import time
 import numpy as np
 
-__version__ = '1.12'
+__version__ = '1.14'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164']
 
 
@@ -1267,7 +1267,7 @@ class UFF:
         dset = {'type':58, 'binary':0}
         try:
             binary = False
-            split_header = b''.join(blockData.splitlines(True)[:13]).decode('ascii').splitlines(True)
+            split_header = b''.join(blockData.splitlines(True)[:13]).decode('ascii', 'replace').splitlines(True)
             if len(split_header[1]) >= 7:
                 if split_header[1][6].lower()=='b':
                     # Read some addititional fields from the header section
@@ -1412,5 +1412,10 @@ class UFF:
         return fieldsOut
 
 if __name__ == '__main__':
-    uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
+    #uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
+    uff_ascii = UFF('./data/Artemis export - data and dof 05_14102016_105117.uff')
     a = uff_ascii.read_sets(0)
+    for _ in a.keys():
+        if _ !='data':
+            print(_, ':', a[_])
+    print(sum(a['data']))

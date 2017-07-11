@@ -77,5 +77,16 @@ def test_read_58b_binary_vs_58_ascii():
     np.testing.assert_array_equal(a['x'],b['x'])
     np.testing.assert_array_almost_equal(a['data'],b['data'])
 
+def test_non_ascii_in_header():
+    uff_ascii = pyuff.UFF('./data/Artemis export - data and dof 05_14102016_105117.uff')
+    a = uff_ascii.read_sets(0)
+    np.testing.assert_string_equal(a['id1'], 'Channel 1 [20, -X]')
+    np.testing.assert_almost_equal(a['x'][-1], 1.007999609375e+03)
+    np.testing.assert_almost_equal(np.sum(a['data']), 172027.83668466809)
+    np.testing.assert_string_equal(a['ordinate_axis_units_lab'][:3], 'm/s')
+    num_pts = a['num_pts']
+    np.testing.assert_equal(num_pts, len(a['x']))
+
+
 if __name__ == '__mains__':
     np.testing.run_module_suite()
