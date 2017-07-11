@@ -84,7 +84,7 @@ import string
 import time
 import numpy as np
 
-__version__ = '1.11'
+__version__ = '1.12'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164']
 
 

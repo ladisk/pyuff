@@ -29,7 +29,7 @@ For a showcase see: https://github.com/openmodal/pyuff/blob/master/pyuff%20Showc
 
 from setuptools import setup
 setup(name='pyuff',
-      version='1.11',
+      version='1.12',
       author='Primož Čermelj et al.',
       author_email='primoz.cermelj@gmail.com, janko.slavic@fs.uni-lj.si',
       description='UFF (Universal File Format) read/write.',

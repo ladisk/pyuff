@@ -100,3 +100,4 @@ ENV/
 measurement.uff
 data/measurement.uff
 .idea/
+.pypirc
