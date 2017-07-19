@@ -9,52 +9,61 @@ sys.path.insert(0, my_path + '/../')
 
 import pyuff
 
-def prepare_58():
-    # delete prior existing files
-    if os.path.exists('./data/measurement.uff'):
-        os.remove('./data/measurement.uff')
-    uff_dataset = []
-    measurement_point_1 = np.genfromtxt('./data/meas_point_1.txt', dtype=complex)
-    measurement_point_2 = np.genfromtxt('./data/meas_point_2.txt', dtype=complex)
-    measurement_point_3 = np.genfromtxt('./data/meas_point_3.txt', dtype=complex)
-    #measurement_point_1[0] = np.nan * (1 + 1.j) #addina np.nan for testing (should be handled ok)
-    measurement = [measurement_point_1, measurement_point_2, measurement_point_3]
-    print()
-    binary = [0,1,0]
-    for i in range(3):
-        print('Adding point {}'.format(i+1))
-        response_node = 1
-        response_direction = 1
-        reference_node = i + 1
-        reference_direction = 1
-        acceleration_complex = measurement[i]
-        frequency = np.arange(0, 1001)
-        name = 'TestCase'
-        data = {'type': 58,
-                'binary': binary[i],
-                'func_type': 4,
-                'rsp_node': response_node,
-                'rsp_dir': response_direction,
-                'ref_dir': reference_direction,
-                'ref_node': reference_node,
-                'data': acceleration_complex,
-                'x': frequency,
-                'id1': 'id1',
-                'rsp_ent_name': name,
-                'ref_ent_name': name,
-                'abscissa_spacing': 1,
-                'abscissa_spec_data_type': 18,
-                'ordinate_spec_data_type': 12,
-                'orddenom_spec_data_type': 13}
-        uff_dataset.append(data.copy())
-        uffwrite = pyuff.UFF('./data/measurement.uff')
-        uffwrite._write_set(data, 'add')
-    return uff_dataset
+def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/Sample_UFF58_ascii.uff')
+    test_read_write_read_given_data_base('./data/Sample_UFF58b_bin.uff')
+
+def test_read_write_read_given_data_base(file=''):
+    if file=='':
+        return
+    #read from file
+    uff_read = pyuff.UFF(file)
+
+    a = uff_read.read_sets()
+    if type(a)==list:
+        types = np.array([_['type'] for _ in a])
+        a = a[np.argwhere(types==58)]
+
+    #write to file
+    save_to_file = './data/temp58.uff'
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+    _ = pyuff.UFF(save_to_file)
+    _.write_sets(a, 'add')
+
+    #read back
+    uff_read = pyuff.UFF(save_to_file)
+    b = uff_read.read_sets(0)
+
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    labels = [_ for _ in a.keys() if any(_[-len(w):]==w for w in ['_lab', '_name', '_description'])]
+    string_keys = ['id1', 'id2', 'id3', 'id4', 'id5']
+    exclude_keys = ['orddenom_spec_data_type', 'abscissa_spec_data_type',
+                    'spec_data_type', 'units_description',
+                    'version_num']
+
+    string_keys = list(set(string_keys).union(set(labels)).difference(set(exclude_keys)))
+    numeric_keys = list((set(a.keys()).difference(set(string_keys)).difference(set(exclude_keys))))
+
+
+    for k in numeric_keys:
+        print('Testing: ', k)
+        np.testing.assert_array_almost_equal(a[k], b[k], decimal=3)
+    for k in string_keys:
+        print('Testing string: ', k, a[k])
+        np.testing.assert_string_equal(a[k], b[k])
+
 
 def test_write_read_58():
-    uff_dataset_origin = prepare_58()
-    uff_read = pyuff.UFF('./data/measurement.uff')
+    save_to_file = './data/measurement.uff'
+    uff_dataset_origin = pyuff.prepare_test_58(save_to_file=save_to_file)
+    uff_read = pyuff.UFF(save_to_file)
     uff_dataset_read = uff_read.read_sets()
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
 
     string_keys = ['id1', 'rsp_ent_name', 'ref_ent_name']
     numeric_keys = list(set(uff_dataset_origin[0].keys()) - set(string_keys))

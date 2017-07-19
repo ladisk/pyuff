@@ -84,8 +84,8 @@ import string
 import time
 import numpy as np
 
-__version__ = '1.14'
-_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164']
+__version__ = '1.16'
+_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
 class UFFException(Exception):
@@ -626,21 +626,22 @@ class UFF:
             dset = self._opt_fields(dset,{'id':'NONE',\
                              'color':0})
             # write strings to the file
-            uniqueLines = set(dset['lines'])
-            if 0 in uniqueLines: uniqueLines.remove(0)
-            nNodes = len(uniqueLines)
+            #removed jul 2017: unique_nodes = set(dset['nodes'])
+            #removed jul 2017:if 0 in unique_nodes: unique_nodes.remove(0)
+            nNodes = len(dset['nodes'])
             fh.write('%6i\n%6i%74s\n' % (-1,82,' '))
             fh.write('%10i%10i%10i\n' % (dset['trace_num'],nNodes,dset['color']))
             fh.write('%-80s\n' % dset['id'])
             sl = 0
-            n8Blocks = len(dset['lines'])/8
-            remLines = len(dset['lines'])%8
-            for ii in range(0,n8Blocks):
-#                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:sl+8]],'')+'\n' )
-                fh.write( ''.join(['%10i'%lineN for lineN in dset['lines'][sl:sl+8]])+'\n' )
-                sl += 8
+            n8Blocks = nNodes//8
+            remLines = nNodes%8
+            if n8Blocks:
+                for ii in range(0,n8Blocks):
+        #                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:sl+8]],'')+'\n' )
+                    fh.write( ''.join(['%10i'%lineN for lineN in dset['nodes'][sl:sl+8]])+'\n' )
+                    sl += 8
             if remLines > 0:
-                fh.write( ''.join(['%10i'%lineN for lineN in dset['lines'][sl:]])+'\n' )
+                fh.write( ''.join(['%10i'%lineN for lineN in dset['nodes'][sl:]])+'\n' )
 #                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:]],'')+'\n' )
             fh.write('%6i\n' % -1)
         except KeyError as msg:
@@ -938,7 +939,7 @@ class UFF:
                 elif mode.lower() == 'add':
                     fh = open(self._fileName, 'at')
             else:
-                n4Blocks = int(len(data)/4)
+                n4Blocks = len(data)//4
                 remVals = len(data)%4
                 if isR:
                     if isEven:
@@ -1151,7 +1152,7 @@ class UFF:
             dset.update( self._parse_header_line(splitData[3],1,[80],[1],['id']) )
             splitData = ''.join(splitData[4:])
             splitData = splitData.split()
-            dset['lines'] = np.asarray([float(str) for str in splitData])
+            dset['nodes'] = np.asarray([float(str) for str in splitData])
         except:
             raise UFFException('Error reading data-set #82')
         return dset        
@@ -1411,7 +1412,148 @@ class UFF:
                 else: fieldsOut.update({key:0.0})
         return fieldsOut
 
+def prepare_test_15(save_to_file=''):
+
+    dataset = {'type': 15,                    #Nodes
+            'node_nums': [16, 17, 18, 19, 20],#I10, node label
+            'def_cs': [11, 11, 11, 12, 12],   #I10, definition coordinate system number
+            'disp_cs': [16, 16, 17, 18, 19],  #I10, displacement coordinate system number
+            'color': [1, 3, 4, 5, 6],         #I10, color
+            'x': [0.0, 1.53, 0.0, 1.53, 0.0], #E13.5
+            'y': [0.0, 0.0, 3.84, 3.84, 0.0], #E13.5
+            'z': [0.0, 0.0, 0.0, 0.0, 1.83]}  #E13.5
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
+
+
+def prepare_test_58(save_to_file=''):
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+
+    uff_datasets = []
+    binary = [0, 1, 0]#ascii of binary
+    frequency = np.arange(10)
+    np.random.seed(0)
+    for i, b in enumerate(binary):
+        print('Adding point {}'.format(i+1))
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        #this is an artificial 'frf'
+        acceleration_complex = np.random.normal(size=len(frequency)) +\
+                            1j*np.random.normal(size=len(frequency))
+        name = 'TestCase'
+        data = {'type': 58,
+                'binary': binary[i],
+                'func_type': 4,
+                'rsp_node': response_node,
+                'rsp_dir': response_direction,
+                'ref_dir': reference_direction,
+                'ref_node': reference_node,
+                'data': acceleration_complex,
+                'x': frequency,
+                'id1': 'id1',
+                'rsp_ent_name': name,
+                'ref_ent_name': name,
+                'abscissa_spacing': 1,
+                'abscissa_spec_data_type': 18,
+                'ordinate_spec_data_type': 12,
+                'orddenom_spec_data_type': 13}
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    return uff_datasets
+
+
+def prepare_test_82(save_to_file=''):
+
+    dataset = {'type': 82,                    #Tracelines
+            'trace_num': 2,                   #I10, trace line number
+            'n_nodes': 7,                    #I10, number of nodes defining trace line (max 250)
+            'color': 30,                      #I10, color
+            'id': 'Identification line',      #80A1, Identification line
+            'nodes': [0, 10, 13, 14, 15, 16, 17],
+                                              #I10, nodes defining trace line:
+                                              #  > 0 draw line to node
+                                              #  = 0 move to node
+               }
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
+
+def prepare_test_151(save_to_file=''):
+
+    dataset = {'type': 151,                       #Header
+            'model_name': 'Model file name',      #80A1, model file name
+            'description': 'Model file description',  #80A1, model file description
+            'db_app': 'Model file description',   #80A1, program which created DB
+            'date_db_created': '27-Jan-16',       #10A1, date database created (DD-MMM-YY)
+            'time_db_created': '14:38:15',        #10A1, time database created (HH:MM:SS)
+            'version_db1': 1,                     #I10, Version from database
+            'version_db2': 2,                     #I10, Subversion from database
+            'file_type': 0,                       #I10, File type (0  Universal, 1 Archive, 2 Other)
+            'date_db_saved': '28-Jan-16',         # 10A1, date database saved (DD-MMM-YY)
+            'time_db_saved': '14:38:16',          # 10A1, time database saved (HH:MM:SS)
+            'program': 'OpenModal',               # 80A1, program which created DB
+            'date_db_written': '29-Jan-16',       # 10A1, date database written (DD-MMM-YY)
+            'time_db_written': '14:38:17',        # 10A1, time database written (HH:MM:SS)
+               }
+
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
+
+def prepare_test_164(save_to_file=''):
+
+    dataset = {'type': 164,                   #Universal Dataset
+            'units_code': 1,                  #I10, units code
+            'units_description': 'SI units',  #20A1, units description
+            'temp_mode': 1,                   #I10, temperature mode
+                    #Unit factors
+                    #for converting universal file units to SI.
+                    #To convert from universal file units to SI divide by
+                    #the appropriate factor listed below.
+            'length': 3.28083989501312334,    #D25.17, length
+            'force': 2.24808943099710480e-01, #D25.17, force
+            'temp': 1.8,               #D25.17, temperature
+            'temp_offset': 459.67,     #D25.17, temperature offset
+               }
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
+
+
+
 if __name__ == '__main__':
+    prepare_test_82()
     #uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
     uff_ascii = UFF('./data/Artemis export - data and dof 05_14102016_105117.uff')
     a = uff_ascii.read_sets(0)
