@@ -628,7 +628,9 @@ class UFF:
             # write strings to the file
             #removed jul 2017: unique_nodes = set(dset['nodes'])
             #removed jul 2017:if 0 in unique_nodes: unique_nodes.remove(0)
-            nNodes = len(dset['nodes'])
+            # number of changes of node need to
+            #nNodes = len(dset['nodes'])
+            nNodes = np.sum((dset['nodes'][1:] - dset['nodes'][:-1])!=0) + 1
             fh.write('%6i\n%6i%74s\n' % (-1,82,' '))
             fh.write('%10i%10i%10i\n' % (dset['trace_num'],nNodes,dset['color']))
             fh.write('%-80s\n' % dset['id'])
@@ -1482,7 +1484,7 @@ def prepare_test_82(save_to_file=''):
             'n_nodes': 7,                    #I10, number of nodes defining trace line (max 250)
             'color': 30,                      #I10, color
             'id': 'Identification line',      #80A1, Identification line
-            'nodes': [0, 10, 13, 14, 15, 16, 17],
+            'nodes': np.array([0, 10, 13, 14, 15, 16, 17]),
                                               #I10, nodes defining trace line:
                                               #  > 0 draw line to node
                                               #  = 0 move to node
