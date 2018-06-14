@@ -1,0 +1,22 @@
+[
+  "tests/test_15.py::test_read_write_read_given_data",
+  "tests/test_15.py::test_read_write_read_given_data_base",
+  "tests/test_15.py::test_read",
+  "tests/test_15.py::test_write_read",
+  "tests/test_151.py::test_read_write_read_given_data",
+  "tests/test_151.py::test_read_write_read_given_data_base",
+  "tests/test_151.py::test_write_read_151",
+  "tests/test_164.py::test_read_write_read_given_data",
+  "tests/test_164.py::test_read_write_read_given_data_base",
+  "tests/test_164.py::test_write_read_164",
+  "tests/test_58.py::test_read_write_read_given_data",
+  "tests/test_58.py::test_read_write_read_given_data_base",
+  "tests/test_58.py::test_write_read_58",
+  "tests/test_58.py::test_read_58b_binary_vs_58_ascii",
+  "tests/test_58.py::test_non_ascii_in_header",
+  "tests/test_82.py::test_read_write_read_given_data",
+  "tests/test_82.py::test_read_write_read_given_data2",
+  "tests/test_82.py::test_write_read_test_data",
+  "tests/test_all.py::test_read_58_ascii",
+  "tests/test_all.py::test_read_58b_binary_vs_58_ascii"
+]

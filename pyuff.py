@@ -1317,7 +1317,7 @@ class UFF:
                 # be split by number of characters!24
                 values = []
                 for i, val in enumerate(split_data):
-                    if len(val) > 15:
+                    if len(val) > 20:
                         if len(val)%13==0:
                                 val_n=self._wrap(val,13).split()
                                 for e in val_n:
