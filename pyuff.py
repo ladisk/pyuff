@@ -83,6 +83,7 @@ import os, sys, struct
 import string
 import time
 import numpy as np
+import textwrap
 
 __version__ = '1.17'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
@@ -1316,10 +1317,19 @@ class UFF:
                 # be split by number of characters!24
                 values = []
                 for i, val in enumerate(split_data):
-                    if len(val) > 23:
-                        pieces = val.replace('E','e').split('e')
-                        values.append(float(''.join([pieces[0], 'e', pieces[1][:3]])))
-                        values.append(float(''.join([pieces[1][3:], 'e', pieces[2]])))
+                    if len(val) > 20:
+                        if len(val)%13==0:
+                                val_n=self._wrap(val,13).split()
+                                for e in val_n:
+                                    values.append(float(e))
+                        else:
+                            n=len(val)%13
+                            val_1=val[:n]
+                            values.append(float(val_1))
+                            val=val[n:]
+                            val_n=self._wrap(val,13).split()
+                            for e in val_n:
+                                values.append(float(e))  
                     else:
                         values.append(float(val))
                 values = np.asarray(values)
@@ -1353,8 +1363,11 @@ class UFF:
             del values
         except:
             raise UFFException('Error reading data-set #58b')
-        return dset 
-                         
+        return dset
+    
+    def _wrap(self, s, w):
+        return textwrap.fill(s, w)    
+
     def _opt_fields(self, dict, fieldsDict):
         # Sets the optional fields of the dict dictionary. Optionaly fields are
         # given in fieldsDict dictionary.
