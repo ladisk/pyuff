@@ -1310,18 +1310,25 @@ class UFF:
                     # double precision - 8 bytes
                     values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
             else:
-                split_data = ''.join(blockData.decode('ascii').splitlines(True)[13:]).split()
-                # TODO: This is not a good implementation -- sometimes there is no space
-                # between values and we get '2.99110e-02-10.00000e-05'. The string should
-                # be split by number of characters!24
                 values = []
-                for i, val in enumerate(split_data):
-                    if len(val) > 23:
-                        pieces = val.replace('E','e').split('e')
-                        values.append(float(''.join([pieces[0], 'e', pieces[1][:3]])))
-                        values.append(float(''.join([pieces[1][3:], 'e', pieces[2]])))
-                    else:
-                        values.append(float(val))
+                split_data = blockData.decode('ascii').splitlines(True)[13:]
+                if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
+                     for line in split_data: #'6E13.5'
+                        values.extend([float(line[13*i:13*(i+1)]) for i in range(len(line)//13)])
+                elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
+                    for line in split_data:  # '4E20.12'
+                        values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
+                elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 2(E13.5,E20.12)
+                        values.extend(
+                            [float(line[13*(i+j)+20*(i):13*(i+1)+20*(i+j)]) \
+                             for i in range(len(line) // 33) for j in [0, 1]])
+                elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 1E13.5,2E20.12
+                        values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
+                else:
+                    raise UFFException('Error reading data-set #58b; not proper data case.')
+
                 values = np.asarray(values)
                 # values = np.asarray([float(str) for str in splitData],'d')
             if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
@@ -1557,7 +1564,7 @@ def prepare_test_164(save_to_file=''):
 if __name__ == '__main__':
     prepare_test_82()
     #uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
-    uff_ascii = UFF('./data/Artemis export - data and dof 05_14102016_105117.uff')
+    uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
     a = uff_ascii.read_sets(0)
     for _ in a.keys():
         if _ !='data':
