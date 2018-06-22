@@ -12,8 +12,10 @@ import pyuff
 def test_read_write_read_given_data():
     test_read_write_read_given_data_base('./data/Sample_UFF58_ascii.uff')
     test_read_write_read_given_data_base('./data/Sample_UFF58b_bin.uff')
+    data_at_the_end = np.array([-5.48363E-004,-7.51019E-004,-6.07967E-004,-0.00103712])
+    test_read_write_read_given_data_base('./data/no_spacing2_UFF58_ascii.uff',data_at_the_end)
 
-def test_read_write_read_given_data_base(file=''):
+def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     if file=='':
         return
     #read from file
@@ -21,8 +23,8 @@ def test_read_write_read_given_data_base(file=''):
 
     a = uff_read.read_sets()
     if type(a)==list:
-        types = np.array([_['type'] for _ in a])
-        a = a[np.argwhere(types==58)]
+        a = [_ for _ in a if _['type']==58]
+        a = a[0]
 
     #write to file
     save_to_file = './data/temp58.uff'
@@ -47,13 +49,20 @@ def test_read_write_read_given_data_base(file=''):
     string_keys = list(set(string_keys).union(set(labels)).difference(set(exclude_keys)))
     numeric_keys = list((set(a.keys()).difference(set(string_keys)).difference(set(exclude_keys))))
 
-
     for k in numeric_keys:
         print('Testing: ', k)
         np.testing.assert_array_almost_equal(a[k], b[k], decimal=3)
     for k in string_keys:
         print('Testing string: ', k, a[k])
         np.testing.assert_string_equal(a[k], b[k])
+
+    print('Testing data: ')
+    np.testing.assert_array_almost_equal(a['data'], b['data'])
+
+    if data_at_the_end is not None:
+        print('Testing last data line: ')
+        np.testing.assert_array_almost_equal(a['data'][-len(data_at_the_end):], data_at_the_end)
+
 
 
 def test_write_read_58():
