@@ -84,7 +84,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.18'
+__version__ = '1.19'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -374,7 +374,7 @@ class UFF:
                     if ind == -1:
                         break
                     blockInd.append(ind)
-                blockInd = np.asarray(blockInd, dtype='int')
+                blockInd = np.asarray(blockInd, dtype='int64')
 
                 # Constructs block indices of start and end values; each pair
                 # points to start and end offset of the data-set (block) data,
@@ -387,7 +387,7 @@ class UFF:
                     fh.close()
                     self._refreshed = True
                     return self._refreshed
-                self._blockInd = np.zeros((nBlocks, 2), dtype='int')
+                self._blockInd = np.zeros((nBlocks, 2), dtype='int64')
                 self._blockInd[:, 0] = blockInd[:-1:2].copy()
                 self._blockInd[:, 1] = blockInd[1::2].copy() - 1
 
