@@ -82,5 +82,8 @@ def test_write_read_151():
     for k in string_keys:
         np.testing.assert_string_equal(a[k], b[k])
 
+if __name__ == '__main__':
+    test_write_read_151()
+
 if __name__ == '__mains__':
     np.testing.run_module_suite()

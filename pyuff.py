@@ -13,8 +13,6 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with pyuff.  If not, see <http://www.gnu.org/licenses/>.
-
-
 """
 ==========
 pyuff module
@@ -46,7 +44,7 @@ Acknowledgement:
     * This source (py2.7) was first written in 2007, 2008 by Primoz Cermelj (primoz.cermelj@gmail.com)
     * As part of the www.openmodal.com project the first source was adopted for Python 3 by
       Matjaz Mrsnik  <matjaz.mrsnik@gmail.com>
-    * The package is maintained by Janko Slavič (janko.slavic@fs.uni-lj.si)
+    * The package is maintained by Janko Slavič <janko.slavic@fs.uni-lj.si>
 
 Notes:
     * 58 data-set is always written in double precision, even if it is
@@ -71,13 +69,12 @@ Performance:
       data-sets from a 110 MB file, entirely in 58b format (binary), it took
       only 8.5 secs (the Matlab's implementations took 20 secs).
       
-Example:
+    Example:
     >>> import pyuff
     >>> uff_file = pyuff.UFF('beam.uff')
     >>> uff_file.file_exists()
     True
 """
-
 import os
 import struct
 import sys
@@ -535,7 +532,7 @@ class UFF:
                 if self._setTypes[int(n)] == 58:
                     blockData = fh.read(ei - si + 1)  # decoding is handled later in _extract58
                 else:
-                    blockData = fh.read(ei - si + 1).decode('utf-8')
+                    blockData = fh.read(ei - si + 1).decode('utf-8', errors='replace')
             except:
                 fh.close()
                 raise UFFException('Error reading data-set #: ' + int(n))
@@ -1314,7 +1311,7 @@ class UFF:
         dset = {'type': 58, 'binary': 0}
         try:
             binary = False
-            split_header = b''.join(blockData.splitlines(True)[:13]).decode('utf-8', 'replace').splitlines(True)
+            split_header = b''.join(blockData.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
             if len(split_header[1]) >= 7:
                 if split_header[1][6].lower() == 'b':
                     # Read some addititional fields from the header section
@@ -1369,7 +1366,7 @@ class UFF:
                     values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
             else:
                 values = []
-                split_data = blockData.decode('utf-8').splitlines(True)[13:]
+                split_data = blockData.decode('utf-8', errors='replace').splitlines(True)[13:]
                 if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                     for line in split_data:  # '6E13.5'
                         values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
@@ -1579,7 +1576,7 @@ def prepare_test_151(save_to_file=''):
     dataset = {'type': 151,  # Header
                'model_name': 'Model file name',  # 80A1, model file name
                'description': 'Model file description',  # 80A1, model file description
-               'db_app': 'Model file description',  # 80A1, program which created DB
+               'db_app': 'Program which created DB',  # 80A1, program which created DB
                'date_db_created': '27-Jan-16',  # 10A1, date database created (DD-MMM-YY)
                'time_db_created': '14:38:15',  # 10A1, time database created (HH:MM:SS)
                'version_db1': 1,  # I10, Version from database
@@ -1629,6 +1626,9 @@ def prepare_test_164(save_to_file=''):
 
 
 if __name__ == '__main__':
+    uff_ascii = UFF('./data/non_ascii_header.uff')
+    a = uff_ascii.read_sets(0)
+    print(a)
     prepare_test_82()
     # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
     uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
