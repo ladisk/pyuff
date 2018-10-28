@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
+# Copyright (C) 2014-2017 Primoz Cermelj, Matjaz Mrsnik, Miha Pirnat, Janko SlaviC, Blaz Starc (in alphabetic order)
 # 
 # This file is part of pyuff.
 # 
@@ -44,7 +44,7 @@ Acknowledgement:
     * This source (py2.7) was first written in 2007, 2008 by Primoz Cermelj (primoz.cermelj@gmail.com)
     * As part of the www.openmodal.com project the first source was adopted for Python 3 by
       Matjaz Mrsnik  <matjaz.mrsnik@gmail.com>
-    * The package is maintained by Janko Slavič <janko.slavic@fs.uni-lj.si>
+    * The package is maintained by Janko SlaviC <janko.slavic@fs.uni-lj.si>
 
 Notes:
     * 58 data-set is always written in double precision, even if it is
@@ -922,7 +922,7 @@ class UFF:
                      (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
                       dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
                       dset['ref_node'], dset['ref_dir']))
-            fh.write('%10i%10i%10i%13.4e%13.4e%13.4e\n' % (ordDataType, numPts, isEven,
+            fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ordDataType, numPts, isEven,
                                                            isEven * dset['abscissa_min'], isEven * dx,
                                                            dset['z_axis_value']))
             fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
@@ -966,10 +966,11 @@ class UFF:
                 elif mode.lower() == 'add':
                     fh = open(self._fileName, 'ab')
                 # write data
-                if bo == 1:
-                    [fh.write(struct.pack('<d', datai)) for datai in data]
-                else:
-                    [fh.write(struct.pack('>d', datai)) for datai in data]
+                fh.write(bytearray(data))                         
+                # if bo == 1:
+                    # [fh.write(struct.pack('<d', datai)) for datai in data]
+                # else:
+                    # [fh.write(struct.pack('>d', datai)) for datai in data]
                 fh.close()
                 if mode.lower() == 'overwrite':
                     fh = open(self._fileName, 'wt')
