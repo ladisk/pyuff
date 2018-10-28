@@ -36,7 +36,7 @@ more information about the UFF format.
 This module also provides an exception handler class, ``UFFException``.
 
 Sources:
-    .. [1] http://www.sdrl.uc.edu/uff/SDRChelp/LANG/English/unv_ug/book.htm
+    .. [1] http://sdrl.uc.edu/sdrl/referenceinfo/universalfileformats
     .. [2] Matlab's ``readuff`` and ``writeuff`` functions:
        http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6395
 
@@ -52,22 +52,6 @@ Notes:
     
     * ``numpy`` module is required as all the vector/matrix-type data are read
       or written using ``numpy.array`` objects.
-      
-To do:
-    * search for ``??`` in the source and check what is missing or
-      what should be changed
-      
-Performance:
-    * To read all the sets from a certain UFF file can take a while if the file
-      is large and, especially, if the file contains mostly ASCII-formated data.
-      Therefore, for large files (files having many data-sets) it is recommended
-      that the data-sets are written in binary format (if available) - this
-      mainly applies to 58-type data-set.
-    * For example, to read a 85 MB file of 160 58 data-sets (in ASCII format) it
-      took 15 secs on the AMD 4200 Dual Core (to compare with the Matlab's
-      implementation [2]_ where it took 13 secs). But, when reading 4093
-      data-sets from a 110 MB file, entirely in 58b format (binary), it took
-      only 8.5 secs (the Matlab's implementations took 20 secs).
       
     Example:
     >>> import pyuff
