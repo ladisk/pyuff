@@ -8,6 +8,8 @@ to manipulate with the UFF (Universal File Format) files.
 
 Read from and write of data-set types **151, 15, 55, 58, 58b, 82, 164** is supported.
 
+Note: this project is developed and tested for Python 3, only.
+
 |travis|
 
 |binder| to test the *pyuff Showcase.ipynb* online.
