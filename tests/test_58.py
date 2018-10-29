@@ -104,5 +104,8 @@ def test_non_ascii_in_header():
     np.testing.assert_equal(num_pts, len(a['x']))
 
 
+if __name__ == '__main__':
+    test_read_58b_binary_vs_58_ascii()
+
 if __name__ == '__mains__':
     np.testing.run_module_suite()
