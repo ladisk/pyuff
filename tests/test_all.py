@@ -1,7 +1,5 @@
-"""
-Unit test for lvm_read.py
-"""
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import numpy as np
 import sys, os
 my_path = os.path.dirname(os.path.abspath(__file__))
