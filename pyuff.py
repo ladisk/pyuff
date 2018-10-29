@@ -626,7 +626,7 @@ class UFF:
             # write strings to the file
             fh.write('%6i\n%6i%74s\n' % (-1, 15, ' '))
             for ii in range(0, n):
-                fh.write('%10i%10i%10i%10i%13.4e%13.4e%13.4e\n' % (
+                fh.write('%10i%10i%10i%10i%13.5e%13.5e%13.5e\n' % (
                     dset['node_nums'][ii], dset['def_cs'][ii], dset['disp_cs'][ii], dset['color'][ii],
                     dset['x'][ii], dset['y'][ii], dset['z'][ii]))
             fh.write('%6i\n' % -1)
@@ -779,16 +779,16 @@ class UFF:
             if dset['analysis_type'] == 2:
                 # Normal modes
                 fh.write('%10i%10i%10i%10i\n' % (2, 4, dset['load_case'], dset['mode_n']))
-                fh.write('%13.4e%13.4e%13.4e%13.4e\n' % (dset['freq'], dset['modal_m'],
+                fh.write('%13.5e%13.5e%13.5e%13.5e\n' % (dset['freq'], dset['modal_m'],
                                                          dset['modal_damp_vis'], dset['modal_damp_his']))
             elif dset['analysis_type'] == 5:
                 # Frequenc response
                 fh.write('%10i%10i%10i%10i\n' % (2, 1, dset['load_case'], dset['freq_step_n']))
-                fh.write('%13.4e\n' % dset['freq'])
+                fh.write('%13.5e\n' % dset['freq'])
             elif (dset['analysis_type'] == 3) or (dset['analysis_type'] == 7):
                 # Complex modes
                 fh.write('%10i%10i%10i%10i\n' % (2, 6, dset['load_case'], dset['mode_n']))
-                fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' % (
+                fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
                     dset['eig'].real, dset['eig'].imag, dset['modal_a'].real, dset['modal_a'].imag,
                     dset['modal_b'].real, dset['modal_b'].imag))
             else:
@@ -799,18 +799,18 @@ class UFF:
                 if nDataPerNode == 3:
                     for k in range(0, n):
                         fh.write('%10i\n' % dset['node_nums'][k])
-                        fh.write('%13.4e%13.4e%13.4e\n' % (dset['r1'][k], dset['r2'][k], dset['r3'][k]))
+                        fh.write('%13.5e%13.5e%13.5e\n' % (dset['r1'][k], dset['r2'][k], dset['r3'][k]))
                 else:
                     for k in range(0, n):
                         fh.write('%10i\n' % dset['node_nums'][k])
-                        fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' %
+                        fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
                                  (dset['r1'][k], dset['r2'][k], dset['r3'][k], dset['r4'][k], dset['r5'][k],
                                   dset['r6'][k]))
             elif dataType == 5:
                 # Complex data; n_data_per_node is assumed being 3
                 for k in range(0, n):
                     fh.write('%10i\n' % dset['node_nums'][k])
-                    fh.write('%13.4e%13.4e%13.4e%13.4e%13.4e%13.4e\n' %
+                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
                              (dset['r1'][k].real, dset['r1'][k].imag, dset['r2'][k].real, dset['r2'][k].imag,
                               dset['r3'][k].real, dset['r3'][k].imag))
             else:
@@ -908,7 +908,7 @@ class UFF:
                      (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
                       dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
                       dset['ref_node'], dset['ref_dir']))
-            fh.write('%10i%10i%10i%13.4e%13.4e%13.4e\n' % (ordDataType, numPts, isEven,
+            fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ordDataType, numPts, isEven,
                                                            isEven * dset['abscissa_min'], isEven * dx,
                                                            dset['z_axis_value']))
             fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
@@ -970,9 +970,9 @@ class UFF:
                         if remVals > 0:
                             fh.write((remVals * '%20.11e' + '\n') % tuple(data[4 * n4Blocks:]))
                     else:
-                        fh.write(n4Blocks * '%13.4e%20.11e%13.4e%20.11e\n' % tuple(data[:4 * n4Blocks]))
+                        fh.write(n4Blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4Blocks]))
                         if remVals > 0:
-                            fmt = ['%13.4e', '%20.11e', '%13.4e', '%20.11e']
+                            fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
                             fh.write((''.join(fmt[remVals]) + '\n') % tuple(data[4 * n4Blocks:]))
                 else:
                     if isEven:
@@ -988,9 +988,9 @@ class UFF:
                         if float(n3Blocks - int(n3Blocks)) != 0.0:
                             print('Warning: Something went wrong when savning the uff file.')
                         n3Blocks = int(n3Blocks)
-                        fh.write(n3Blocks * '%13.4e%20.11e%20.11e\n' % tuple(data[:3 * n3Blocks]))
+                        fh.write(n3Blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3Blocks]))
                         if remVals > 0:
-                            fmt = ['%13.4e', '%20.11e', '%20.11e']
+                            fmt = ['%13.5e', '%20.11e', '%20.11e']
                             fh.write((''.join(fmt[remVals]) + '\n') % tuple(data[3 * n3Blocks:]))
             fh.write('%6i\n' % -1)
             del data
