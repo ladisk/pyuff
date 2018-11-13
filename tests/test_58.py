@@ -8,6 +8,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/BK_4_channels.uff')
     test_read_write_read_given_data_base('./data/Sample_UFF58_ascii.uff')
     test_read_write_read_given_data_base('./data/Sample_UFF58b_bin.uff')
     data_at_the_end = np.array([-5.48363E-004,-7.51019E-004,-6.07967E-004,-0.00103712])
