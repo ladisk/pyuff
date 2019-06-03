@@ -68,7 +68,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.20'
+__version__ = '1.21'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -875,8 +875,10 @@ class UFF:
             if isR:
                 # real data
                 dset['ord_data_type'] = 4
-                nBytes = numPts * 4
-                ordDataType = 4
+                nBytes = numPts * 8
+                if 'n_bytes' in dset.keys():
+                    dset['n_bytes'] = nBytes
+                ordDataType = dset['ord_data_type']
             else:
                 # complex data
                 dset['ord_data_type'] = 6
@@ -887,6 +889,10 @@ class UFF:
 
             # handling abscissa spacing automatically
             # isEven = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
+            # decode utf to ascii
+            for k, v in dset.items():
+                if type(v) == str:
+                    dset[k] = v.encode("utf-8").decode('ascii','ignore')
 
             dset['abscissa_min'] = dset['x'][0]
             dx = dset['x'][1] - dset['x'][0]
@@ -1612,7 +1618,7 @@ def prepare_test_164(save_to_file=''):
 
 
 if __name__ == '__main__':
-    uff_ascii = UFF('./data/non_ascii_header.uff')
+    uff_ascii = UFF('./data/test.uff')
     a = uff_ascii.read_sets(0)
     print(a)
     prepare_test_82()

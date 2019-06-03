@@ -8,9 +8,10 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/Artemis export - data and dof 05_14102016_105117.uff')
     test_read_write_read_given_data_base('./data/BK_4_channels.uff')
     test_read_write_read_given_data_base('./data/Sample_UFF58_ascii.uff')
-    test_read_write_read_given_data_base('./data/Sample_UFF58b_bin.uff')
+    test_read_write_read_given_data_base('./data/binary8byte.uff')
     data_at_the_end = np.array([-5.48363E-004,-7.51019E-004,-6.07967E-004,-0.00103712])
     test_read_write_read_given_data_base('./data/no_spacing2_UFF58_ascii.uff',data_at_the_end)
 
@@ -48,6 +49,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     string_keys = list(set(string_keys).union(set(labels)).difference(set(exclude_keys)))
     numeric_keys = list((set(a.keys()).difference(set(string_keys)).difference(set(exclude_keys))))
 
+    #print(a['n_bytes'], b['n_bytes'])
     for k in numeric_keys:
         print('Testing: ', k)
         np.testing.assert_array_almost_equal(a[k], b[k], decimal=3)
@@ -106,7 +108,7 @@ def test_non_ascii_in_header():
 
 
 if __name__ == '__main__':
-    test_read_58b_binary_vs_58_ascii()
+    test_read_write_read_given_data()
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()
