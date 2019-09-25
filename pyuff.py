@@ -763,6 +763,8 @@ class UFF:
             #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
             if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
                 nDataPerNode = 6
+            else:
+                nDataPerNode = 3
             if np.iscomplexobj(dset['r1']):
                 nDataPerNode = 3
                 dataType = 5
@@ -1479,6 +1481,48 @@ class UFF:
                     fieldsOut.update({key: 0.0})
         return fieldsOut
 
+def prepare_test_55(save_to_file=''):
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+    uff_datasets = []
+    modes = [1, 2, 3]
+    node_nums = [1, 2, 3, 4]
+    freqs = [10.0, 12.0, 13.0]
+    for i, b in enumerate(modes):
+        mode_shape = np.random.normal(size=len(node_nums))
+        name = 'TestCase'
+        data = {
+            'type': 55,
+            'model_type': 1,
+            'id1': 'NONE',
+            'id2': 'NONE',
+            'id3': 'NONE',
+            'id4': 'NONE',
+            'id5': 'NONE',
+            'analysis_type': 2,
+            'data_characteristic': 2,
+            'spec_data_type': 8,
+            'data_type': 2,
+            'data_ch': 2,
+            'r1': mode_shape,
+            'r2': mode_shape,
+            'r3': mode_shape,
+            'nDataPerNode': 3,
+            'node_nums': [1, 2, 3, 4],
+            'load_case': 1,
+            'mode_n': i + 1,
+            'modal_m': 0,
+            'freq': freqs[i],
+            'modal_damp_vis': 0,
+            'modal_damp_his': 0,
+        }
+
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    return uff_datasets
 
 def prepare_test_15(save_to_file=''):
     dataset = {'type': 15,  # Nodes
