@@ -68,7 +68,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.21'
+__version__ = '1.22'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -763,9 +763,12 @@ class UFF:
             #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
             if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
                 nDataPerNode = 6
-            if np.iscomplexobj(dset['r1']):
+            else:
                 nDataPerNode = 3
+            if np.iscomplexobj(dset['r1']):
                 dataType = 5
+            else:
+                dataType = 2
             # Write strings to the file
             fh.write('%6i\n%6i%74s\n' % (-1, 55, ' '))
             fh.write('%-80s\n' % dset['id1'])
@@ -1499,6 +1502,49 @@ def prepare_test_15(save_to_file=''):
 
     return dataset_out
 
+def prepare_test_55(save_to_file=''):
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+    uff_datasets = []
+    modes = [1, 2, 3]
+    node_nums = [1, 2, 3, 4]
+    freqs = [10.0, 12.0, 13.0]
+    for i, b in enumerate(modes):
+        mode_shape = np.random.normal(size=len(node_nums))
+        name = 'TestCase'
+        data = {
+            'type': 55,
+            'model_type': 1,
+            'id1': 'NONE',
+            'id2': 'NONE',
+            'id3': 'NONE',
+            'id4': 'NONE',
+            'id5': 'NONE',
+            'analysis_type': 2,
+            'data_ch': 2,
+            'spec_data_type': 8,
+            'data_type': 2,
+            'data_ch': 2,
+            'r1': mode_shape,
+            'r2': mode_shape,
+            'r3': mode_shape,
+            'n_data_per_node': 3,
+            'node_nums': [1, 2, 3, 4],
+            'load_case': 1,
+            'mode_n': i + 1,
+            'modal_m': 0,
+            'freq': freqs[i],
+            'modal_damp_vis': 0,
+            'modal_damp_his': 0,
+        }
+
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    return uff_datasets
+
 
 def prepare_test_58(save_to_file=''):
     if save_to_file:
@@ -1618,10 +1664,10 @@ def prepare_test_164(save_to_file=''):
 
 
 if __name__ == '__main__':
-    uff_ascii = UFF('./data/test.uff')
+    uff_ascii = UFF('./data/beam.uff')
     a = uff_ascii.read_sets(0)
     print(a)
-    prepare_test_82()
+    prepare_test_55('./data/test_uff55.uff')
     # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
     uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
     a = uff_ascii.read_sets(0)
