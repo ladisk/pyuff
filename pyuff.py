@@ -68,7 +68,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.22'
+__version__ = '1.23'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -1363,8 +1363,11 @@ class UFF:
                 values = []
                 split_data = blockData.decode('utf-8', errors='replace').splitlines(True)[13:]
                 if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                    for line in split_data:  # '6E13.5'
+                    for line in split_data[:-1]:  # '6E13.5'
                         values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
+                    else:
+                        line = split_data[-1]
+                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
                 elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
                     for line in split_data:  # '4E20.12'
                         values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
