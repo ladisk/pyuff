@@ -131,9 +131,9 @@ class UFF:
         * ``'element_nums'``       -- *list of n element numbers*
         * ``'num_nodes'``          -- *n number of nodes on element*
         * ``'nodes_nums'``         -- *n list of node numbers defining element*
-        * ``<'fe_descriptor'>``    -- *n fe descriptor id*
-        * ``<'phys_table'>``       -- *n physical property table number*
-        * ``<'mat_table'>``        -- *n material property table number*
+        * ``'fe_descriptor'``      -- *n fe descriptor id*
+        * ``'phys_table'``         -- *n physical property table number*
+        * ``'mat_table'``          -- *n material property table number*
         * ``<'color'>``            -- *n color numbers*
     
     **Data-set 82 (line data)**:
@@ -1118,7 +1118,7 @@ class UFF:
             dset['color'] = values[:,4].tolist()
             dset['num_nodes'] = values[:,5].tolist()
             values = splitData[1::2] # Extract Record 2
-            dset['nodes_nums'] = values.copy()
+            dset['nodes_nums'] =  np.array(values, dtype=int).tolist()
             pass
         except:
             raise UFFException('Error reading data-set #2412')
@@ -1710,6 +1710,6 @@ if __name__ == '__main__':
     #         print(_, ':', a[_])
     # print(sum(a['data']))
 
-    uff_ascii = UFF('./data/mesh_Oros-modal.unv')
+    uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
     a = uff_ascii.read_sets()
     pass
