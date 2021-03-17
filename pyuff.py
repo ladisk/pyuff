@@ -1110,7 +1110,7 @@ class UFF:
             # Body
             splitData = blockData.splitlines()
             splitData = [a.split() for a in splitData][2:]
-            values = np.array(splitData[::2]) # Extract Record 1
+            values = np.array(splitData[::2], dtype=int) # Extract Record 1
             dset['element_nums'] = values[:,0].tolist()
             dset['fe_descriptor'] = values[:,1].tolist()
             dset['phys_table'] = values[:,2].tolist()
