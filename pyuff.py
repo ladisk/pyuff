@@ -540,7 +540,7 @@ class UFF:
         elif self._setTypes[int(n)] == 2411:
             dset = self._extract2411(blockData)  # TEMP ADD
         elif self._setTypes[int(n)] == 2412:
-            dset = self._extract2412(blockData)  # TEMP ADD
+            dset = self._extract2412(blockData)
         elif self._setTypes[int(n)] == 18:
             dset = self._extract18(blockData)  # TEMP ADD
         elif self._setTypes[int(n)] == 82:
@@ -1698,18 +1698,14 @@ def prepare_test_164(save_to_file=''):
 
 
 if __name__ == '__main__':
-    # uff_ascii = UFF('./data/beam.uff')
-    # a = uff_ascii.read_sets(0)
-    # print(a)
-    # prepare_test_55('./data/test_uff55.uff')
-    # # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
-    # uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
-    # a = uff_ascii.read_sets(0)
-    # for _ in a.keys():
-    #     if _ != 'data':
-    #         print(_, ':', a[_])
-    # print(sum(a['data']))
-
-    uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
-    a = uff_ascii.read_sets()
-    pass
+    uff_ascii = UFF('./data/beam.uff')
+    a = uff_ascii.read_sets(0)
+    print(a)
+    prepare_test_55('./data/test_uff55.uff')
+    # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
+    uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
+    a = uff_ascii.read_sets(0)
+    for _ in a.keys():
+        if _ != 'data':
+            print(_, ':', a[_])
+    print(sum(a['data']))
