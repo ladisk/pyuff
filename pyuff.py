@@ -25,7 +25,7 @@ defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
-are supported: **151, 15, 55, 58, 58b, 82, 164.** Data-set **58b**
+are supported: **151, 15, 55, 58, 58b, 82, 164, 2412, 2420.** Data-set **58b**
 is actually a hybrid format [1]_ where the signal is written in the
 binary form, while the header-part is slightly different from 58 but still in the
 ascii format.
@@ -68,7 +68,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.23'
+__version__ = '1.24'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -124,6 +124,16 @@ class UFF:
         * ``'z'``                  -- *z-coordinates of the n nodes*
         * ``<'def_cs'>``           -- *n deformation cs numbers*
         * ``<'disp_cs'>``          -- *n displacement cs numbers*
+        * ``<'color'>``            -- *n color numbers*
+
+    **Data-set 2412 (elements data)**:
+        * ``'type'``               -- *type number = 2412*
+        * ``'element_nums'``       -- *list of n element numbers*
+        * ``'num_nodes'``          -- *n number of nodes on element*
+        * ``'nodes_nums'``         -- *n list of node numbers defining element*
+        * ``'fe_descriptor'``      -- *n fe descriptor id*
+        * ``'phys_table'``         -- *n physical property table number*
+        * ``'mat_table'``          -- *n material property table number*
         * ``<'color'>``            -- *n color numbers*
     
     **Data-set 82 (line data)**:
@@ -530,7 +540,7 @@ class UFF:
         elif self._setTypes[int(n)] == 2411:
             dset = self._extract2411(blockData)  # TEMP ADD
         elif self._setTypes[int(n)] == 2412:
-            dset = self._extract15(blockData)  # TEMP ADD
+            dset = self._extract2412(blockData)
         elif self._setTypes[int(n)] == 18:
             dset = self._extract18(blockData)  # TEMP ADD
         elif self._setTypes[int(n)] == 82:
@@ -1091,6 +1101,27 @@ class UFF:
             dset['z'] = values[6::7].copy()
         except:
             raise UFFException('Error reading data-set #15')
+        return dset
+
+    def _extract2412(self,blockData):
+        # Extract element data - data-set 2412.
+        dset = {'type': 2412}
+        try:
+            # Body
+            splitData = blockData.splitlines()
+            splitData = [a.split() for a in splitData][2:]
+            values = np.array(splitData[::2], dtype=int) # Extract Record 1
+            dset['element_nums'] = values[:,0].copy()
+            dset['fe_descriptor'] = values[:,1].copy()
+            dset['phys_table'] = values[:,2].copy()
+            dset['mat_table'] = values[:,3].copy()
+            dset['color'] = values[:,4].copy()
+            dset['num_nodes'] = values[:,5].copy()
+            values = splitData[1::2] # Extract Record 2
+            dset['nodes_nums'] =  np.array(values, dtype=int).copy().reshape((-1,dset['num_nodes'][0]))
+            pass
+        except:
+            raise UFFException('Error reading data-set #2412')
         return dset
 
     def _extract18(self, blockData):
@@ -1667,14 +1698,15 @@ def prepare_test_164(save_to_file=''):
 
 
 if __name__ == '__main__':
-    uff_ascii = UFF('./data/beam.uff')
-    a = uff_ascii.read_sets(0)
-    print(a)
-    prepare_test_55('./data/test_uff55.uff')
+    #uff_ascii = UFF('./data/beam.uff')
+    #a = uff_ascii.read_sets(0)
+    #print(a)
+    #prepare_test_55('./data/test_uff55.uff')
     # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
-    uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
-    a = uff_ascii.read_sets(0)
+    #uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
+    uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
+    a = uff_ascii.read_sets(2)
     for _ in a.keys():
         if _ != 'data':
             print(_, ':', a[_])
-    print(sum(a['data']))
+    #print(sum(a['data']))
