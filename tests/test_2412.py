@@ -14,13 +14,24 @@ def test_read_2412():
     np.testing.assert_array_equal(a['quad']['nodes_nums'][-1], np.array([50, 74, 73, 49]))
 
 def test_read_write_2412_mixed():
+    # Read dataset 2412 in test file
     uff_ascii = pyuff.UFF('./data/mesh_test_uff2412_mixed.unv')
     a = uff_ascii.read_sets(2)
+    # Test
     np.testing.assert_array_equal(a['triangle']['nodes_nums'][-1], np.array([3, 6, 11]))
     np.testing.assert_array_equal(a['quad']['nodes_nums'][-1], np.array([3, 4, 5, 6]))
     
+    # Write dataset 2412
     uff_write = pyuff.UFF('./data/tmp.unv')
-    uff_write._write_set(a,'add')
+    uff_write._write_set(a,'overwrite')
+
+    # Read dataset 2412 in written file
+    uff_ascii = pyuff.UFF('./data/tmp.unv')
+    a = uff_ascii.read_sets(0)
+    # Test
+    np.testing.assert_array_equal(a['triangle']['nodes_nums'][-1], np.array([3, 6, 11]))
+    np.testing.assert_array_equal(a['quad']['nodes_nums'][-1], np.array([3, 4, 5, 6]))
+
 
 if __name__ == '__main__':
     # test_read_2412()

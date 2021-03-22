@@ -1026,7 +1026,7 @@ class UFF:
                     'cs_color': 8}
 
             dset = self._opt_fields(dset, dict)
-            fh.write('%6i\n%6i%74s\n' % (-1, 2411, ' '))
+            fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
 
             for node in range(dset['grid_global'].shape[0]):
                 fh.write('%10i%10i%10i%10i\n' % (dset['grid_global'][node, 0], dset['export_cs_number'],
@@ -1039,12 +1039,30 @@ class UFF:
         except:
             raise UFFException('Error writing data-set #2411')
 
-        def _write2412(self, fh, dset):
-            try:
-                pass
+    def _write2412(self, fh, dset):
+        try:
+            elt_type_dict = {"triangle": 3, "quad": 4}
+            fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
+            for elt_type in dset:
+                if elt_type == "type":
+                    pass
+                else:
+                    for i in range(len(dset[elt_type]['element_nums'])):
+                        fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+                            dset[elt_type]['element_nums'][i],
+                            dset[elt_type]['fe_descriptor'][i],
+                            dset[elt_type]['phys_table'][i],
+                            dset[elt_type]['mat_table'][i],
+                            dset[elt_type]['color'][i],
+                            elt_type_dict[elt_type],
+                        ))
+                        for ii in range(elt_type_dict[elt_type]):
+                            fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
+                        fh.write('\n')
+            fh.write('%6i\n' % -1)
 
-            except:
-                raise UFFException('Error writing data-set #2412')
+        except:
+            raise UFFException('Error writing data-set #2412')
 
     # TODO: Big deal - the output dictionary when reading this set
     #    is different than the dictionary that is expected (keys) when
