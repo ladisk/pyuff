@@ -1026,7 +1026,7 @@ class UFF:
                     'cs_color': 8}
 
             dset = self._opt_fields(dset, dict)
-            fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
+            fh.write('%6i\n%6i%74s\n' % (-1, 2411, ' '))
 
             for node in range(dset['grid_global'].shape[0]):
                 fh.write('%10i%10i%10i%10i\n' % (dset['grid_global'][node, 0], dset['export_cs_number'],

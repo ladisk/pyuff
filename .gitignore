@@ -101,6 +101,8 @@ ENV/
 
 measurement.uff
 data/measurement.uff
+data/tmp.uff
+data/tmp.unv
 data/measurement_58b.uff
 .idea/
 .pypirc
