@@ -30,7 +30,7 @@ For a showcase see: `https://github.com/openmodal/pyuff/ <https://github.com/ope
 
 from setuptools import setup
 setup(name='pyuff',
-      version='1.24',
+      version='1.25',
       author='Primož Čermelj, Janko Slavič',
       author_email='primoz.cermelj@gmail.com, janko.slavic@fs.uni-lj.si',
       description='UFF (Universal File Format) read/write.',

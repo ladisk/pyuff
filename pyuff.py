@@ -68,7 +68,7 @@ import time
 
 import numpy as np
 
-__version__ = '1.24'
+__version__ = '1.25'
 _SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
 
 
@@ -1041,7 +1041,7 @@ class UFF:
 
     def _write2412(self, fh, dset):
         try:
-            elt_type_dict = {"triangle": 3, "quad": 4}
+            elt_type_dict = {'triangle': 3, 'quad': 4}
             fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
             for elt_type in dset:
                 if elt_type == "type":
@@ -1135,7 +1135,7 @@ class UFF:
         dset = {'type': 2412}
         # Define dictionary of possible elements types
         # Only 2D non-quadratic elements are supported
-        elt_type_dict = {"3": "triangle", "4": "quad"}
+        elt_type_dict = {'3': 'triangle', '4': 'quad'}
         # Read data
         try:
             splitData = blockData.splitlines()
