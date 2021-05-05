@@ -1844,7 +1844,7 @@ if __name__ == '__main__':
     # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
     #uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
     #uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
-    uff_ascii = UFF('./data/DS2414_disp_file.unv')
+    uff_ascii = UFF('./data/DS2414_disp_file.uff')
     a = uff_ascii.read_sets(2)
     for _ in a.keys():
         if _ != 'data':
