@@ -1096,28 +1096,7 @@ class UFF:
                 fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data1'], dset['frequency'], dset['frequency'], dset['specific_data4'],
                                                  dset['specific_data5'], dset['specific_data6']))
                 fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data7'], dset['specific_data8'], dset['specific_data9'], dset['specific_data10'],
-                                                 dset['specific_data11'], dset['specific_data12']))
-
-                #integer_specific_data5 is frequency
-
-                # fh.write('%6i\n%6i\n' % (-1, 2414))
-                # fh.write('%10i\n' % (dset['DS2414_num']))                     
-                # fh.write('Solid displacement at   %.5e Hz\n' % (dset['freq']))
-                # fh.write('         1\n')
-                # fh.write('FEMTown to UNV output driver                                                      \n')
-                # fh.write(''' 'Analysis' ''' '\n')
-                # fh.write('Solid displacement at   %.5e Hz\n' % (dset['freq']))
-                # fh.write('Loadcase %7d \n' % (dset['loadcase']))
-                # fh.write(' none\n')
-
-                # fh.write('         0         5         2         8         5         3\n')
-
-                # fh.write('         1         0         1         0         1         0         0 %9d\n' % (dset['Nthfreq']))
-                
-                # fh.write('         1         1\n')
-                # fh.write('  0.00000e+00  %.5e  %.5e  0.00000e+00  0.00000e+00  0.00000e+00\n' %(dset['freq'],dset['freq']))
-                # fh.write('  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00\n')
-            
+                                                 dset['specific_data11'], dset['specific_data12']))                            
                 for node in range(dset['node_nums'].shape[0]):
                     fh.write('%10i\n' % (int(dset['node_nums'][node])))
                     fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (np.real(dset['x'][node]),np.imag(dset['x'][node]),np.real(dset['y'][node]),np.imag(dset['y'][node]),np.real(dset['z'][node]),np.imag(dset['z'][node])))
@@ -1228,17 +1207,6 @@ class UFF:
         try:
             binary = False
             split_header = blockData.splitlines(True)[:15]  # Keep the line breaks!
-            
-            # split_header = (blockData.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
-            # if len(split_header[1]) >= 7:
-            #     if split_header[1][6].lower() == 'b':
-            #         # Read some addititional fields from the header section
-            #         binary = True
-            #         dset['binary'] = 1
-            #         dset.update(self._parse_header_line(split_header[1], 6, [6, 1, 6, 6, 12, 12, 6, 6, 12, 12],
-            #                                             [-1, -1, 2, 2, 2, 2, -1, -1, -1, -1],
-            #                                             ['', '', 'byte_ordering', 'fp_format', 'n_ascii_lines',
-            #                                              'n_bytes', '', '', '', '']))
             dset.update(self._parse_header_line(split_header[2], 1, [80], [2], ['analysis_dataset_label'])) #Loadcase number
             dset.update(self._parse_header_line(split_header[3], 1, [80], [1], ['analysis_dataset_name'])) # usually with the frequency
             dset.update(self._parse_header_line(split_header[4], 1, [80], [2], ['dataset_location']))
