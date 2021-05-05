@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import sys, os
-# my_path = os.path.dirname(os.path.abspath(__file__))
-# sys.path.insert(0, my_path + '/../')
+my_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, my_path + '/../')
 
 import pyuff
 
