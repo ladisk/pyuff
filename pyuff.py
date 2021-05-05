@@ -38,7 +38,7 @@ more information about the UFF format.
 This module also provides an exception handler class, ``UFFException``.
 
 Sources:
-    .. [1] http://sdrl.uc.edu/sdrl/referenceinfo/universalfileformats
+    .. [1] https://www.ceas3.uc.edu/sdrluff/
     .. [2] Matlab's ``readuff`` and ``writeuff`` functions:
        http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=6395
 
@@ -537,26 +537,26 @@ class UFF:
         # Extracts the dset
         if self._setTypes[int(n)] == 15:
             dset = self._extract15(blockData)
-        elif self._setTypes[int(n)] == 2411:
-            dset = self._extract2411(blockData)  # TEMP ADD
-        elif self._setTypes[int(n)] == 2412:
-            dset = self._extract2412(blockData)
         elif self._setTypes[int(n)] == 18:
             dset = self._extract18(blockData)  # TEMP ADD
-        elif self._setTypes[int(n)] == 82:
-            dset = self._extract82(blockData)
-        elif self._setTypes[int(n)] == 2420:
-            dset = self._extract2420(blockData)
-        elif self._setTypes[int(n)] == 151:
-            dset = self._extract151(blockData)
-        elif self._setTypes[int(n)] == 164:
-            dset = self._extract164(blockData)
         elif self._setTypes[int(n)] == 55:
             dset = self._extract55(blockData)
         elif self._setTypes[int(n)] == 58:
             dset = self._extract58(blockData)
+        elif self._setTypes[int(n)] == 82:
+            dset = self._extract82(blockData)
+        elif self._setTypes[int(n)] == 151:
+            dset = self._extract151(blockData)
+        elif self._setTypes[int(n)] == 164:
+            dset = self._extract164(blockData)
+        elif self._setTypes[int(n)] == 2411:
+            dset = self._extract2411(blockData)  # TEMP ADD
+        elif self._setTypes[int(n)] == 2412:
+            dset = self._extract2412(blockData)
         elif self._setTypes[int(n)] == 2414:
             dset = self._extract2414(blockData) 
+        elif self._setTypes[int(n)] == 2420:
+            dset = self._extract2420(blockData)
         else:
             dset['type'] = self._setTypes[int(n)]
             # Unsupported data-set - do nothing
@@ -603,24 +603,24 @@ class UFF:
 
             if setType == 15:
                 self._write15(fh, dset)
+            elif setType == 55:
+                self._write55(fh, dset)
+            elif setType == 58:
+                self._write58(fh, dset, mode)
             elif setType == 82:
                 self._write82(fh, dset)
             elif setType == 151:
                 self._write151(fh, dset)
             elif setType == 164:
                 self._write164(fh, dset)
-            elif setType == 55:
-                self._write55(fh, dset)
-            elif setType == 58:
-                self._write58(fh, dset, mode)
             elif setType == 2411:
                 self._write2411(fh, dset)
             elif setType == 2412:
                 self._write2412(fh, dset)
-            elif setType == 2420:
-                self._write2420(fh, dset)
             elif setType == 2414:
                 self._write2414(fh, dset)
+            elif setType == 2420:
+                self._write2420(fh, dset)
             else:
                 # Unsupported data-set - do nothing
                 pass
