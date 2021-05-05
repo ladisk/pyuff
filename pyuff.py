@@ -1845,7 +1845,7 @@ if __name__ == '__main__':
     #uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
     #uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
     uff_ascii = UFF('./data/DS2414_disp_file.uff')
-    a = uff_ascii.read_sets(2)
+    a = uff_ascii.read_sets(3)
     for _ in a.keys():
         if _ != 'data':
             print(_, ':', a[_])
