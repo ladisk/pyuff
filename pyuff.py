@@ -69,7 +69,7 @@ import time
 import numpy as np
 
 __version__ = '1.25'
-_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420']
+_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420','2414']
 
 
 class UFFException(Exception):
@@ -555,6 +555,8 @@ class UFF:
             dset = self._extract55(blockData)
         elif self._setTypes[int(n)] == 58:
             dset = self._extract58(blockData)
+        elif self._setTypes[int(n)] == 2414:
+            dset = self._extract2414(blockData) 
         else:
             dset['type'] = self._setTypes[int(n)]
             # Unsupported data-set - do nothing
@@ -617,6 +619,8 @@ class UFF:
                 self._write2412(fh, dset)
             elif setType == 2420:
                 self._write2420(fh, dset)
+            elif setType == 2414:
+                self._write2414(fh, dset)
             else:
                 # Unsupported data-set - do nothing
                 pass
@@ -1064,6 +1068,63 @@ class UFF:
         except:
             raise UFFException('Error writing data-set #2412')
 
+    def _write2414(self, fh, dset):
+        #DS2414_num is iterative number for each DS2414
+        #Nthfreq is th frequency
+        #Writes data at nodes - data-set 2414 - to an open file fh. Currently:
+        #   - frequency response (5)
+        # analyses are supported.
+        try:
+            # Handle general optional fields
+            
+            if dset['analysis_type']==5:
+                fh.write('%6i\n%6i\n' % (-1, 2414))
+                fh.write('%10i\n' % (dset['analysis_dataset_label'])) #Loadcase number (DS2414_num)
+                fh.write('%-80s\n' % (dset['analysis_dataset_name'])) #usually with the frequency
+                fh.write('%10i\n' % (dset['dataset_location']))
+                fh.write('%-80s\n' % dset['id1'])
+                fh.write('%-80s\n' % dset['id2'])
+                fh.write('%-80s\n' % dset['id3']) #usually with the frequency
+                fh.write('%-80s\n' % dset['id4']) #usually with the loadcase
+                fh.write('%-80s\n' % dset['id5'])
+
+                fh.write('%10i%10i%10i%10i%10i%10i\n' % (dset['model_type'], dset['analysis_type'], dset['data_characteristic'], dset['result_type'],
+                                                 dset['data_type'], dset['number_of_data_values_for_the_data_component']))
+                fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['integer_specific_data1'], dset['integer_specific_data2'], dset['integer_specific_data3'], dset['integer_specific_data4'],
+                                                 dset['integer_specific_data5'], dset['integer_specific_data6'],dset['integer_specific_data7'], dset['integer_specific_data8']))
+                fh.write('%10i%10i\n' % (dset['integer_specific_data9'], dset['integer_specific_data10']))
+                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data1'], dset['frequency'], dset['frequency'], dset['specific_data4'],
+                                                 dset['specific_data5'], dset['specific_data6']))
+                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data7'], dset['specific_data8'], dset['specific_data9'], dset['specific_data10'],
+                                                 dset['specific_data11'], dset['specific_data12']))
+
+                #integer_specific_data5 is frequency
+
+                # fh.write('%6i\n%6i\n' % (-1, 2414))
+                # fh.write('%10i\n' % (dset['DS2414_num']))                     
+                # fh.write('Solid displacement at   %.5e Hz\n' % (dset['freq']))
+                # fh.write('         1\n')
+                # fh.write('FEMTown to UNV output driver                                                      \n')
+                # fh.write(''' 'Analysis' ''' '\n')
+                # fh.write('Solid displacement at   %.5e Hz\n' % (dset['freq']))
+                # fh.write('Loadcase %7d \n' % (dset['loadcase']))
+                # fh.write(' none\n')
+
+                # fh.write('         0         5         2         8         5         3\n')
+
+                # fh.write('         1         0         1         0         1         0         0 %9d\n' % (dset['Nthfreq']))
+                
+                # fh.write('         1         1\n')
+                # fh.write('  0.00000e+00  %.5e  %.5e  0.00000e+00  0.00000e+00  0.00000e+00\n' %(dset['freq'],dset['freq']))
+                # fh.write('  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00\n')
+            
+                for node in range(dset['node_nums'].shape[0]):
+                    fh.write('%10i\n' % (int(dset['node_nums'][node])))
+                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (np.real(dset['x'][node]),np.imag(dset['x'][node]),np.real(dset['y'][node]),np.imag(dset['y'][node]),np.real(dset['z'][node]),np.imag(dset['z'][node])))
+                fh.write('%6i\n' % (-1))    
+        except:
+            raise UFFException('Error writing data-set #2414')
+
     # TODO: Big deal - the output dictionary when reading this set
     #    is different than the dictionary that is expected (keys) when
     #    writing this same set. This is not OK!
@@ -1156,6 +1217,80 @@ class UFF:
                 dict_tmp['color'] = rec1[ind,4].copy()
                 dict_tmp['nodes_nums'] =  np.array([rec2[i] for i in ind], dtype=int).copy().reshape((-1,elt_type))
                 dset[elt_type_dict[str(elt_type)]] = dict_tmp
+        except:
+            raise UFFException('Error reading data-set #2412')
+        return dset
+    
+    def _extract2414(self,blockData):
+        # Extract analysis data - data-set 2414.
+        dset = {'type': 2414}
+        # Read data
+        try:
+            binary = False
+            split_header = blockData.splitlines(True)[:15]  # Keep the line breaks!
+            
+            # split_header = (blockData.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
+            # if len(split_header[1]) >= 7:
+            #     if split_header[1][6].lower() == 'b':
+            #         # Read some addititional fields from the header section
+            #         binary = True
+            #         dset['binary'] = 1
+            #         dset.update(self._parse_header_line(split_header[1], 6, [6, 1, 6, 6, 12, 12, 6, 6, 12, 12],
+            #                                             [-1, -1, 2, 2, 2, 2, -1, -1, -1, -1],
+            #                                             ['', '', 'byte_ordering', 'fp_format', 'n_ascii_lines',
+            #                                              'n_bytes', '', '', '', '']))
+            dset.update(self._parse_header_line(split_header[2], 1, [80], [2], ['analysis_dataset_label'])) #Loadcase number
+            dset.update(self._parse_header_line(split_header[3], 1, [80], [1], ['analysis_dataset_name'])) # usually with the frequency
+            dset.update(self._parse_header_line(split_header[4], 1, [80], [2], ['dataset_location']))
+            dset.update(self._parse_header_line(split_header[5], 1, [80], [1], ['id1']))
+            dset.update(self._parse_header_line(split_header[6], 1, [80], [1], ['id2']))
+            dset.update(self._parse_header_line(split_header[7], 1, [80], [1], ['id3']))  # usually with the frequency
+            dset.update(self._parse_header_line(split_header[8], 1, [80], [1], ['id4']))  # usually with the loadcase
+            dset.update(self._parse_header_line(split_header[9], 1, [80], [1], ['id5']))
+           
+            dset.update(self._parse_header_line(split_header[10], 6, [10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2],
+                                                ['model_type', 'analysis_type', 'data_characteristic', 'result_type',
+                                                 'data_type', 'number_of_data_values_for_the_data_component']))     
+            
+            dset.update(self._parse_header_line(split_header[11], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
+                                                ['integer_specific_data1', 'integer_specific_data2',
+                                                 'integer_specific_data3', 'integer_specific_data4',
+                                                 'integer_specific_data5', 'integer_specific_data6',
+                                                 'integer_specific_data7', 'integer_specific_data8']))
+            dset.update(self._parse_header_line(split_header[12], 2, [10, 10], [2, 2],
+                                                ['integer_specific_data9', 'integer_specific_data10']))
+
+            if dset['analysis_type'] == 5:
+                # frequency response 
+                dset.update(self._parse_header_line(split_header[13], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                                ['specific_data1', 'frequency',
+                                                 'frequency', 'specific_data4', 'specific_data5',
+                                                 'specific_data6']))
+                dset.update(self._parse_header_line(split_header[14], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                                ['specific_data7', 'specific_data8',
+                                                 'specific_data9', 'specific_data10', 'specific_data11',
+                                                 'specific_data12']))
+                splitData = blockData.splitlines(True)  # Keep the line breaks!
+                freq = float(splitData[3][21:21+14])
+                loadcase = int(splitData[8][9:9+7])
+                Precision = splitData[10].split()[4]
+                NumberOfDataValue = splitData[10].split()[5]
+                DS2414_num = splitData[2].split()[0]
+                Nthfreq = splitData[11].split()[7]
+                if Precision == '5' and NumberOfDataValue == '3':
+                    splitData = ''.join(splitData[15:])  # ..as they are again needed
+                    splitData = splitData.split()
+                    values = np.asarray([float(str) for str in splitData], 'd')
+                    dset['freq'] = float(freq)
+                    dset['loadcase'] = int(loadcase)
+                    dset['DS2414_num'] = int(DS2414_num)
+                    dset['Nthfreq'] = int(Nthfreq)
+                    dset['node_nums'] = values[::7].copy()
+                    dset['x'] = values[1::7].copy()+values[2::7].copy()*1j
+                    dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
+                    dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
+
+            pass  
         except:
             raise UFFException('Error reading data-set #2412')
         return dset
@@ -1740,7 +1875,8 @@ if __name__ == '__main__':
     #prepare_test_55('./data/test_uff55.uff')
     # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
     #uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
-    uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
+    #uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
+    uff_ascii = UFF('./data/DS2414_disp_file.unv')
     a = uff_ascii.read_sets(2)
     for _ in a.keys():
         if _ != 'data':
