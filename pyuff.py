@@ -1088,18 +1088,48 @@ class UFF:
                 fh.write('%-80s\n' % dset['id4']) #usually with the loadcase
                 fh.write('%-80s\n' % dset['id5'])
 
-                fh.write('%10i%10i%10i%10i%10i%10i\n' % (dset['model_type'], dset['analysis_type'], dset['data_characteristic'], dset['result_type'],
-                                                 dset['data_type'], dset['number_of_data_values_for_the_data_component']))
-                fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['integer_specific_data1'], dset['integer_specific_data2'], dset['integer_specific_data3'], dset['integer_specific_data4'],
-                                                 dset['integer_specific_data5'], dset['integer_specific_data6'],dset['integer_specific_data7'], dset['integer_specific_data8']))
-                fh.write('%10i%10i\n' % (dset['integer_specific_data9'], dset['integer_specific_data10']))
-                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data1'], dset['frequency'], dset['frequency'], dset['specific_data4'],
-                                                 dset['specific_data5'], dset['specific_data6']))
-                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (dset['specific_data7'], dset['specific_data8'], dset['specific_data9'], dset['specific_data10'],
-                                                 dset['specific_data11'], dset['specific_data12']))                            
+                fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+                                                dset['model_type'], 
+                                                dset['analysis_type'], 
+                                                dset['data_characteristic'], 
+                                                dset['result_type'],
+                                                dset['data_type'], 
+                                                dset['number_of_data_values_for_the_data_component']))
+                fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
+                                                dset['design_set_id'], 
+                                                dset['iteration_number'],
+                                                dset['solution_set_id'],
+                                                dset['boundary_condition'], 
+                                                dset['load_set'],
+                                                dset['mode_number'], 
+                                                dset['time_step_number'],
+                                                dset['frequency_number']))
+                fh.write('%10i%10i\n' % (
+                                                dset['creation_option'], 
+                                                dset['number_retained']))
+                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                                                dset['time'], 
+                                                dset['frequency'], 
+                                                dset['eigenvalue'], 
+                                                dset['modal_mass'],
+                                                dset['viscous_damping'], 
+                                                dset['hysteretic_damping']))
+                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                                                dset['real_part_eigenvalue'], 
+                                                dset['imaginary_part_eigenvalue'], 
+                                                dset['real_part_of_modal_A_or_modal_mass'], 
+                                                dset['imaginary_part_of_modal_A_or_modal_mass'],
+                                                dset['real_part_of_modal_B_or_modal_mass'], 
+                                                dset['imaginary_part_of_modal_B_or_modal_mass']))                            
                 for node in range(dset['node_nums'].shape[0]):
                     fh.write('%10i\n' % (int(dset['node_nums'][node])))
-                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (np.real(dset['x'][node]),np.imag(dset['x'][node]),np.real(dset['y'][node]),np.imag(dset['y'][node]),np.real(dset['z'][node]),np.imag(dset['z'][node])))
+                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
+                                                np.real(dset['x'][node]),
+                                                np.imag(dset['x'][node]),
+                                                np.real(dset['y'][node]),
+                                                np.imag(dset['y'][node]),
+                                                np.real(dset['z'][node]),
+                                                np.imag(dset['z'][node])))
                 fh.write('%6i\n' % (-1))    
         except:
             raise UFFException('Error writing data-set #2414')
@@ -1221,39 +1251,24 @@ class UFF:
                                                  'data_type', 'number_of_data_values_for_the_data_component']))     
             
             dset.update(self._parse_header_line(split_header[11], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
-                                                ['integer_specific_data1', 'integer_specific_data2',
-                                                 'integer_specific_data3', 'integer_specific_data4',
-                                                 'integer_specific_data5', 'integer_specific_data6',
-                                                 'integer_specific_data7', 'integer_specific_data8']))
+                                                ['design_set_id', 'iteration_number', 'solution_set_id', 'boundary_condition', 
+                                                 'load_set', 'mode_number', 'time_step_number', 'frequency_number']))
             dset.update(self._parse_header_line(split_header[12], 2, [10, 10], [2, 2],
-                                                ['integer_specific_data9', 'integer_specific_data10']))
+                                                ['creation_option', 'number_retained']))
 
+            dset.update(self._parse_header_line(split_header[13], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['time', 'frequency', 'eigenvalue', 'modal_mass', 'viscous_damping', 'hysteretic_damping']))
+            dset.update(self._parse_header_line(split_header[14], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['real_part_eigenvalue', 'imaginary_part_eigenvalue', 
+                                                'real_part_of_modal_A_or_modal_mass', 'imaginary_part_of_modal_A_or_modal_mass', 
+                                                'real_part_of_modal_B_or_modal_mass', 'imaginary_part_of_modal_B_or_modal_mass']))
             if dset['analysis_type'] == 5:
                 # frequency response 
-                dset.update(self._parse_header_line(split_header[13], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
-                                                ['specific_data1', 'frequency',
-                                                 'frequency', 'specific_data4', 'specific_data5',
-                                                 'specific_data6']))
-                dset.update(self._parse_header_line(split_header[14], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
-                                                ['specific_data7', 'specific_data8',
-                                                 'specific_data9', 'specific_data10', 'specific_data11',
-                                                 'specific_data12']))
-                splitData = blockData.splitlines(True)  # Keep the line breaks!
-                freq = float(splitData[3][21:21+14])
-                loadcase = int(splitData[8][9:9+7])
-                Precision = splitData[10].split()[4]
-                NumberOfDataValue = splitData[10].split()[5]
-                DS2414_num = splitData[2].split()[0]
-                Nthfreq = splitData[11].split()[7]
-                if Precision == '5' and NumberOfDataValue == '3':
-                    splitData = ''.join(splitData[15:])  # ..as they are again needed
-                    splitData = splitData.split()
+                splitData = ''.join(blockData.splitlines(True)[15:])
+                splitData = splitData.split()
+                if dset['data_type'] == 5 and dset['number_of_data_values_for_the_data_component'] == 3:
                     values = np.asarray([float(str) for str in splitData], 'd')
-                    dset['freq'] = float(freq)
-                    dset['loadcase'] = int(loadcase)
-                    dset['DS2414_num'] = int(DS2414_num)
-                    dset['Nthfreq'] = int(Nthfreq)
-                    dset['node_nums'] = values[::7].copy()
+                    dset['node_nums'] = np.array(values[::7].copy(), dtype=int)
                     dset['x'] = values[1::7].copy()+values[2::7].copy()*1j
                     dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
                     dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
