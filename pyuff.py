@@ -68,8 +68,8 @@ import time
 
 import numpy as np
 
-__version__ = '1.25'
-_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2420','2414']
+__version__ = '1.26'
+_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2414', '2420']
 
 
 class UFFException(Exception):

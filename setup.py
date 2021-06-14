@@ -23,14 +23,14 @@ UFF (Universal File Format) read/write.
 This module is part of the www.openmodal.com project and defines an UFF class to manipulate with the
 UFF (Universal File Format) files
 
-Read from and write of data-set types **151, 15, 55, 58, 58b, 82, 164, 2411, 2412, 2420** are supported.
+Read from and write of data-set types **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420** are supported.
 
 For a showcase see: `https://github.com/openmodal/pyuff/ <https://github.com/openmodal/pyuff/blob/master/pyuff%20Showcase.ipynb>`_
 """
 
 from setuptools import setup
 setup(name='pyuff',
-      version='1.25',
+      version='1.26',
       author='Primož Čermelj, Janko Slavič',
       author_email='primoz.cermelj@gmail.com, janko.slavic@fs.uni-lj.si',
       description='UFF (Universal File Format) read/write.',
