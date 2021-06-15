@@ -1997,7 +1997,70 @@ def dict_55(id1=None,
     return dataset
 
 
+def dict_58():
 
+
+    dataset={'type': 58,
+            'binary': binary,
+            'id1': id1,
+            'id2': id2,
+            'id3': id3,
+            'id4': id4,
+            'id5': id5,
+
+            'func_type': func_type,
+            'ver_num': ver_num,
+            'load_case_id': load_case_id,
+            'rsp_ent_name': rsp_ent_name
+            'rsp_node': rsp_node,
+            'rsp_dir': rsp_dir,
+            'ref_ent_name': ref_ent_name,
+            'ref_node': ref_node,
+            'ref_dir': ref_dir,
+
+            'ord_data_type': ord_data_type,
+            'num_pts': num_pts,
+            'abscissa_spacing': abscissa_spacing,
+            'abscissa_min': abscissa_min,
+            'abscissa_inc': abscissa_inc,
+            'z_axis_value': z_axis_value,
+
+            'abscissa_spec_data_type': abscissa_spec_data_type,
+            'abscissa_len_unit_exp': abscissa_len_unit_exp,
+            'abscissa_force_unit_exp': abscissa_force_unit_exp,
+            'abscissa_temp_unit_exp': abscissa_temp_unit_exp,
+            
+            'abscissa_axis_units_lab': abscissa_axis_units_lab,
+
+            'ordinate_spec_data_type': ordinate_spec_data_type,
+            'ordinate_len_unit_exp': ordinate_len_unit_exp,
+            'ordinate_force_unit_exp': ordinate_force_unit_exp,
+            'ordinate_temp_unit_exp': ordinate_temp_unit_exp,
+            
+            'ordinate_axis_units_lab': ordinate_axis_units_lab,
+
+            'orddenom_spec_data_type': orddenom_spec_data_type,
+            'orddenom_len_unit_exp': orddenom_len_unit_exp,
+            'orddenom_force_unit_exp': orddenom_force_unit_exp,
+            'orddenom_temp_unit_exp': orddenom_temp_unit_exp,
+            
+            'orddenom_axis_units_lab': orddenom_axis_units_lab,
+
+            'z_axis_spec_data_type': z_axis_spec_data_type,
+            'z_axis_len_unit_exp': z_axis_len_unit_exp,
+            'z_axis_force_unit_exp': z_axis_force_unit_exp,
+            'z_axis_temp_unit_exp': z_axis_temp_unit_exp,
+            
+            'z_axis_axis_units_lab': z_axis_axis_units_lab,
+
+            'data': data,
+            'x': x,
+    }
+            
+    
+    
+    
+    
 
 
 
