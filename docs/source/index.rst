@@ -11,8 +11,9 @@ This is the documentation for pyuff package. Check out the project source_.
     :maxdepth: 2
     :caption: Contents
 
-    code_documentation
     showcase
+    code_documentation
+    Supported_datasets
 
 
 
