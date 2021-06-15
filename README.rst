@@ -16,5 +16,5 @@ Note: this project is developed and tested for Python 3, only.
 
 .. |binder| image:: http://mybinder.org/badge.svg
    :target: http://mybinder.org:/repo/openmodal/pyuff
-.. |travis| image:: https://travis-ci.org/openmodal/pyuff.svg?branch=master
-    :target: https://travis-ci.org/openmodal/pyuff
+.. |travis| image:: https://www.travis-ci.com/ladisk/pyuff.svg?branch=master
+    :target: https://travis-ci.com/ladisk/pyuff
