@@ -34,7 +34,7 @@ we see that first 4 datasets are 151: Header, 164: Units, 2420: Coordinate Syste
 We see that each dataset consists number of dictionary-like keys. We read and write directly to keys.
 
 Reading from the UFF file
--------------------
+---------------------------
 
 To load all datasets from the UFF file to data object use:
 
@@ -61,7 +61,7 @@ Most important keys are 'x': x_axis and 'data': y_axis that define the stored re
 
 
 Writing measurement data to UFF file
--------------------
+--------------------------------------
 
 Here you can see a minimal working example for writing measured accelerance FRF data to the UFF file. First we load the accelerance:
 
