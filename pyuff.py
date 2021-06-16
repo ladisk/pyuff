@@ -2088,28 +2088,28 @@ def dict_58(
     :param abscissa_force_unit_exp: R8 F3, Abscissa force units exponent
     :param abscissa_temp_unit_exp: R8 F4, Abscissa temperature units exponent
     
-    :param abscissa_axis_units_lab: R8 F6, Abscissa units label ("NONE" if not used)
+    :param abscissa_axis_units_lab: R8 F6, Abscissa units label ("None" if not used)
 
     :param ordinate_spec_data_type: R9 F1, Ordinate specific data type
     :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent
     :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent
     :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent
     
-    :param ordinate_axis_units_lab: R9 F6, Ordinate units label ("NONE" if not used)
+    :param ordinate_axis_units_lab: R9 F6, Ordinate units label ("None" if not used)
 
     :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type
     :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent
     :param orddenom_force_unit_exp: R10 F3, Ordinate Denominator force units exponent
     :param orddenom_temp_unit_exp: R10 F4, Ordinate Denominator temperature units exponent
     
-    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label ("NONE" if not used)
+    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label ("None" if not used)
 
     :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type
     :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent
     :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent
     :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent
     
-    :param z_axis_axis_units_lab: R11 F6, Z-axis units label ("NONE" if not used)
+    :param z_axis_axis_units_lab: R11 F6, Z-axis units label ("None" if not used)
 
     :param data: R12 F1, Data values
 
@@ -2117,8 +2117,8 @@ def dict_58(
     :param spec_data_type: Specific data type
     :param byte_ordering: R1 F3, Byte ordering (only for binary)
     :param fp_format: R1 F4 Floating-point format (only for binary)
-    :param n_ascii_lines: R1 F5, Number of ascii lines
-    :param n_bytes: R1 F6, Number of bytes
+    :param n_ascii_lines: R1 F5, Number of ascii lines (only for binary)
+    :param n_bytes: R1 F6, Number of bytes (only for binary)
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
@@ -2201,7 +2201,7 @@ def dict_82(
     lines=None,
     return_full_dict=False):
 
-    """Name = Tracelines
+    """Name: Tracelines
 
     R-Record, F-Field
 
@@ -2283,7 +2283,7 @@ def dict_151(
             'program': program,
             'date_file_written': date_file_written,
             'time_file_written': time_file_written,
-            'return_full_dict': return_full_dict,}
+            'return_full_dict': return_full_dict}
     
 
     if return_full_dict is False:
@@ -2294,10 +2294,128 @@ def dict_151(
 
 
 
+def dict_164(
+    units_code=None,
+    units_description=None,
+    temp_mode=None,
+    length=None,
+    force=None,
+    temp=None,
+    temp_offset=None,
+    return_full_dict=False):
+    """Name: Units
+
+    R-Record, F-Field
+
+    :param units_code: R1 F1, Units code
+    :param units_description: R1 F2, Units description
+    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative)
+    :param length: R2 F1, Length
+    :param force: R2 F2, Force
+    :param temp: R2 F3, Temperature
+    :param temp_offset: R2 F4, Temperature offset
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+    dataset={'type': 164,
+            'units_code':units_code,
+            'units_description':units_description,
+            'temp_mode':temp_mode,
+            'length':length,
+            'force':force,
+            'temp':temp,
+            'temp_offset':temp_offset}
+
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
+
+
+
+def dict_2411(
+    node_nums,
+    def_cs,
+    disp_cs,
+    color,
+    x,
+    y,
+    z,
+    return_full_dict):
+    """Name: Nodes - Double Precision
+
+    R-Record, F-Field
+    
+    :param node_nums: R1 F1, Node label
+    :param def_cs: R1 F2, Export coordinate system number
+    :param disp_cs: R1 F3, Displacement coordinate system number
+    :param color: R1 F4, Color
+    :param x: R2 F1, Node coordinates in the part coordinate system
+    :param y: R2 F2, Node coordinates in the part coordinate system
+    :param z: R2 F3, Node coordinates in the part coordinate system
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
+    
+    Records 1 and 2 are repeated for each node in the model.
+    """
+
+    dataset={'type': 2411,
+            'node_nums': node_nums,
+            'def_cs': def_cs,
+            'disp_cs': disp_cs,
+            'color': color,
+            'x':  x,
+            'y': y,
+            'z': z}
+    
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
 
 
 
 
+
+def dict_2412(
+    element_nums=None,
+    fe_descriptor=None,
+    phys_table=None,
+    mat_table=None,
+    color=None,
+    num_nodes=None,
+    nodes_nums=None,
+    return_full_dict=False):
+    """Name: Elements
+
+    R-Record, F-Field
+
+    :param element_nums: R1 F1, List of n element numbers
+    :param fe_descriptor: R1 F2, Fe descriptor id
+    :param phys_table: R1 F3, Physical property table number
+    :param mat_table: R1 F4, Material property table number
+    :param color: R1 F5, Color
+    :param num_nodes: R1 F6, Number of nodes on element
+    :param nodes_nums: R2 F1, Node labels defining element
+
+    **R3, R4?**
+
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+    
+    dataset={'type': 2412,
+            'element_nums': element_nums,
+            'fe_descriptor': fe_descriptor,
+            'phys_table': phys_table,
+            'mat_table': mat_table,
+            'color': color,
+            'num_nodes': num_nodes,
+            'nodes_nums': nodes_nums}
+    
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
 
 
 
@@ -2310,6 +2428,9 @@ def check_dict_for_none(dataset):
             dataset1[k] = v
 
     return dataset1
+
+
+
 
 
 
@@ -2329,3 +2450,15 @@ if __name__ == '__main__':
         if _ != 'data':
             print(_, ':', a[_])
     #print(sum(a['data']))
+
+
+
+
+
+
+
+
+
+
+
+    

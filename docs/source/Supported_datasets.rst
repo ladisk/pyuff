@@ -33,14 +33,19 @@ Dataset 151
 Dataset 164
 -----------
 
+.. autofunction:: pyuff.dict_164
+
 
 Dataset 2411
 -------------
 
+.. autofunction:: pyuff.dict_2411
 
 
 Dataset 2412
 -------------
+
+.. autofunction:: pyuff.dict_2412
 
 
 Dataset 2414
