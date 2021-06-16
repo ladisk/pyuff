@@ -1107,14 +1107,14 @@ class UFF:
                 fh.write('%10i%10i\n' % (
                                                 dset['creation_option'], 
                                                 dset['number_retained']))
-                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
                                                 dset['time'], 
                                                 dset['frequency'], 
                                                 dset['eigenvalue'], 
                                                 dset['modal_mass'],
                                                 dset['viscous_damping'], 
                                                 dset['hysteretic_damping']))
-                fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
                                                 dset['real_part_eigenvalue'], 
                                                 dset['imaginary_part_eigenvalue'], 
                                                 dset['real_part_of_modal_A_or_modal_mass'], 
