@@ -1913,7 +1913,7 @@ def dict_55(
     modal_a=None,
     modal_b=None,
     freq_step_n=None,
-    mode_nums=None,
+    node_nums=None,
     return_full_dict=False):
     """
     Name:   Data at Nodes
@@ -2219,7 +2219,7 @@ def dict_82(
             'n_nodes': n_nodes,
             'color': color,
             'id': id,
-            'lines': trace_num  
+            'lines': lines 
             }
 
 
@@ -2283,7 +2283,7 @@ def dict_151(
             'program': program,
             'date_file_written': date_file_written,
             'time_file_written': time_file_written,
-            'return_full_dict': return_full_dict}
+            }
     
 
     if return_full_dict is False:
@@ -2335,14 +2335,14 @@ def dict_164(
 
 
 def dict_2411(
-    node_nums,
-    def_cs,
-    disp_cs,
-    color,
-    x,
-    y,
-    z,
-    return_full_dict):
+    node_nums=None,
+    def_cs=None,
+    disp_cs=None,
+    color=None,
+    x=None,
+    y=None,
+    z=None,
+    return_full_dict=False):
     """Name: Nodes - Double Precision
 
     R-Record, F-Field
@@ -2418,7 +2418,194 @@ def dict_2412(
     return dataset
 
 
+def dict_2414(
+    analysis_dataset_label=None,
+    analysis_dataset_name=None,
+    dataset_location=None,
+    id1=None,
+    id2=None,
+    id3=None,
+    id4=None,
+    id5=None,
+    model_type=None,
+    analysis_type=None,
+    data_characteristic=None,
+    result_type=None,
+    data_type=None,
+    number_of_data_values_for_the_data_component=None,
+    design_set_id=None,
+    iteration_number=None,
+    solution_set_id=None,
+    boundary_condition=None,
+    load_set=None,
+    mode_number=None,
+    time_step_number=None,
+    frequency_number=None,
+    creation_option=None,
+    number_retained=None,
+    time=None,
+    frequency=None,
+    eigenvalue=None,
+    modal_mass=None,
+    viscous_damping=None,
+    hysteretic_damping=None,
+    real_part_eigenvalue=None,
+    imaginary_part_eigenvalue=None,
+    real_part_of_modal_A_or_modal_mass=None,
+    imaginary_part_of_modal_A_or_modal_mass=None,
+    real_part_of_modal_B_or_modal_mass=None,
+    imaginary_part_of_modal_B_or_modal_mass=None,
+    d=None,
+    node_nums=None,
+    x=None,
+    y=None,
+    z=None,
+    return_full_dict=False):
+    """Name: Analysis Data
 
+    R-Record, F-Field
+
+    :param analysis_dataset_label: R1 F1, Analysis dataset label
+    :param analysis_dataset_name: R2 F1, Analysis dataset name 
+    :param dataset_location: R3 F1, Dataset location
+    :param id1: R4 F1, ID line 1
+    :param id2: R5 F1, ID line 2
+    :param id3: R6 F1, ID line 3
+    :param id4: R7 F1, ID line 4
+    :param id5: R8 F1, ID line 5
+    :param model_type: R9 F1, Model type
+    :param analysis_type: R9 F2, Analysis type 
+    :param data_characteristic: R9 F3, Data characteristic
+    :param result_type: R9 F4, Result type
+    :param data_type: R9 F5, Data type
+    :param number_of_data_values_for_the_data_component: R9 F6,  Number of data values for the data component (NVALDC)
+    
+    **Integer analysis type specific data**
+    
+    :param design_set_id: R10 F1, 
+    :param iteration_number: R10 F1,
+    :param solution_set_id: R10 F1,
+    :param boundary_condition: R10 F1,
+    :param load_set: R10 F1,
+    :param mode_number: R10 F1,
+    :param time_step_number: R10 F1,
+    :param frequency_number: R10 F1,
+    
+    :param creation_option: R11 F1,
+    :param number_retained: R11 F1,
+
+    **Real analysis type specific data**
+
+    :param time: R12 F1,
+    :param frequency: R12 F1,
+    :param eigenvalue: R12 F1,
+    :param modal_mass: R12 F1,
+    :param viscous_damping: R12 F1,
+    :param hysteretic_damping: R12 F1,
+    
+    :param real_part_eigenvalue: R13 F1,
+    :param imaginary_part_eigenvalue: R13 F1,
+    :param real_part_of_modal_A_or_modal_mass: R13 F1,
+    :param imaginary_part_of_modal_A_or_modal_mass: R13 F1,
+    :param real_part_of_modal_B_or_modal_mass,: R13 F1,
+    :param imaginary_part_of_modal_B_or_modal_mass: R13 F1,
+    :param node_nums: R14 F1, Node number
+    :param d: R15 F1, Data at this node (NDVAL real or complex values) **check**
+    :param x: R15 F1,
+    :param y: R15 F1,
+    :param z: R15 F1,
+    
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+
+    dataset={'type': 2414,
+            'analysis_dataset_label': analysis_dataset_label,
+            'analysis_dataset_name': analysis_dataset_name,
+            'dataset_location': dataset_location,
+            'id1': id1,
+            'id2': id2,
+            'id3': id3,
+            'id4': id4,
+            'id5': id5,
+            'model_type': model_type,
+            'analysis_type': analysis_type,
+            'data_characteristic': data_characteristic,
+            'result_type': result_type,
+            'data_type': data_type,
+            'number_of_data_values_for_the_data_component': number_of_data_values_for_the_data_component,
+            'design_set_id': design_set_id,
+            'iteration_number': iteration_number,
+            'solution_set_id': solution_set_id,
+            'boundary_condition': boundary_condition,
+            'load_set': load_set,
+            'mode_number': mode_number,
+            'time_step_number': time_step_number,
+            'frequency_number': frequency_number,
+            'creation_option': creation_option,
+            'number_retained': number_retained,
+            'time': time,
+            'frequency': frequency,
+            'eigenvalue': eigenvalue,
+            'modal_mass': modal_mass,
+            'viscous_damping': viscous_damping,
+            'hysteretic_damping': hysteretic_damping,
+            'real_part_eigenvalue': real_part_eigenvalue,
+            'imaginary_part_eigenvalue': imaginary_part_eigenvalue,
+            'real_part_of_modal_A_or_modal_mass,': real_part_of_modal_A_or_modal_mass, 
+            'imaginary_part_of_modal_A_or_modal_mass': imaginary_part_of_modal_A_or_modal_mass,
+            'real_part_of_modal_B_or_modal_mass,': real_part_of_modal_B_or_modal_mass, 
+            'imaginary_part_of_modal_B_or_modal_mass': imaginary_part_of_modal_B_or_modal_mass,
+            'd': d,
+            'node_nums': node_nums,
+            'x': x,
+            'y': y,
+            'z': z
+            }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
+
+
+def dict_2420(
+    Part_UID=None,
+    Part_Name=None,
+    CS_sys_labels=None,
+    CS_types=None,
+    CS_colors=None,
+    CS_names=None,
+    CS_matrices=None,
+    return_full_dict=False):
+    """Name: Coordinate Systems
+
+    R-Record, F-Field
+
+    :param Part_UID: R1 F1, Part UID
+    :param Part_Name: R2 F1, Part Name
+    :param CS_sys_labels: R3 F1, Coordinate System Label
+    :param CS_types: R3 F2, Coordinate System Type (0-Cartesian, 1-Cylindrical, 2-Spherical)
+    :param CS_colors: R3 F3, Coordinate System Color
+    :param CS_names: R4 F1, Coordinate System Name
+    :param CS_matrices: R5-8 F1-3, Transformation Matrix
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+    dataset={'type': 2420,
+            'Part_UID':Part_UID,
+            'Part_Name': Part_Name,
+            'CS_sys_labels': CS_sys_labels,
+            'CS_types': CS_types,
+            'CS_colors': CS_colors,
+            'CS_names': CS_names,
+            'CS_matrices': CS_matrices
+            }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
 
 
 def check_dict_for_none(dataset):
