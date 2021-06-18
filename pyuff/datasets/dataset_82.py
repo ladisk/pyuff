@@ -1,6 +1,8 @@
 import numpy as np
+import os
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from .. import pyuff
 
 
 def _write82(fh, dset):
@@ -87,5 +89,27 @@ def dict_82(
 
 
     return dataset
+
+
+def prepare_test_82(save_to_file=''):
+    dataset = {'type': 82,  # Tracelines
+               'trace_num': 2,  # I10, trace line number
+               'n_nodes': 7,  # I10, number of nodes defining trace line (max 250)
+               'color': 30,  # I10, color
+               'id': 'Identification line',  # 80A1, Identification line
+               'nodes': np.array([0, 10, 13, 14, 15, 16, 17]),
+               # I10, nodes defining trace line:
+               #  > 0 draw line to node
+               #  = 0 move to node
+               }
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
 
 

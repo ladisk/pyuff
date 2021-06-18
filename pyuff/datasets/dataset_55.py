@@ -1,6 +1,8 @@
 import numpy as np
+import os
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from .. import pyuff
 
 def _write55(fh, dset):
     # Writes data at nodes - data-set 55 - to an open file fh. Currently:
@@ -296,3 +298,45 @@ def dict_55(
     return dataset
 
 
+def prepare_test_55(save_to_file=''):
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+    uff_datasets = []
+    modes = [1, 2, 3]
+    node_nums = [1, 2, 3, 4]
+    freqs = [10.0, 12.0, 13.0]
+    for i, b in enumerate(modes):
+        mode_shape = np.random.normal(size=len(node_nums))
+        name = 'TestCase'
+        data = {
+            'type': 55,
+            'model_type': 1,
+            'id1': 'NONE',
+            'id2': 'NONE',
+            'id3': 'NONE',
+            'id4': 'NONE',
+            'id5': 'NONE',
+            'analysis_type': 2,
+            'data_ch': 2,
+            'spec_data_type': 8,
+            'data_type': 2,
+            'data_ch': 2,
+            'r1': mode_shape,
+            'r2': mode_shape,
+            'r3': mode_shape,
+            'n_data_per_node': 3,
+            'node_nums': [1, 2, 3, 4],
+            'load_case': 1,
+            'mode_n': i + 1,
+            'modal_m': 0,
+            'freq': freqs[i],
+            'modal_damp_vis': 0,
+            'modal_damp_his': 0,
+        }
+
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = pyuff.UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    return uff_datasets

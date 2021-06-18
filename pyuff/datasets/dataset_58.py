@@ -1,8 +1,10 @@
 import numpy as np
 import struct
 import sys
+import os
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from .. import pyuff
 
 def _write58(fh, dset, mode='add', _fileName=None):
     # Writes function at nodal DOF - data-set 58 - to an open file fh.
@@ -502,4 +504,47 @@ def dict_58(
 
 
     return dataset
+
+
+def prepare_test_58(save_to_file=''):
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+
+    uff_datasets = []
+    binary = [0, 1, 0]  # ascii of binary
+    frequency = np.arange(10)
+    np.random.seed(0)
+    for i, b in enumerate(binary):
+        print('Adding point {}'.format(i + 1))
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        # this is an artificial 'frf'
+        acceleration_complex = np.random.normal(size=len(frequency)) + \
+                               1j * np.random.normal(size=len(frequency))
+        name = 'TestCase'
+        data = {'type': 58,
+                'binary': binary[i],
+                'func_type': 4,
+                'rsp_node': response_node,
+                'rsp_dir': response_direction,
+                'ref_dir': reference_direction,
+                'ref_node': reference_node,
+                'data': acceleration_complex,
+                'x': frequency,
+                'id1': 'id1',
+                'rsp_ent_name': name,
+                'ref_ent_name': name,
+                'abscissa_spacing': 1,
+                'abscissa_spec_data_type': 18,
+                'ordinate_spec_data_type': 12,
+                'orddenom_spec_data_type': 13}
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = pyuff.UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    return uff_datasets
+
 

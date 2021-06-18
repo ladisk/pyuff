@@ -1,8 +1,8 @@
 import numpy as np
-import time
+import os
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
-
+from .. import pyuff
 
 def _write164(fh, dset):
     # Writes units data - data-set 164 - to an open file fh
@@ -81,6 +81,30 @@ def dict_164(
 
     return dataset
 
+
+def prepare_test_164(save_to_file=''):
+    dataset = {'type': 164,  # Universal Dataset
+               'units_code': 1,  # I10, units code
+               'units_description': 'SI units',  # 20A1, units description
+               'temp_mode': 1,  # I10, temperature mode
+               # Unit factors
+               # for converting universal file units to SI.
+               # To convert from universal file units to SI divide by
+               # the appropriate factor listed below.
+               'length': 3.28083989501312334,  # D25.17, length
+               'force': 2.24808943099710480e-01,  # D25.17, force
+               'temp': 1.8,  # D25.17, temperature
+               'temp_offset': 459.67,  # D25.17, temperature offset
+               }
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
 
 
 

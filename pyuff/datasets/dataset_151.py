@@ -1,8 +1,9 @@
 import numpy as np
 import time
+import os
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
-
+from .. import pyuff
 
 def _write151(fh, dset):
     # Writes dset data - data-set 151 - to an open file fh
@@ -117,4 +118,32 @@ def dict_151(
 
 
     return dataset
+
+
+def prepare_test_151(save_to_file=''):
+    dataset = {'type': 151,  # Header
+               'model_name': 'Model file name',  # 80A1, model file name
+               'description': 'Model file description',  # 80A1, model file description
+               'db_app': 'Program which created DB',  # 80A1, program which created DB
+               'date_db_created': '27-Jan-16',  # 10A1, date database created (DD-MMM-YY)
+               'time_db_created': '14:38:15',  # 10A1, time database created (HH:MM:SS)
+               'version_db1': 1,  # I10, Version from database
+               'version_db2': 2,  # I10, Subversion from database
+               'file_type': 0,  # I10, File type (0  Universal, 1 Archive, 2 Other)
+               'date_db_saved': '28-Jan-16',  # 10A1, date database saved (DD-MMM-YY)
+               'time_db_saved': '14:38:16',  # 10A1, time database saved (HH:MM:SS)
+               'program': 'OpenModal',  # 80A1, program which created DB
+               'date_db_written': '29-Jan-16',  # 10A1, date database written (DD-MMM-YY)
+               'time_db_written': '14:38:17',  # 10A1, time database written (HH:MM:SS)
+               }
+
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
 

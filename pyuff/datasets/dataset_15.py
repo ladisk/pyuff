@@ -1,7 +1,9 @@
 from os import write
+import os
 import numpy as np
 
 from ..tools import UFFException, _opt_fields, _parse_header_line, _write_record, check_dict_for_none
+from .. import pyuff
 
 # def _write15(fh, dset):
 #     """Writes coordinate data - data-set 15 - to an open file fh"""
@@ -99,3 +101,23 @@ def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None
         dataset = check_dict_for_none(dataset)
 
     return dataset
+
+
+def prepare_test_15(save_to_file=''):
+    dataset = {'type': 15,  # Nodes
+               'node_nums': [16, 17, 18, 19, 20],  # I10, node label
+               'def_cs': [11, 11, 11, 12, 12],  # I10, definition coordinate system number
+               'disp_cs': [16, 16, 17, 18, 19],  # I10, displacement coordinate system number
+               'color': [1, 3, 4, 5, 6],  # I10, color
+               'x': [0.0, 1.53, 0.0, 1.53, 0.0],  # E13.5
+               'y': [0.0, 0.0, 3.84, 3.84, 0.0],  # E13.5
+               'z': [0.0, 0.0, 0.0, 0.0, 1.83]}  # E13.5
+    dataset_out = dataset.copy()
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+    return dataset_out
