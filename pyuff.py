@@ -389,7 +389,7 @@ class UFF:
                 # type and the property whether the data-set is in binary
                 # or ascii format
                 self._nSets = nBlocks
-                self._setTypes = np.zeros(nBlocks)
+                self._setTypes = np.zeros(nBlocks).astype(int)
                 self._setFormats = np.zeros(nBlocks)
                 for ii in range(0, self._nSets):
                     si = self._blockInd[ii, 0]
