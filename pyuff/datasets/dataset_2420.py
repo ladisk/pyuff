@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 # TODO: Big deal - the output dictionary when reading this set
 #    is different than the dictionary that is expected (keys) when
@@ -61,3 +61,43 @@ def _extract2420(blockData):
     #        except:
     #            raise UFFException('Error reading data-set #2420')
     return dset
+
+
+def dict_2420(
+    Part_UID=None,
+    Part_Name=None,
+    CS_sys_labels=None,
+    CS_types=None,
+    CS_colors=None,
+    CS_names=None,
+    CS_matrices=None,
+    return_full_dict=False):
+    """Name: Coordinate Systems
+
+    R-Record, F-Field
+
+    :param Part_UID: R1 F1, Part UID
+    :param Part_Name: R2 F1, Part Name
+    :param CS_sys_labels: R3 F1, Coordinate System Label
+    :param CS_types: R3 F2, Coordinate System Type (0-Cartesian, 1-Cylindrical, 2-Spherical)
+    :param CS_colors: R3 F3, Coordinate System Color
+    :param CS_names: R4 F1, Coordinate System Name
+    :param CS_matrices: R5-8 F1-3, Transformation Matrix
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+    dataset={'type': 2420,
+            'Part_UID':Part_UID,
+            'Part_Name': Part_Name,
+            'CS_sys_labels': CS_sys_labels,
+            'CS_types': CS_types,
+            'CS_colors': CS_colors,
+            'CS_names': CS_names,
+            'CS_matrices': CS_matrices
+            }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
+

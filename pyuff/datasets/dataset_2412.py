@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2412(fh, dset):
     try:
@@ -57,3 +57,45 @@ def _extract2412(blockData):
     except:
         raise UFFException('Error reading data-set #2412')
     return dset
+
+
+def dict_2412(
+    element_nums=None,
+    fe_descriptor=None,
+    phys_table=None,
+    mat_table=None,
+    color=None,
+    num_nodes=None,
+    nodes_nums=None,
+    return_full_dict=False):
+    """Name: Elements
+
+    R-Record, F-Field
+
+    :param element_nums: R1 F1, List of n element numbers
+    :param fe_descriptor: R1 F2, Fe descriptor id
+    :param phys_table: R1 F3, Physical property table number
+    :param mat_table: R1 F4, Material property table number
+    :param color: R1 F5, Color
+    :param num_nodes: R1 F6, Number of nodes on element
+    :param nodes_nums: R2 F1, Node labels defining element
+
+    **R3, R4?**
+
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+    
+    dataset={'type': 2412,
+            'element_nums': element_nums,
+            'fe_descriptor': fe_descriptor,
+            'phys_table': phys_table,
+            'mat_table': mat_table,
+            'color': color,
+            'num_nodes': num_nodes,
+            'nodes_nums': nodes_nums}
+    
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
+

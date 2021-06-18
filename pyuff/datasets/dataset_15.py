@@ -1,7 +1,7 @@
 from os import write
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, _write_record
+from ..tools import UFFException, _opt_fields, _parse_header_line, _write_record, check_dict_for_none
 
 # def _write15(fh, dset):
 #     """Writes coordinate data - data-set 15 - to an open file fh"""
@@ -69,3 +69,33 @@ def _extract15(blockData):
     except:
         raise UFFException('Error reading data-set #15')
     return dset
+
+
+def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None,z=None,return_full_dict=False):
+    """Name: Nodes
+    
+    R-Record, F-Field
+
+    :param node_nums: R1 F1, node label
+    :param def_cs: R1 F2, deformation coordinate system numbers 
+    :param disp_cs: R1 F3, displacement coordinate system numbers
+    :param color: R1 F4, color
+    :param x: R1 F5, Dimensional coordinate of node in the definition system
+    :param y: R1 F6, Dimensional coordinate of node in the definition system
+    :param z: R1 F7, Dimensional coordinate of node in the definition system
+    
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+    dataset={'type': 15,
+        'node_nums': node_nums,
+        'def_cs': def_cs, 
+        'disp_cs': disp_cs,  
+        'color': color,  
+        'x': x,  
+        'y': y,  
+        'z': z }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset

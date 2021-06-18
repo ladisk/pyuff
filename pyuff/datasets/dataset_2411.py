@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2411(fh, dset):
     try:
@@ -41,3 +41,43 @@ def _extract2411(blockData):
     except:
         raise UFFException('Error reading data-set #15')
     return dset
+
+
+def dict_2411(
+    node_nums=None,
+    def_cs=None,
+    disp_cs=None,
+    color=None,
+    x=None,
+    y=None,
+    z=None,
+    return_full_dict=False):
+    """Name: Nodes - Double Precision
+
+    R-Record, F-Field
+    
+    :param node_nums: R1 F1, Node label
+    :param def_cs: R1 F2, Export coordinate system number
+    :param disp_cs: R1 F3, Displacement coordinate system number
+    :param color: R1 F4, Color
+    :param x: R2 F1, Node coordinates in the part coordinate system
+    :param y: R2 F2, Node coordinates in the part coordinate system
+    :param z: R2 F3, Node coordinates in the part coordinate system
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
+    
+    Records 1 and 2 are repeated for each node in the model.
+    """
+
+    dataset={'type': 2411,
+            'node_nums': node_nums,
+            'def_cs': def_cs,
+            'disp_cs': disp_cs,
+            'color': color,
+            'x':  x,
+            'y': y,
+            'z': z}
+    
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset

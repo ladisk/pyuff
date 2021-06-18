@@ -127,6 +127,12 @@ def _write_record(fh, values, formats, multiline=False, fstring=True):
 
     fh.write(to_write)
 
+def check_dict_for_none(dataset):
+    dataset1 = {}
+    for k, v in dataset.items():
+        if v is not None:
+            dataset1[k] = v
 
+    return dataset1
 
 

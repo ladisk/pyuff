@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write55(fh, dset):
     # Writes data at nodes - data-set 55 - to an open file fh. Currently:
@@ -186,3 +186,113 @@ def _extract55(blockData):
         raise UFFException('Error reading data-set #55')
     del values
     return dset
+
+
+def dict_55(
+    id1=None,
+    id2=None,
+    id3=None,
+    id4=None,
+    id5=None,
+    model_type=None,
+    analysis_type=None,
+    data_ch=None,
+    spec_data_type=None,
+    data_type=None,
+    n_data_per_node=None,
+    r1=None,
+    r2=None,
+    r3=None,
+    r4=None,
+    r5=None,
+    r6=None,
+    load_case=None,
+    mode_n=None,
+    freq=None,
+    modal_m=None,
+    modal_damp_vis=None,
+    modal_damp_his=None,
+    eig=None,
+    modal_a=None,
+    modal_b=None,
+    freq_step_n=None,
+    node_nums=None,
+    return_full_dict=False):
+    """
+    Name:   Data at Nodes
+
+    R-Record, F-Field
+
+    :param id1: R1 F1, ID Line 1 
+    :param id2: R2 F1, ID Line 2
+    :param id3: R3 F1, ID Line 3
+    :param id4: R4 F1, ID Line 4
+    :param id5: R5 F1, ID Line 5
+
+    :param model_type: R6 F1, Model type
+    :param analysis_type: R6 F2, Analysis type; currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported
+    :param data_ch: R6 F3, Data characteristic number
+    :param spec_data_type: R6 F4, Specific data type
+    :param data_type: R6 F5,  Data type
+    :param n_data_per_node: R6 F6, Number of data values per node
+
+    :param r1: Response array for DOF 1,
+    :param r2: Response array for DOF 2,
+    :param r3: Response array for DOF 3,
+    :param r4: Response array for DOF 4,
+    :param r5: Response array for DOF 5,
+    :param r6: Response array for DOF 6,
+    :param load_case: R7 F3, Load case number 
+    :param mode_n: R7 F4, Mode number
+    :param freq: R8 F1, Frequency (Hertz) 
+    :param modal_m: R8 F2, Modal mass
+    :param modal_damp_vis: R8 F3, Modal viscous damping ratio
+    :param modal_damp_his: R8 F4, Modal hysteric damping ratio
+    :param eig: R8 F1: Real part Eigenvalue, R8 F2: Imaginary part Eigenvalue
+    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A
+    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B
+    :param freq_step_n: R7 F4, Frequency step number
+    :param mode_nums: R9 F1 Node number
+
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+
+    dataset = {
+            'type': 55,
+            'id1': id1,
+            'id2': id2,
+            'id3': id3,
+            'id4': id4,
+            'id5': id5,
+            'model_type':model_type,
+            'analysis_type': analysis_type,
+            'data_ch': data_ch,
+            'spec_data_type': spec_data_type,
+            'data_type': data_type,
+            'n_data_per_node': n_data_per_node,
+            'r1': r1,
+            'r2': r2,
+            'r3': r3,
+            'r4': r4,
+            'r5': r5,
+            'r6': r6,
+            'load_case': load_case,
+            'mode_n': mode_n,
+            'freq': freq,
+            'modal_m': modal_m,
+            'modal_damp_vis': modal_damp_vis,
+            'modal_damp_his': modal_damp_his,
+            'eig': eig,
+            'modal_a': modal_a,
+            'modal_b': modal_b,
+            'freq_step_n': freq_step_n,
+            'node_nums': node_nums
+            }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+    return dataset
+
+

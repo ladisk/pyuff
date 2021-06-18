@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 
 def _write82(fh, dset):
@@ -50,3 +50,42 @@ def _extract82(blockData):
     except:
         raise UFFException('Error reading data-set #82')
     return dset
+
+
+def dict_82(
+    trace_num=None,
+    n_nodes=None,
+    color=None,
+    id=None,
+    lines=None,
+    return_full_dict=False):
+
+    """Name: Tracelines
+
+    R-Record, F-Field
+
+    :param trace_num: R1 F1, Trace line number
+    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250)
+    :param color: R1 F3, Color
+    :param id: R2 F1, Identification line
+    :param lines: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
+    
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+    dataset={'type': 82,
+            'trace_num': trace_num,
+            'n_nodes': n_nodes,
+            'color': color,
+            'id': id,
+            'lines': lines 
+            }
+
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+
+    return dataset
+
+

@@ -2,7 +2,7 @@ import numpy as np
 import struct
 import sys
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write58(fh, dset, mode='add', _fileName=None):
     # Writes function at nodal DOF - data-set 58 - to an open file fh.
@@ -303,4 +303,203 @@ def _extract58(blockData):
         raise UFFException('Error reading data-set #58b')
     return dset
 
+
+def dict_58(
+    binary=None,
+    id1=None,
+    id2=None,
+    id3=None,
+    id4=None,
+    id5=None,
+
+    func_type=None,
+    ver_num=None,
+    load_case_id=None,
+    rsp_ent_name=None,
+    rsp_node=None,
+    rsp_dir=None,
+    ref_ent_name=None,
+    ref_node=None,
+    ref_dir=None,
+
+    ord_data_type=None,
+    num_pts=None,
+    abscissa_spacing=None,
+    abscissa_min=None,
+    abscissa_inc=None,
+    z_axis_value=None,
+
+    abscissa_spec_data_type=None,
+    abscissa_len_unit_exp=None,
+    abscissa_force_unit_exp=None,
+    abscissa_temp_unit_exp=None,
+    
+    abscissa_axis_units_lab=None,
+
+    ordinate_spec_data_type=None,
+    ordinate_len_unit_exp=None,
+    ordinate_force_unit_exp=None,
+    ordinate_temp_unit_exp=None,
+    
+    ordinate_axis_units_lab=None,
+
+    orddenom_spec_data_type=None,
+    orddenom_len_unit_exp=None,
+    orddenom_force_unit_exp=None,
+    orddenom_temp_unit_exp=None,
+    
+    orddenom_axis_units_lab=None,
+
+    z_axis_spec_data_type=None,
+    z_axis_len_unit_exp=None,
+    z_axis_force_unit_exp=None,
+    z_axis_temp_unit_exp=None,
+    
+    z_axis_axis_units_lab=None,
+
+    data=None,
+    x=None,
+    spec_data_type=None,
+    byte_ordering=None,
+    fp_format=None,
+    n_ascii_lines=None,
+    n_bytes=None,
+    return_full_dict=False):
+
+    """Name:   Function at Nodal DOF
+
+    R-Record, F-Field
+
+    :param binary: 1 for binary, 0 for ascii,
+    :param id1: R1 F1, ID Line 1
+    :param id2: R2 F1, ID Line 2
+    :param id3: R3 F1, ID Line 3
+    :param id4: R4 F1, ID Line 4
+    :param id5: R5 F1, ID Line 5
+
+    :param func_type: R6 F1, Funtction type
+    :param ver_num: R6 F3, Version number
+    :param load_case_id: R6 F4, Load case identification number
+    :param rsp_ent_name: R6 F5, Response entity name
+    :param rsp_node: R6 F6, Response node
+    :param rsp_dir: R6 F7, Responde direction
+    :param ref_ent_name: R6 F8, Reference entity name
+    :param ref_node: R6 F9, Reference node
+    :param ref_dir: R6 F10, Reference direction
+
+    :param ord_data_type: R7 F1, Ordinate data type
+    :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa
+    :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even)
+    :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven)
+    :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven)
+    :param z_axis_value: R7 F6, Z-axis value (0.0 if unused)
+
+    :param abscissa_spec_data_type: R8 F1, Abscissa specific data type
+    :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent
+    :param abscissa_force_unit_exp: R8 F3, Abscissa force units exponent
+    :param abscissa_temp_unit_exp: R8 F4, Abscissa temperature units exponent
+    
+    :param abscissa_axis_units_lab: R8 F6, Abscissa units label ("None" if not used)
+
+    :param ordinate_spec_data_type: R9 F1, Ordinate specific data type
+    :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent
+    :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent
+    :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent
+    
+    :param ordinate_axis_units_lab: R9 F6, Ordinate units label ("None" if not used)
+
+    :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type
+    :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent
+    :param orddenom_force_unit_exp: R10 F3, Ordinate Denominator force units exponent
+    :param orddenom_temp_unit_exp: R10 F4, Ordinate Denominator temperature units exponent
+    
+    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label ("None" if not used)
+
+    :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type
+    :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent
+    :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent
+    :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent
+    
+    :param z_axis_axis_units_lab: R11 F6, Z-axis units label ("None" if not used)
+
+    :param data: R12 F1, Data values
+
+    :param x: Abscissa array
+    :param spec_data_type: Specific data type
+    :param byte_ordering: R1 F3, Byte ordering (only for binary)
+    :param fp_format: R1 F4 Floating-point format (only for binary)
+    :param n_ascii_lines: R1 F5, Number of ascii lines (only for binary)
+    :param n_bytes: R1 F6, Number of bytes (only for binary)
+
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    """
+
+
+    dataset={'type': 58,
+            'binary': binary,
+            'id1': id1,
+            'id2': id2,
+            'id3': id3,
+            'id4': id4,
+            'id5': id5,
+
+            'func_type': func_type,
+            'ver_num': ver_num,
+            'load_case_id': load_case_id,
+            'rsp_ent_name': rsp_ent_name,
+            'rsp_node': rsp_node,
+            'rsp_dir': rsp_dir,
+            'ref_ent_name': ref_ent_name,
+            'ref_node': ref_node,
+            'ref_dir': ref_dir,
+
+            'ord_data_type': ord_data_type,
+            'num_pts': num_pts,
+            'abscissa_spacing': abscissa_spacing,
+            'abscissa_min': abscissa_min,
+            'abscissa_inc': abscissa_inc,
+            'z_axis_value': z_axis_value,
+
+            'abscissa_spec_data_type': abscissa_spec_data_type,
+            'abscissa_len_unit_exp': abscissa_len_unit_exp,
+            'abscissa_force_unit_exp': abscissa_force_unit_exp,
+            'abscissa_temp_unit_exp': abscissa_temp_unit_exp,
+            
+            'abscissa_axis_units_lab': abscissa_axis_units_lab,
+
+            'ordinate_spec_data_type': ordinate_spec_data_type,
+            'ordinate_len_unit_exp': ordinate_len_unit_exp,
+            'ordinate_force_unit_exp': ordinate_force_unit_exp,
+            'ordinate_temp_unit_exp': ordinate_temp_unit_exp,
+            
+            'ordinate_axis_units_lab': ordinate_axis_units_lab,
+
+            'orddenom_spec_data_type': orddenom_spec_data_type,
+            'orddenom_len_unit_exp': orddenom_len_unit_exp,
+            'orddenom_force_unit_exp': orddenom_force_unit_exp,
+            'orddenom_temp_unit_exp': orddenom_temp_unit_exp,
+            
+            'orddenom_axis_units_lab': orddenom_axis_units_lab,
+
+            'z_axis_spec_data_type': z_axis_spec_data_type,
+            'z_axis_len_unit_exp': z_axis_len_unit_exp,
+            'z_axis_force_unit_exp': z_axis_force_unit_exp,
+            'z_axis_temp_unit_exp': z_axis_temp_unit_exp,
+            
+            'z_axis_axis_units_lab': z_axis_axis_units_lab,
+
+            'data': data,
+            'x': x,
+            'spec_data_type': spec_data_type,
+            'byte_ordering': byte_ordering,
+            'fp_format': fp_format,
+            'n_ascii_lines': n_ascii_lines,
+            'n_bytes': n_bytes
+             }
+
+    if return_full_dict is False:
+        dataset = check_dict_for_none(dataset)
+
+
+    return dataset
 
