@@ -37,6 +37,8 @@ def _parse_header_line(line, minValues, widths, types, names):
     filed values is returned.
     
     :param line: a string representing the whole line.
+    :param minValues: specifies how many values (fields) are mandatory to read
+        from the line
     :param widths: fields widths to be read
     :param types: field types 1=string, 2=int, 3=float, -1=ignore the field
     :param names: a list of key (field) names
@@ -89,3 +91,42 @@ def _parse_header_line(line, minValues, widths, types, names):
             else:
                 fieldsOut.update({key: 0.0})
     return fieldsOut
+
+def _write_record(fh, values, formats, multiline=False, fstring=True):
+    """Write a record to the open file using the specified formats.
+
+    :param fh: opened file
+    :param values: str or list, values to be written to the fields of the record
+    :param formats: str or list, formats for each record
+    :param multiline: if True, newline character is inserted after every value
+    :param fstring: if True, f-string formatting is used (currently, only fstring=True
+        is supported)    
+    """
+
+    if type(values) not in [list, tuple]:
+        values = [values]
+    if type(formats) not in [list, tuple]:
+        formats = [formats]
+    
+    
+    to_write = ''
+
+    for v, f in zip(values, formats):
+        if fstring:
+            if type(v) == str:
+                align = '<'
+            else:
+                align = '>'
+            to_write = to_write + f'{v:{align}{f}}'
+
+            if multiline:
+                to_write = to_write + '\n'
+    
+    if not multiline:
+        to_write = to_write + '\n'
+
+    fh.write(to_write)
+
+
+
+
