@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2412(fh, dset):
     try:
@@ -25,7 +25,7 @@ def _write2412(fh, dset):
         fh.write('%6i\n' % -1)
 
     except:
-        raise UFFException('Error writing data-set #2412')
+        raise Exception('Error writing data-set #2412')
 
 
 def _extract2412(blockData):
@@ -55,7 +55,7 @@ def _extract2412(blockData):
             dict_tmp['nodes_nums'] =  np.array([rec2[i] for i in ind], dtype=int).copy().reshape((-1,elt_type))
             dset[elt_type_dict[str(elt_type)]] = dict_tmp
     except:
-        raise UFFException('Error reading data-set #2412')
+        raise Exception('Error reading data-set #2412')
     return dset
 
 

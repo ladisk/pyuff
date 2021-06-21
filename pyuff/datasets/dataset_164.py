@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write164(fh, dset):
@@ -20,9 +20,9 @@ def _write164(fh, dset):
         fh.write(str)
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #164')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #164')
     except:
-        raise UFFException('Error writing data-set #164')
+        raise Exception('Error writing data-set #164')
 
 
 def _extract164(blockData):
@@ -39,7 +39,7 @@ def _extract164(blockData):
         dset['temp'] = float(splitData[2].lower().replace('d', 'e'))
         dset['temp_offset'] = float(splitData[3].lower().replace('d', 'e'))
     except:
-        raise UFFException('Error reading data-set #164')
+        raise Exception('Error reading data-set #164')
     return dset
 
 

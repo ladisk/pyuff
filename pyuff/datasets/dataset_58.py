@@ -3,14 +3,14 @@ import struct
 import sys
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write58(fh, dset, mode='add', _fileName=None):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         if not (dset['func_type'] in [1, 2, 3, 4, 6]):
-            raise UFFException('Unsupported function type')
+            raise ValueError('Unsupported function type')
         # handle optional fields - only those that are not calculated
         # automatically
         dict = {'units_description': '',
@@ -186,9 +186,9 @@ def _write58(fh, dset, mode='add', _fileName=None):
         fh.write('%6i\n' % -1)
         del data
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #58')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #58')
     except:
-        raise UFFException('Error writing data-set #58')
+        raise Exception('Error writing data-set #58')
 
 
 def _extract58(blockData):
@@ -270,7 +270,7 @@ def _extract58(blockData):
                 for line in split_data:  # 1E13.5,2E20.12
                     values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
             else:
-                raise UFFException('Error reading data-set #58b; not proper data case.')
+                raise Exception('Error reading data-set #58b; not proper data case.')
 
             values = np.asarray(values)
             # values = np.asarray([float(str) for str in splitData],'d')
@@ -302,7 +302,7 @@ def _extract58(blockData):
                 dset['data'] = values[0:-1:2] + 1.j * values[1::2]
         del values
     except:
-        raise UFFException('Error reading data-set #58b')
+        raise Exception('Error reading data-set #58b')
     return dset
 
 

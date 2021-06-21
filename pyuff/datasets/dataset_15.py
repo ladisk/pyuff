@@ -2,7 +2,7 @@ from os import write
 import os
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, _write_record, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, _write_record, check_dict_for_none
 from .. import pyuff
 
 # def _write15(fh, dset):
@@ -21,9 +21,9 @@ from .. import pyuff
 #                 dset['x'][ii], dset['y'][ii], dset['z'][ii]))
 #         fh.write('%6i\n' % -1)
 #     except KeyError as msg:
-#         raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
+#         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
 #     except:
-#         raise UFFException('Error writing data-set #15')
+#         raise Exception('Error writing data-set #15')
 
 FORMATS = [
     ['10.0f', '10.0f', '10.0f', '10.0f', '13.5f', '13.5f', '13.5f'],
@@ -47,9 +47,9 @@ def _write15(fh, dset):
 
         _write_record(fh, -1, '6.0f')
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
     except:
-        raise UFFException('Error writing data-set #15')
+        raise Exception('Error writing data-set #15')
 
 
 def _extract15(blockData):
@@ -69,7 +69,7 @@ def _extract15(blockData):
         dset['y'] = split_data[5::7]
         dset['z'] = split_data[6::7]
     except:
-        raise UFFException('Error reading data-set #15')
+        raise Exception('Error reading data-set #15')
     return dset
 
 
@@ -79,7 +79,7 @@ def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None
     R-Record, F-Field
 
     :param node_nums: R1 F1, node label
-    :param def_cs: R1 F2, deformation coordinate system numbers 
+    :param <def_cs>: R1 F2, deformation coordinate system numbers 
     :param disp_cs: R1 F3, displacement coordinate system numbers
     :param color: R1 F4, color
     :param x: R1 F5, Dimensional coordinate of node in the definition system

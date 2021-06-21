@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2411(fh, dset):
     try:
@@ -19,7 +19,7 @@ def _write2411(fh, dset):
         fh.write('%6i\n' % -1)
 
     except:
-        raise UFFException('Error writing data-set #2411')
+        raise Exception('Error writing data-set #2411')
 
 
 def _extract2411(blockData):
@@ -39,7 +39,7 @@ def _extract2411(blockData):
         dset['y'] = values[5::7].copy()
         dset['z'] = values[6::7].copy()
     except:
-        raise UFFException('Error reading data-set #15')
+        raise Exception('Error reading data-set #15')
     return dset
 
 

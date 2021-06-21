@@ -35,8 +35,6 @@ data where data-set is a block of data between the start and end tags ``____-1``
 (``_`` representing the space character). Refer to [1]_ and [2]_ for
 more information about the UFF format.
 
-This module also provides an exception handler class, ``UFFException``.
-
 Sources:
     .. [1] https://www.ceas3.uc.edu/sdrluff/
     .. [2] Matlab's ``readuff`` and ``writeuff`` functions:
@@ -65,8 +63,6 @@ import os
 import numpy as np
 
 
-from .tools import UFFException
-
 from .datasets.dataset_15 import _write15, _extract15
 from .datasets.dataset_18 import _extract18
 from .datasets.dataset_55 import _write55, _extract55
@@ -91,7 +87,7 @@ class UFF:
     universal file. If the file does not exist, no basic file info will be
     extracted and the status will be False - indicating that the file is not
     refreshed. Hovewer, when one tries to read one or more data-sets, the file
-    must exist or the UFFException will be raised.
+    must exist or the Exception will be raised.
     
     The file, given as a parameter to the UFF instance, is open only when
     reading from or writing to the file. The UFF instance refreshes the file
@@ -328,7 +324,7 @@ class UFF:
     def file_exists(self):
         """
         Returns true if the file exists and False otherwise. If the file does
-        not exist, invoking one of the read methods would raise the UFFException
+        not exist, invoking one of the read methods would raise the Exception
         exception.
         """
         return os.path.exists(self._fileName)
@@ -354,7 +350,7 @@ class UFF:
             fh = open(self._fileName, 'rb')
         #             fh = open(self._fileName, 'rt')
         except:
-            raise UFFException('Cannot access the file %s' % self._fileName)
+            raise Exception('Cannot access the file %s' % self._fileName)
         else:
             try:
                 # Parses the entire file for '    -1' tags and extracts
@@ -405,7 +401,7 @@ class UFF:
                 del blockInd
             except:
                 fh.close()
-                raise UFFException('Error refreshing UFF file: ' + self._fileName)
+                raise Exception('Error refreshing UFF file: ' + self._fileName)
             else:
                 self._refreshed = True
                 fh.close()
@@ -432,17 +428,17 @@ class UFF:
             else:
                 readRange = setn
         if not self.file_exists():
-            raise UFFException('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
         if not self._refreshed:
             if not self._refresh():
-                raise UFFException('Cannot read from the file: ' + self._fileName)
+                raise Exception('Cannot read from the file: ' + self._fileName)
         try:
             for ii in readRange:
                 dset.append(self._read_set(ii))
-        except UFFException as msg:
-            raise UFFException('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
+        except Exception as msg:
+            raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
         except:
-            raise UFFException('Error when reading data-set(s)')
+            raise Exception('Error when reading data-set(s)')
         if len(dset) == 1:
             dset = dset[0]
         return dset
@@ -467,7 +463,7 @@ class UFF:
             dsets = [dsets]
         nSets = len(dsets)
         if nSets < 1:
-            raise UFFException('Nothing to write')
+            raise Exception('Nothing to write')
         if mode.lower() == 'overwrite':
             # overwrite mode; first set is written in the overwrite mode, others
             # in add mode
@@ -479,7 +475,7 @@ class UFF:
             for ii in range(0, nSets):
                 self._write_set(dsets[ii], 'add')
         else:
-            raise UFFException('Unknown mode: ' + mode)
+            raise Exception('Unknown mode: ' + mode)
 
     def _read_set(self, n):
         """
@@ -492,18 +488,18 @@ class UFF:
         
         dset = {}
         if not self.file_exists():
-            raise UFFException('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
         if not self._refreshed:
             if not self.refresh():
-                raise UFFException('Cannot read from the file: ' + self._fileName + '. The file cannot be refreshed.')
+                raise Exception('Cannot read from the file: ' + self._fileName + '. The file cannot be refreshed.')
         if (n > self._nSets - 1) or (n < 0):
-            raise UFFException('Cannot read data-set: ' + str(int(n)) + \
+            raise Exception('Cannot read data-set: ' + str(int(n)) + \
                                '. Data-set number to high or to low.')
         # Read n-th data-set data (one block)
         try:
             fh = open(self._fileName, 'rb')
         except:
-            raise UFFException('Cannot access the file: ' + self._fileName + ' to read from.')
+            raise Exception('Cannot access the file: ' + self._fileName + ' to read from.')
         else:
             try:
                 si = self._blockInd[n][0]  # start offset
@@ -515,7 +511,7 @@ class UFF:
                     blockData = fh.read(ei - si + 1).decode('utf-8', errors='replace')
             except:
                 fh.close()
-                raise UFFException('Error reading data-set #: ' + int(n))
+                raise Exception('Error reading data-set #: ' + int(n))
             else:
                 fh.close()
         # Extracts the dset
@@ -568,22 +564,22 @@ class UFF:
             try:
                 fh = open(self._fileName, 'wt')
             except:
-                raise UFFException('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
         elif mode.lower() == 'add':
             # add (append) mode
             try:
                 fh = open(self._fileName, 'at')
             except:
-                raise UFFException('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
         else:
-            raise UFFException('Unknown mode: ' + mode)
+            raise Exception('Unknown mode: ' + mode)
         try:
             # Actual writing
             try:
                 setType = dset['type']
             except:
                 fh.close()
-                raise UFFException('Data-set\'s dictionary is missing the required \'type\' key')
+                raise Exception('Data-set\'s dictionary is missing the required \'type\' key')
             # handle nan or inf
             if 'data' in dset.keys():
                 dset['data'] = np.nan_to_num(dset['data'])

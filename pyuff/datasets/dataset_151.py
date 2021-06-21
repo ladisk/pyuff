@@ -2,7 +2,7 @@ import numpy as np
 import time
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write151(fh, dset):
@@ -33,9 +33,9 @@ def _write151(fh, dset):
         fh.write('%-10s%-10s\n' % (dset['date_file_written'], dset['time_file_written']))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')
     except:
-        raise UFFException('Error writing data-set #151')
+        raise Exception('Error writing data-set #151')
 
 
 def _extract151(blockData):
@@ -54,7 +54,7 @@ def _extract151(blockData):
         dset.update(
             _parse_header_line(splitData[8], 1, [10, 10], [1, 1], ['date_file_written', 'time_file_written']))
     except:
-        raise UFFException('Error reading data-set #151')
+        raise Exception('Error reading data-set #151')
     return dset
 
 

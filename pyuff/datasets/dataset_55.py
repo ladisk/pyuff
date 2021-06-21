@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write55(fh, dset):
@@ -43,7 +43,7 @@ def _write55(fh, dset):
             pass
         else:
             # unsupported analysis type
-            raise UFFException('Error writing data-set #55: unsupported analysis type')
+            raise ValueError('Error writing data-set #55: unsupported analysis type')
         # Some additional checking
         dataType = 2
         #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
@@ -81,7 +81,7 @@ def _write55(fh, dset):
                 dset['eig'].real, dset['eig'].imag, dset['modal_a'].real, dset['modal_a'].imag,
                 dset['modal_b'].real, dset['modal_b'].imag))
         else:
-            raise UFFException('Unsupported analysis type')
+            raise ValueError('Unsupported analysis type')
         n = len(dset['node_nums'])
         if dataType == 2:
             # Real data
@@ -103,12 +103,12 @@ def _write55(fh, dset):
                             (dset['r1'][k].real, dset['r1'][k].imag, dset['r2'][k].real, dset['r2'][k].imag,
                             dset['r3'][k].real, dset['r3'][k].imag))
         else:
-            raise UFFException('Unsupported data type')
+            raise ValueError('Unsupported data type')
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')
     except:
-        raise UFFException('Error writing data-set #55')
+        raise Exception('Error writing data-set #55')
 
 
 def _extract55(blockData):
@@ -183,11 +183,11 @@ def _extract55(blockData):
                 dset['r2'] = values[3:-3:7] + 1.j * values[4:-2:7]
                 dset['r3'] = values[5:-1:7] + 1.j * values[6::7]
             else:
-                raise UFFException('Cannot handle 6 points per node and complex data when reading data-set #55')
+                raise Exception('Cannot handle 6 points per node and complex data when reading data-set #55')
         else:
-            raise UFFException('Error reading data-set #55')
+            raise Exception('Error reading data-set #55')
     except:
-        raise UFFException('Error reading data-set #55')
+        raise Exception('Error reading data-set #55')
     del values
     return dset
 
