@@ -6,7 +6,7 @@ from .. import pyuff
 
 
 def _write82(fh, dset):
-    # Writes line data - data-set 82 - to an open file fh
+    """Writes line data - data-set 82 - to an open file fh"""
     try:
         # handle optional fields
         dset = _opt_fields(dset, {'id': 'NONE',
@@ -39,7 +39,7 @@ def _write82(fh, dset):
 
 
 def _extract82(blockData):
-    # Extract line data - data-set 82.
+    """Extract line data - data-set 82."""
     dset = {'type': 82}
     try:
         splitData = blockData.splitlines(True)

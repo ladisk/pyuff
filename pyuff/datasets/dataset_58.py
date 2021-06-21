@@ -7,7 +7,7 @@ from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_fo
 from .. import pyuff
 
 def _write58(fh, dset, mode='add', _fileName=None):
-    # Writes function at nodal DOF - data-set 58 - to an open file fh.
+    """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         if not (dset['func_type'] in [1, 2, 3, 4, 6]):
             raise UFFException('Unsupported function type')
@@ -192,7 +192,7 @@ def _write58(fh, dset, mode='add', _fileName=None):
 
 
 def _extract58(blockData):
-    # Extract function at nodal DOF - data-set 58.
+    """Extract function at nodal DOF - data-set 58."""
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False

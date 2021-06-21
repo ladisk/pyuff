@@ -482,10 +482,14 @@ class UFF:
             raise UFFException('Unknown mode: ' + mode)
 
     def _read_set(self, n):
-        # Reads n-th set from UFF file. n can be an integer between 0 and nSets-1.
-        # User must be sure that, since the last reading/writing/refreshing,
-        # the data has not changed by some other means than through the
-        # UFF object. The method returns dset dictionary.
+        """
+        Reads n-th set from UFF file. 
+        n can be an integer between 0 and nSets-1. 
+        User must be sure that, since the last reading/writing/refreshing, 
+        the data has not changed by some other means than through the
+        UFF object. The method returns dset dictionary.
+        """
+        
         dset = {}
         if not self.file_exists():
             raise UFFException('Cannot read from a non-existing file: ' + self._fileName)
@@ -544,18 +548,21 @@ class UFF:
         return dset
 
     def _write_set(self, dset, mode='add'):
-        # Writes UFF data (UFF data-sets) to the file.  The mode can be
-        # either 'add' (default) or 'overwrite'. The dset is a
-        # dictionary of keys and corresponding values. Unsupported
-        # data-set will be ignored.
-        # 
-        # For each data-set, there are some optional and some required fields at
-        # dset dictionary. Also, in general, the sum of the required
-        # and the optional fields together can be less then the number of fields
-        # read from the same type of data-set; the reason is that for some
-        # data-sets some fields are set automatically. Optional fields are
-        # calculated automatically and the dset is updated - as dset is actually
-        # an alias (aka pointer), this is reflected at the caller too.
+        """
+        Writes UFF data (UFF data-sets) to the file.  The mode can be
+        either 'add' (default) or 'overwrite'. The dset is a
+        dictionary of keys and corresponding values. Unsupported
+        data-set will be ignored.
+         
+        For each data-set, there are some optional and some required fields at
+        dset dictionary. Also, in general, the sum of the required
+        and the optional fields together can be less then the number of fields
+        read from the same type of data-set; the reason is that for some
+        data-sets some fields are set automatically. Optional fields are
+        calculated automatically and the dset is updated - as dset is actually
+        an alias (aka pointer), this is reflected at the caller too.
+        
+        """
         if mode.lower() == 'overwrite':
             # overwrite mode
             try:

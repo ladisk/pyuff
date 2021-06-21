@@ -6,7 +6,7 @@ from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_fo
 from .. import pyuff
 
 def _write151(fh, dset):
-    # Writes dset data - data-set 151 - to an open file fh
+    """Writes dset data - data-set 151 - to an open file fh."""
     try:
         ds = time.strftime('%d-%b-%y', time.localtime())
         ts = time.strftime('%H:%M:%S', time.localtime())
@@ -39,7 +39,7 @@ def _write151(fh, dset):
 
 
 def _extract151(blockData):
-    # Extract dset data - data-set 151.
+    """Extract dset data - data-set 151."""
     dset = {'type': 151}
     try:
         splitData = blockData.splitlines(True)

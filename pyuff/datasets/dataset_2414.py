@@ -3,11 +3,13 @@ import numpy as np
 from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2414(fh, dset):
-    #DS2414_num is iterative number for each DS2414
-    #Nthfreq is th frequency
-    #Writes data at nodes - data-set 2414 - to an open file fh. Currently:
-    #   - frequency response (5)
-    # analyses are supported.
+    """
+    DS2414_num is iterative number for each DS2414
+    Nthfreq is th frequency
+    Writes data at nodes - data-set 2414 - to an open file fh. 
+    Currently:
+       - frequency response (5) analyses are supported.
+       """
     try:
         # Handle general optional fields
         
@@ -70,7 +72,7 @@ def _write2414(fh, dset):
 
 
 def _extract2414(blockData):
-    # Extract analysis data - data-set 2414.
+    """Extract analysis data - data-set 2414."""
     dset = {'type': 2414}
     # Read data
     try:

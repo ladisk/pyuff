@@ -5,12 +5,13 @@ from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_fo
 from .. import pyuff
 
 def _write55(fh, dset):
-    # Writes data at nodes - data-set 55 - to an open file fh. Currently:
-    #   - only normal mode (2)
-    #   - complex eigenvalue first order (displacement) (3)
-    #   - frequency response and (5)
-    #   - complex eigenvalue second order (velocity) (7)
-    # analyses are supported.
+    """
+    Writes data at nodes - data-set 55 - to an open file fh. Currently:
+       - only normal mode (2)
+       - complex eigenvalue first order (displacement) (3)
+       - frequency response and (5)
+       - complex eigenvalue second order (velocity) (7) analyses are supported.
+    """
     try:
         # Handle general optional fields
         dset = _opt_fields(dset,
@@ -111,12 +112,13 @@ def _write55(fh, dset):
 
 
 def _extract55(blockData):
-    # Extract data at nodes - data-set 55. Currently:
-    #   - only normal mode (2)
-    #   - complex eigenvalue first order (displacement) (3)
-    #   - frequency response and (5)
-    #   - complex eigenvalue second order (velocity) (7)
-    # analyses are supported.
+    """
+    Extract data at nodes - data-set 55. Currently:
+       - only normal mode (2)
+       - complex eigenvalue first order (displacement) (3)
+       - frequency response and (5)
+       - complex eigenvalue second order (velocity) (7) analyses are supported.
+    """
     dset = {'type': 55}
     try:
         splitData = blockData.splitlines(True)

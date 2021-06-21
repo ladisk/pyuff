@@ -29,7 +29,7 @@ def _write2412(fh, dset):
 
 
 def _extract2412(blockData):
-    # Extract element data - data-set 2412.
+    """Extract element data - data-set 2412."""
     dset = {'type': 2412}
     # Define dictionary of possible elements types
     # Only 2D non-quadratic elements are supported

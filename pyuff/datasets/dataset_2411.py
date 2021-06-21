@@ -23,7 +23,7 @@ def _write2411(fh, dset):
 
 
 def _extract2411(blockData):
-    # Extract coordinate data - data-set 15.
+    """Extract coordinate data - data-set 15."""
     dset = {'type': 15}
     try:
         # Body

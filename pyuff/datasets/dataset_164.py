@@ -5,7 +5,7 @@ from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_fo
 from .. import pyuff
 
 def _write164(fh, dset):
-    # Writes units data - data-set 164 - to an open file fh
+    """Writes units data - data-set 164 - to an open file fh."""
     try:
         # handle optional fields
         dset = _opt_fields(dset, {'units_description': 'User unit system',
@@ -26,7 +26,7 @@ def _write164(fh, dset):
 
 
 def _extract164(blockData):
-    # Extract units data - data-set 164.
+    """Extract units data - data-set 164."""
     dset = {'type': 164}
     try:
         splitData = blockData.splitlines(True)
