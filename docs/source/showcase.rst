@@ -49,7 +49,7 @@ The first dataset 58 (this is the fifth in the example file) contains following 
 
     data[4].keys()
 
-Most important keys are 'x': x_axis and 'data': y_axis that define the stored response:
+Most important keys are ``x``: x-axis and ``data``: y-axis that define the stored response:
 
 .. code:: python
 
@@ -94,5 +94,26 @@ In the next step we create a UFF file where we add dataset 58 for measurement co
             'orddenom_spec_data_type':13}
     uffwrite = pyuff.UFF('./data/measurement.uff')
     uffwrite.write_sets(data,'add')
+
+Or we can use support function ``dict_58`` to prepare the dictionary for creating UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
+
+.. code:: python
+
+    pyuff.dict_58(func_type=4, 
+                rsp_node=response_node, 
+                rsp_dir=response_direction, 
+                ref_dir=reference_direction
+                ref_node=reference_node,
+                data=acceleration_complex,
+                x=frequency,
+                id1='id1', 
+                rsp_ent_name=name,
+                ref_ent_name=name,
+                abscissa_spacing=1,
+                abscissa_spec_data_type=18,
+                ordinate_spec_data_type=12,
+                orddenom_spec_data_type=13)
+
+
 
     
