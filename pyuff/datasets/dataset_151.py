@@ -81,16 +81,16 @@ def dict_151(
     :param model_name: R1 F1, Model file name
     :param description: R2 F1, Model file description
     :param db_app: R3 F1, Name of the application that created database
-    :param date_db_created: R4 F1, Date database created
-    :param time_db_created: R4 F2, Time database created
-    :param version_db1: R4 F3, Version string 1 of the database
-    :param version_db2: R4 F4, Version string 2 of the database
-    :param file_type: R4 F5, File type
-    :param date_db_saved: R5 F1, Date database last saved
-    :param time_db_saved: R5 F2, Time database last saved
+    :param date_db_created: R4 F1, Date database created, optional
+    :param time_db_created: R4 F2, Time database created, optional
+    :param version_db1: R4 F3, Version string 1 of the database, optional
+    :param version_db2: R4 F4, Version string 2 of the database, optional
+    :param file_type: R4 F5, File type, optional
+    :param date_db_saved: R5 F1, Date database last saved, optional
+    :param time_db_saved: R5 F2, Time database last saved, optional
     :param program: R6 F1, Program which created universal file
-    :param date_file_written: R7 F1, Date universal file was written
-    :param time_file_written: R7 F2 Time universal file was written
+    :param date_file_written: R7 F1, Date universal file was written, optional
+    :param time_file_written: R7 F2 Time universal file was written, optional
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     

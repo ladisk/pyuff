@@ -227,18 +227,18 @@ def dict_55(
 
     R-Record, F-Field
 
-    :param id1: R1 F1, ID Line 1 
-    :param id2: R2 F1, ID Line 2
-    :param id3: R3 F1, ID Line 3
-    :param id4: R4 F1, ID Line 4
-    :param id5: R5 F1, ID Line 5
+    :param id1: R1 F1, ID Line 1, optional
+    :param id2: R2 F1, ID Line 2, optional
+    :param id3: R3 F1, ID Line 3, optional
+    :param id4: R4 F1, ID Line 4, optional
+    :param id5: R5 F1, ID Line 5, optional
 
-    :param model_type: R6 F1, Model type
+    :param model_type: R6 F1, Model type, optional
     :param analysis_type: R6 F2, Analysis type; currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported
     :param data_ch: R6 F3, Data characteristic number
     :param spec_data_type: R6 F4, Specific data type
-    :param data_type: R6 F5,  Data type
-    :param n_data_per_node: R6 F6, Number of data values per node
+    :param data_type: R6 F5,  Data type, ignored
+    :param n_data_per_node: R6 F6, Number of data values per node, ignored
 
     :param r1: Response array for DOF 1,
     :param r2: Response array for DOF 2,
@@ -249,12 +249,12 @@ def dict_55(
     :param load_case: R7 F3, Load case number 
     :param mode_n: R7 F4, Mode number
     :param freq: R8 F1, Frequency (Hertz) 
-    :param modal_m: R8 F2, Modal mass
-    :param modal_damp_vis: R8 F3, Modal viscous damping ratio
-    :param modal_damp_his: R8 F4, Modal hysteric damping ratio
+    :param modal_m: R8 F2, Modal mass, optional
+    :param modal_damp_vis: R8 F3, Modal viscous damping ratio, optional
+    :param modal_damp_his: R8 F4, Modal hysteric damping ratio, optional
     :param eig: R8 F1: Real part Eigenvalue, R8 F2: Imaginary part Eigenvalue
-    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A
-    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B
+    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A, optional
+    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B, optional
     :param freq_step_n: R7 F4, Frequency step number
     :param mode_nums: R9 F1 Node number
 

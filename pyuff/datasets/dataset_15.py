@@ -79,9 +79,9 @@ def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None
     R-Record, F-Field
 
     :param node_nums: R1 F1, node label
-    :param <def_cs>: R1 F2, deformation coordinate system numbers 
-    :param disp_cs: R1 F3, displacement coordinate system numbers
-    :param color: R1 F4, color
+    :param def_cs: R1 F2, deformation coordinate system numbers, optional
+    :param disp_cs: R1 F3, displacement coordinate system numbers, optional
+    :param color: R1 F4, color, optional
     :param x: R1 F5, Dimensional coordinate of node in the definition system
     :param y: R1 F6, Dimensional coordinate of node in the definition system
     :param z: R1 F7, Dimensional coordinate of node in the definition system

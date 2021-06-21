@@ -67,9 +67,9 @@ def dict_82(
     R-Record, F-Field
 
     :param trace_num: R1 F1, Trace line number
-    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250)
-    :param color: R1 F3, Color
-    :param id: R2 F1, Identification line
+    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250), ignored
+    :param color: R1 F3, color, optional
+    :param id: R2 F1, identification line, optional
     :param lines: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
     
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included

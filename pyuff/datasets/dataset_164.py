@@ -57,8 +57,8 @@ def dict_164(
     R-Record, F-Field
 
     :param units_code: R1 F1, Units code
-    :param units_description: R1 F2, Units description
-    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative)
+    :param units_description: R1 F2, Units description, optional
+    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative), optional
     :param length: R2 F1, Length
     :param force: R2 F2, Force
     :param temp: R2 F3, Temperature

@@ -76,7 +76,7 @@ def dict_2412(
     :param fe_descriptor: R1 F2, Fe descriptor id
     :param phys_table: R1 F3, Physical property table number
     :param mat_table: R1 F4, Material property table number
-    :param color: R1 F5, Color
+    :param color: R1 F5, Color, optional
     :param num_nodes: R1 F6, Number of nodes on element
     :param nodes_nums: R2 F1, Node labels defining element
 
