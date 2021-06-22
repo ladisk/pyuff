@@ -1,7 +1,7 @@
 Supported datasets
 ==================
 
-More info on specific datasets can be obtained `here <https://www.ceas3.uc.edu/sdrluff>`_
+More info on specific datasets can be obtained `here <https://www.ceas3.uc.edu/sdrluff>`_.
 
 
 Dict function showcase

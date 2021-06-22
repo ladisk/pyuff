@@ -7,7 +7,7 @@ This module defines an UFF class to manipulate with the UFF (Universal File Form
 
 Read from and write of data-set types **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420** are supported.
 
-Check out the `documentation <https://pyuff.readthedocs.io/en/latest/index.html>`_
+Check out the `documentation <https://pyuff.readthedocs.io/en/latest/index.html>`_.
 
 
 Showcase
@@ -88,7 +88,7 @@ Creating the UFF file where we add dataset 58 for measurement consisting of the 
     uffwrite = pyuff.UFF('./data/measurement.uff')
     uffwrite.write_sets(data,'add')
 
-Or we can use support function ``dict_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found in `Supported datasets <https://pyuff.readthedocs.io/en/latest/Supported_datasets.html>` 
+Or we can use support function ``dict_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found in `supported datasets <https://pyuff.readthedocs.io/en/latest/Supported_datasets.html>`_.
 
 .. code:: python
 
