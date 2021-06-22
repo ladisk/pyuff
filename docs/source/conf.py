@@ -27,7 +27,7 @@ author = 'Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž S
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '?'
+release = '2014'
 
 
 # -- General configuration ---------------------------------------------------
@@ -108,7 +108,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyEMAdoc'
+htmlhelp_basename = 'pyuffdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -135,8 +135,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pyEMA.tex', 'pyEMA Documentation',
-     'Klemen Zaletelj, Tomaž Bregar, Domen Gorjup, Janko Slavič', 'manual'),
+    (master_doc, 'pyuff.tex', 'pyuff Documentation',
+     'Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc', 'manual'),
 ]
 
 
@@ -145,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyema', 'pyEMA Documentation',
+    (master_doc, 'pyuff', 'pyuff Documentation',
      [author], 1)
 ]
 
@@ -156,8 +156,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pyEMA', 'pyEMA Documentation',
-     author, 'pyEMA', 'One line description of project.',
+    (master_doc, 'pyuff', 'pyuff Documentation',
+     author, 'pyuff', 'One line description of project.',
      'Miscellaneous'),
 ]
 

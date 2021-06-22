@@ -1,15 +1,4 @@
 
-class UFFException(Exception):
-    """An exception that prints a string describing the error.
-    """
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return self.value
-
-
 def _opt_fields(dict, fieldsDict):
     """Sets the optional fields of the dict dictionary. 
     
@@ -60,7 +49,7 @@ def _parse_header_line(line, minValues, widths, types, names):
     # Check for the number of fields,...
     nFields = len(fieldsFromLine)
     if (nFieldsReq < nFields) or (minValues > nFields):
-        raise UFFException('Error parsing header section; too many or to less' + \
+        raise Exception('Error parsing header section; too many or to less' + \
                             'fields found')
     # Mandatory fields
     for key, n in zip(names[:minValues], range(0, minValues)):

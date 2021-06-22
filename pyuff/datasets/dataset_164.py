@@ -1,11 +1,11 @@
 import numpy as np
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write164(fh, dset):
-    # Writes units data - data-set 164 - to an open file fh
+    """Writes units data - data-set 164 - to an open file fh."""
     try:
         # handle optional fields
         dset = _opt_fields(dset, {'units_description': 'User unit system',
@@ -20,13 +20,13 @@ def _write164(fh, dset):
         fh.write(str)
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #164')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #164')
     except:
-        raise UFFException('Error writing data-set #164')
+        raise Exception('Error writing data-set #164')
 
 
 def _extract164(blockData):
-    # Extract units data - data-set 164.
+    """Extract units data - data-set 164."""
     dset = {'type': 164}
     try:
         splitData = blockData.splitlines(True)
@@ -39,7 +39,7 @@ def _extract164(blockData):
         dset['temp'] = float(splitData[2].lower().replace('d', 'e'))
         dset['temp_offset'] = float(splitData[3].lower().replace('d', 'e'))
     except:
-        raise UFFException('Error reading data-set #164')
+        raise Exception('Error reading data-set #164')
     return dset
 
 
@@ -57,8 +57,8 @@ def dict_164(
     R-Record, F-Field
 
     :param units_code: R1 F1, Units code
-    :param units_description: R1 F2, Units description
-    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative)
+    :param units_description: R1 F2, Units description, optional
+    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative), optional
     :param length: R2 F1, Length
     :param force: R2 F2, Force
     :param temp: R2 F3, Temperature

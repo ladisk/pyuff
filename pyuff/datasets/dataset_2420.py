@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 # TODO: Big deal - the output dictionary when reading this set
 #    is different than the dictionary that is expected (keys) when
@@ -26,7 +26,7 @@ def _write2420(fh, dset):
             fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 3, :]))
         fh.write('%6i\n' % -1)
     except:
-        raise UFFException('Error writing data-set #2420')
+        raise Exception('Error writing data-set #2420')
 
 def _extract2420(blockData):
     '''Extract local CS/transforms -- data-set 2420.'''
@@ -59,7 +59,7 @@ def _extract2420(blockData):
     dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)])) \
                             for i in np.arange(0, len(row1), 3)]
     #        except:
-    #            raise UFFException('Error reading data-set #2420')
+    #            raise Exception('Error reading data-set #2420')
     return dset
 
 

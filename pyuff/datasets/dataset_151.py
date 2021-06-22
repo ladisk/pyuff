@@ -2,11 +2,11 @@ import numpy as np
 import time
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write151(fh, dset):
-    # Writes dset data - data-set 151 - to an open file fh
+    """Writes dset data - data-set 151 - to an open file fh."""
     try:
         ds = time.strftime('%d-%b-%y', time.localtime())
         ts = time.strftime('%H:%M:%S', time.localtime())
@@ -33,13 +33,13 @@ def _write151(fh, dset):
         fh.write('%-10s%-10s\n' % (dset['date_file_written'], dset['time_file_written']))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')
     except:
-        raise UFFException('Error writing data-set #151')
+        raise Exception('Error writing data-set #151')
 
 
 def _extract151(blockData):
-    # Extract dset data - data-set 151.
+    """Extract dset data - data-set 151."""
     dset = {'type': 151}
     try:
         splitData = blockData.splitlines(True)
@@ -54,7 +54,7 @@ def _extract151(blockData):
         dset.update(
             _parse_header_line(splitData[8], 1, [10, 10], [1, 1], ['date_file_written', 'time_file_written']))
     except:
-        raise UFFException('Error reading data-set #151')
+        raise Exception('Error reading data-set #151')
     return dset
 
 
@@ -81,16 +81,16 @@ def dict_151(
     :param model_name: R1 F1, Model file name
     :param description: R2 F1, Model file description
     :param db_app: R3 F1, Name of the application that created database
-    :param date_db_created: R4 F1, Date database created
-    :param time_db_created: R4 F2, Time database created
-    :param version_db1: R4 F3, Version string 1 of the database
-    :param version_db2: R4 F4, Version string 2 of the database
-    :param file_type: R4 F5, File type
-    :param date_db_saved: R5 F1, Date database last saved
-    :param time_db_saved: R5 F2, Time database last saved
+    :param date_db_created: R4 F1, Date database created, optional
+    :param time_db_created: R4 F2, Time database created, optional
+    :param version_db1: R4 F3, Version string 1 of the database, optional
+    :param version_db2: R4 F4, Version string 2 of the database, optional
+    :param file_type: R4 F5, File type, optional
+    :param date_db_saved: R5 F1, Date database last saved, optional
+    :param time_db_saved: R5 F2, Time database last saved, optional
     :param program: R6 F1, Program which created universal file
-    :param date_file_written: R7 F1, Date universal file was written
-    :param time_file_written: R7 F2 Time universal file was written
+    :param date_file_written: R7 F1, Date universal file was written, optional
+    :param time_file_written: R7 F2 Time universal file was written, optional
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     

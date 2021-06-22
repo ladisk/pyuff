@@ -35,8 +35,6 @@ data where data-set is a block of data between the start and end tags ``____-1``
 (``_`` representing the space character). Refer to [1]_ and [2]_ for
 more information about the UFF format.
 
-This module also provides an exception handler class, ``UFFException``.
-
 Sources:
     .. [1] https://www.ceas3.uc.edu/sdrluff/
     .. [2] Matlab's ``readuff`` and ``writeuff`` functions:
@@ -65,8 +63,6 @@ import os
 import numpy as np
 
 
-from .tools import UFFException
-
 from .datasets.dataset_15 import _write15, _extract15
 from .datasets.dataset_18 import _extract18
 from .datasets.dataset_55 import _write55, _extract55
@@ -91,7 +87,7 @@ class UFF:
     universal file. If the file does not exist, no basic file info will be
     extracted and the status will be False - indicating that the file is not
     refreshed. Hovewer, when one tries to read one or more data-sets, the file
-    must exist or the UFFException will be raised.
+    must exist or the Exception will be raised.
     
     The file, given as a parameter to the UFF instance, is open only when
     reading from or writing to the file. The UFF instance refreshes the file
@@ -102,175 +98,6 @@ class UFF:
     be invoked before any reading or writing.
     
     All array-type data are read/written using numpy's ``np.array`` module.
-    
-    Appendix
-    --------
-    Below are the fileds for all the data sets supported. <..> designates an
-    *optional* field, i.e., a field that is not needed when writting to a file
-    as the field has a defualt value. Additionally, <<..>> designates fields that
-    are *ignored* when writing (not needed at all); these fields are defined
-    automatically.
-    
-    Moreover, there are also some fields that are data-type dependent, i.e.,
-    some fields that are onyl used/available for some specific data-type. E.g.,
-    see ``modal_damp_vis`` at Data-set 55.
-        
-    **Data-set 15 (points data)**:
-        
-        * ``'type'``               -- *type number = 15*
-        * ``'node_nums'``          -- *list of n node numbers*
-        * ``'x'``                  -- *x-coordinates of the n nodes*
-        * ``'y'``                  -- *y-coordinates of the n nodes*
-        * ``'z'``                  -- *z-coordinates of the n nodes*
-        * ``<'def_cs'>``           -- *n deformation cs numbers*
-        * ``<'disp_cs'>``          -- *n displacement cs numbers*
-        * ``<'color'>``            -- *n color numbers*
-
-    **Data-set 2412 (elements data)**:
-        * ``'type'``               -- *type number = 2412*
-        * ``'element_nums'``       -- *list of n element numbers*
-        * ``'num_nodes'``          -- *n number of nodes on element*
-        * ``'nodes_nums'``         -- *n list of node numbers defining element*
-        * ``'fe_descriptor'``      -- *n fe descriptor id*
-        * ``'phys_table'``         -- *n physical property table number*
-        * ``'mat_table'``          -- *n material property table number*
-        * ``<'color'>``            -- *n color numbers*
-    
-    **Data-set 82 (line data)**:
-        
-        * ``'type'``               -- *type number = 82*
-        * ``'trace_num'``          -- *number of the trace*
-        * ``'lines'``              -- *list of n line numbers*
-        * ``<'id'>``               -- *id string*
-        * ``<'color'>``            -- *color number*
-        * ``<<'n_nodes'>>``        -- *number of nodes*
-        
-    **Data-set 151 (header data)**:
-        
-        * ``'type'``               -- *type number = 151*
-        * ``'model_name'``         -- *name of the model*
-        * ``'description'``        -- *description of the model*
-        * ``'db_app'``             -- *name of the application that
-          created database*
-        * ``'program'``            -- *name of the program*
-        * ``'model_name'``         -- *the name of the model*
-        * ``<'version_db1'>``      -- *version string 1 of the database*
-        * ``<'version_db2'>``      -- *version string 2 of the database*
-        * ``<'file_type'>``        -- *file type string*
-        * ``<'date_db_created'>``  -- *date database was created*
-        * ``<'time_db_created'>``  -- *time database was created*
-        * ``<'date_db_saved'>``    -- *date database was saved*
-        * ``<'time_db_saved'>``    -- *time database was saved*
-        * ``<'date_file_written'>``-- *date file was written*
-        * ``<'time_file_written'>``-- *time file was written*
-
-    **Data-set 164 (units)**:
-        
-        * ``'type'``               -- *type number = 164*
-        * ``'units_code'``         -- *units code number*
-        * ``'length'``             -- *length factor*
-        * ``'force'``              -- *force factor*
-        * ``'temp'``               -- *temperature factor*
-        * ``'temp_offset'``        -- *temperature-offset factor*
-        * ``<'units_description'>``-- *units description*
-        * ``<'temp_mode'>``        -- *temperature mode number*
-
-    **Data-set 58<b> (function at nodal DOF)**:
-        
-        * ``'type'``               -- *type number = 58*
-        * ``'func_type'``          -- *function type; only 1, 2, 3, 4
-          and 6 are supported*
-        * ``'rsp_node'``           -- *response node number*
-        * ``'rsp_dir'``            -- *response direction number*
-        * ``'ref_node'``           -- *reference node number*
-        * ``'ref_dir'``            -- *reference direction number*
-        * ``'data'``               -- *data array*
-        * ``'x'``                  -- *abscissa array*
-        * ``<'binary'>``           -- *1 for binary, 0 for ascii*
-        * ``<'id1'>``              -- *id string 1*
-        * ``<'id2'>``              -- *id string 2*
-        * ``<'id3'>``              -- *id string 3*
-        * ``<'id4'>``              -- *id string 4*
-        * ``<'id5'>``              -- *id string 5*
-        * ``<'load_case_id'>``     -- *id number for the load case*
-        * ``<'rsp_ent_name'>``     -- *entity name for the response*
-        * ``<'ref_ent_name'>``     -- *entity name for the reference*
-        * ``<'abscissa_axis_units_lab'>``-- *label for the units on the abscissa*
-        * ``<'abscissa_len_unit_exp'>``  -- *exp for the length unit on the abscissa*
-        * ``<'abscissa_force_unit_exp'>``-- *exp for the force unit on the abscissa*
-        * ``<'abscissa_temp_unit_exp'>`` -- *exp for the temperature unit on the abscissa*
-        * ``<'ordinate_axis_units_lab'>``-- *label for the units on the ordinate*
-        * ``<'ordinate_len_unit_exp'>``  -- *exp for the length unit on the ordinate*
-        * ``<'ordinate_force_unit_exp'>``-- *exp for the force unit on the ordinate*
-        * ``<'ordinate_temp_unit_exp'>`` -- *exp for the temperature unit on the ordinate*
-        * ``<'orddenom_axis_units_lab'>``-- *label for the units on the ordinate denominator*
-        * ``<'orddenom_len_unit_exp'>``  -- *exp for the length unit on the ordinate denominator*
-        * ``<'orddenom_force_unit_exp'>``-- *exp for the force unit on the ordinate denominator*
-        * ``<'orddenom_temp_unit_exp'>`` -- *exp for the temperature unit on the ordinate denominator*
-        * ``<'z_axis_axis_units_lab'>``  -- *label for the units on the z axis*
-        * ``<'z_axis_len_unit_exp'>``    -- *exp for the length unit on the z axis*
-        * ``<'z_axis_force_unit_exp'>``  -- *exp for the force unit on the z axis*
-        * ``<'z_axis_temp_unit_exp'>``   -- *exp for the temperature unit on the z axis*
-        * ``<'z_axis_value'>``           -- *z axis value*
-        * ``<'spec_data_type'>``         -- *specific data type*
-        * ``<'abscissa_spec_data_type'>``-- *abscissa specific data type*
-        * ``<'ordinate_spec_data_type'>``-- *ordinate specific data type*
-        * ``<'orddenom_spec_data_type'>``-- *ordinate denominator specific data type*
-        * ``<'z_axis_spec_data_type'>``  -- *z-axis specific data type*
-        * ``<'ver_num'>``                -- *version number*
-        * ``<<'ord_data_type'>>``        -- *ordinate data type*
-        * ``<<'abscissa_min'>>``         -- *abscissa minimum*
-        * ``<<'byte_ordering'>>``        -- *byte ordering*
-        * ``<<'fp_format'>>``            -- *floating-point format*
-        * ``<<'n_ascii_lines'>>``        -- *number of ascii lines*
-        * ``<<'n_bytes'>>``              -- *number of bytes*
-        * ``<<'num_pts'>>``              -- *number of data pairs for
-          uneven abscissa or number of data values for even abscissa*
-        * ``<<'abscissa_spacing'>>``     -- *abscissa spacing; 0=uneven,
-          1=even*
-        * ``<<'abscissa_inc'>>``         -- *abscissa increment; 0 if
-          spacing uneven*
-
-    **Data-set 55 (data at nodes)**:
-        
-        * ``'type'``               -- *type number = 55*
-        * ``'analysis_type'``      -- *analysis type number; currently
-          only only normal mode (2), complex eigenvalue first order
-          (displacement) (3), frequency response and (5) and complex eigenvalue
-          second order (velocity) (7) are supported*
-        * ``'data_ch'``            -- *data-characteristic number*
-        * ``'spec_data_type'``     -- *specific data type number*
-        * ``'load_case'``          -- *load case number*
-        * ``'mode_n'``             -- *mode number; applicable to
-          analysis types 2, 3 and 7 only*
-        * ``'eig'``                -- *eigen frequency (complex number);
-          applicable to analysis types 3 and 7 only*
-        * ``'freq'``               -- *frequency (Hz); applicable to
-          analysis types 2 and 5 only*
-        * ``'freq_step_n'``        -- *frequency step number; applicable
-          to analysis type 5 only*
-        * ``'node_nums'``          -- *node numbers*
-        * ``'r1'..'r6'``           -- *response array for each DOF; when
-          response is complex only r1 through r3 will be used*
-        * ``<'id1'>``              -- *id1 string*
-        * ``<'id2'>``              -- *id2 string*
-        * ``<'id3'>``              -- *id3 string*
-        * ``<'id4'>``              -- *id4 string*
-        * ``<'id5'>``              -- *id5 string*
-        * ``<'model_type'>``       -- *model type number*
-        * ``<'modal_m'>``          -- *modal mass; applicable to
-          analysis type 2 only*
-        * ``<'modal_damp_vis'>``   -- *modal viscous damping ratio;
-          applicable to analysis type 2 only*
-        * ``<'modal_damp_his'>``   -- *modal hysteretic damping ratio;
-          applicable to analysis type 2 only*
-        * ``<'modal_b'>``          -- *modal-b (complex number);
-          applicable to analysis types 3 and 7 only*
-        * ``<'modal_a'>``          -- *modal-a (complex number);
-          applicable to analysis types 3 and 7 only*
-        * ``<<'n_data_per_node'>>``-- *number of data per node (DOFs)*
-        * ``<<'data_type'>>``      -- *data type number; 2 = real data,
-          5 = complex data*
     """
 
     def __init__(self, fileName):
@@ -328,7 +155,7 @@ class UFF:
     def file_exists(self):
         """
         Returns true if the file exists and False otherwise. If the file does
-        not exist, invoking one of the read methods would raise the UFFException
+        not exist, invoking one of the read methods would raise the Exception
         exception.
         """
         return os.path.exists(self._fileName)
@@ -354,7 +181,7 @@ class UFF:
             fh = open(self._fileName, 'rb')
         #             fh = open(self._fileName, 'rt')
         except:
-            raise UFFException('Cannot access the file %s' % self._fileName)
+            raise Exception('Cannot access the file %s' % self._fileName)
         else:
             try:
                 # Parses the entire file for '    -1' tags and extracts
@@ -405,7 +232,7 @@ class UFF:
                 del blockInd
             except:
                 fh.close()
-                raise UFFException('Error refreshing UFF file: ' + self._fileName)
+                raise Exception('Error refreshing UFF file: ' + self._fileName)
             else:
                 self._refreshed = True
                 fh.close()
@@ -432,17 +259,17 @@ class UFF:
             else:
                 readRange = setn
         if not self.file_exists():
-            raise UFFException('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
         if not self._refreshed:
             if not self._refresh():
-                raise UFFException('Cannot read from the file: ' + self._fileName)
+                raise Exception('Cannot read from the file: ' + self._fileName)
         try:
             for ii in readRange:
                 dset.append(self._read_set(ii))
-        except UFFException as msg:
-            raise UFFException('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
+        except Exception as msg:
+            raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
         except:
-            raise UFFException('Error when reading data-set(s)')
+            raise Exception('Error when reading data-set(s)')
         if len(dset) == 1:
             dset = dset[0]
         return dset
@@ -467,7 +294,7 @@ class UFF:
             dsets = [dsets]
         nSets = len(dsets)
         if nSets < 1:
-            raise UFFException('Nothing to write')
+            raise Exception('Nothing to write')
         if mode.lower() == 'overwrite':
             # overwrite mode; first set is written in the overwrite mode, others
             # in add mode
@@ -479,27 +306,31 @@ class UFF:
             for ii in range(0, nSets):
                 self._write_set(dsets[ii], 'add')
         else:
-            raise UFFException('Unknown mode: ' + mode)
+            raise Exception('Unknown mode: ' + mode)
 
     def _read_set(self, n):
-        # Reads n-th set from UFF file. n can be an integer between 0 and nSets-1.
-        # User must be sure that, since the last reading/writing/refreshing,
-        # the data has not changed by some other means than through the
-        # UFF object. The method returns dset dictionary.
+        """
+        Reads n-th set from UFF file. 
+        n can be an integer between 0 and nSets-1. 
+        User must be sure that, since the last reading/writing/refreshing, 
+        the data has not changed by some other means than through the
+        UFF object. The method returns dset dictionary.
+        """
+        
         dset = {}
         if not self.file_exists():
-            raise UFFException('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
         if not self._refreshed:
             if not self.refresh():
-                raise UFFException('Cannot read from the file: ' + self._fileName + '. The file cannot be refreshed.')
+                raise Exception('Cannot read from the file: ' + self._fileName + '. The file cannot be refreshed.')
         if (n > self._nSets - 1) or (n < 0):
-            raise UFFException('Cannot read data-set: ' + str(int(n)) + \
+            raise Exception('Cannot read data-set: ' + str(int(n)) + \
                                '. Data-set number to high or to low.')
         # Read n-th data-set data (one block)
         try:
             fh = open(self._fileName, 'rb')
         except:
-            raise UFFException('Cannot access the file: ' + self._fileName + ' to read from.')
+            raise Exception('Cannot access the file: ' + self._fileName + ' to read from.')
         else:
             try:
                 si = self._blockInd[n][0]  # start offset
@@ -511,7 +342,7 @@ class UFF:
                     blockData = fh.read(ei - si + 1).decode('utf-8', errors='replace')
             except:
                 fh.close()
-                raise UFFException('Error reading data-set #: ' + int(n))
+                raise Exception('Error reading data-set #: ' + int(n))
             else:
                 fh.close()
         # Extracts the dset
@@ -544,39 +375,42 @@ class UFF:
         return dset
 
     def _write_set(self, dset, mode='add'):
-        # Writes UFF data (UFF data-sets) to the file.  The mode can be
-        # either 'add' (default) or 'overwrite'. The dset is a
-        # dictionary of keys and corresponding values. Unsupported
-        # data-set will be ignored.
-        # 
-        # For each data-set, there are some optional and some required fields at
-        # dset dictionary. Also, in general, the sum of the required
-        # and the optional fields together can be less then the number of fields
-        # read from the same type of data-set; the reason is that for some
-        # data-sets some fields are set automatically. Optional fields are
-        # calculated automatically and the dset is updated - as dset is actually
-        # an alias (aka pointer), this is reflected at the caller too.
+        """
+        Writes UFF data (UFF data-sets) to the file.  The mode can be
+        either 'add' (default) or 'overwrite'. The dset is a
+        dictionary of keys and corresponding values. Unsupported
+        data-set will be ignored.
+         
+        For each data-set, there are some optional and some required fields at
+        dset dictionary. Also, in general, the sum of the required
+        and the optional fields together can be less then the number of fields
+        read from the same type of data-set; the reason is that for some
+        data-sets some fields are set automatically. Optional fields are
+        calculated automatically and the dset is updated - as dset is actually
+        an alias (aka pointer), this is reflected at the caller too.
+        
+        """
         if mode.lower() == 'overwrite':
             # overwrite mode
             try:
                 fh = open(self._fileName, 'wt')
             except:
-                raise UFFException('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
         elif mode.lower() == 'add':
             # add (append) mode
             try:
                 fh = open(self._fileName, 'at')
             except:
-                raise UFFException('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
         else:
-            raise UFFException('Unknown mode: ' + mode)
+            raise Exception('Unknown mode: ' + mode)
         try:
             # Actual writing
             try:
                 setType = dset['type']
             except:
                 fh.close()
-                raise UFFException('Data-set\'s dictionary is missing the required \'type\' key')
+                raise Exception('Data-set\'s dictionary is missing the required \'type\' key')
             # handle nan or inf
             if 'data' in dset.keys():
                 dset['data'] = np.nan_to_num(dset['data'])

@@ -12,7 +12,7 @@ This is the documentation for pyuff package. Check out the project source_.
     :caption: Contents
 
     showcase
-    code_documentation
+    the_uff_class
     Supported_datasets
 
 

@@ -1,12 +1,12 @@
 import numpy as np
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 
 def _write82(fh, dset):
-    # Writes line data - data-set 82 - to an open file fh
+    """Writes line data - data-set 82 - to an open file fh"""
     try:
         # handle optional fields
         dset = _opt_fields(dset, {'id': 'NONE',
@@ -33,13 +33,13 @@ def _write82(fh, dset):
         #                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:]],'')+'\n' )
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
     except:
-        raise UFFException('Error writing data-set #82')
+        raise Exception('Error writing data-set #82')
 
 
 def _extract82(blockData):
-    # Extract line data - data-set 82.
+    """Extract line data - data-set 82."""
     dset = {'type': 82}
     try:
         splitData = blockData.splitlines(True)
@@ -50,7 +50,7 @@ def _extract82(blockData):
         splitData = splitData.split()
         dset['nodes'] = np.asarray([float(str) for str in splitData])
     except:
-        raise UFFException('Error reading data-set #82')
+        raise Exception('Error reading data-set #82')
     return dset
 
 
@@ -67,9 +67,9 @@ def dict_82(
     R-Record, F-Field
 
     :param trace_num: R1 F1, Trace line number
-    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250)
-    :param color: R1 F3, Color
-    :param id: R2 F1, Identification line
+    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250), ignored
+    :param color: R1 F3, color, optional
+    :param id: R2 F1, identification line, optional
     :param lines: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
     
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included

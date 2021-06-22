@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import UFFException, _opt_fields, _parse_header_line
+from ..tools import _opt_fields, _parse_header_line
 
 def _extract18(blockData):
     '''Extract local CS definitions -- data-set 18.'''
@@ -43,7 +43,7 @@ def _extract18(blockData):
                                         np.array(rec_32[1::3]),
                                         np.array(rec_32[2::3]))).transpose()
     except:
-        raise UFFException('Error reading data-set #18')
+        raise Exception('Error reading data-set #18')
     return dset
 
 

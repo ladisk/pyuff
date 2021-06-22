@@ -1,16 +1,17 @@
 import numpy as np
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write55(fh, dset):
-    # Writes data at nodes - data-set 55 - to an open file fh. Currently:
-    #   - only normal mode (2)
-    #   - complex eigenvalue first order (displacement) (3)
-    #   - frequency response and (5)
-    #   - complex eigenvalue second order (velocity) (7)
-    # analyses are supported.
+    """
+    Writes data at nodes - data-set 55 - to an open file fh. Currently:
+       - only normal mode (2)
+       - complex eigenvalue first order (displacement) (3)
+       - frequency response and (5)
+       - complex eigenvalue second order (velocity) (7) analyses are supported.
+    """
     try:
         # Handle general optional fields
         dset = _opt_fields(dset,
@@ -42,7 +43,7 @@ def _write55(fh, dset):
             pass
         else:
             # unsupported analysis type
-            raise UFFException('Error writing data-set #55: unsupported analysis type')
+            raise ValueError('Error writing data-set #55: unsupported analysis type')
         # Some additional checking
         dataType = 2
         #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
@@ -80,7 +81,7 @@ def _write55(fh, dset):
                 dset['eig'].real, dset['eig'].imag, dset['modal_a'].real, dset['modal_a'].imag,
                 dset['modal_b'].real, dset['modal_b'].imag))
         else:
-            raise UFFException('Unsupported analysis type')
+            raise ValueError('Unsupported analysis type')
         n = len(dset['node_nums'])
         if dataType == 2:
             # Real data
@@ -102,21 +103,22 @@ def _write55(fh, dset):
                             (dset['r1'][k].real, dset['r1'][k].imag, dset['r2'][k].real, dset['r2'][k].imag,
                             dset['r3'][k].real, dset['r3'][k].imag))
         else:
-            raise UFFException('Unsupported data type')
+            raise ValueError('Unsupported data type')
         fh.write('%6i\n' % -1)
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')
     except:
-        raise UFFException('Error writing data-set #55')
+        raise Exception('Error writing data-set #55')
 
 
 def _extract55(blockData):
-    # Extract data at nodes - data-set 55. Currently:
-    #   - only normal mode (2)
-    #   - complex eigenvalue first order (displacement) (3)
-    #   - frequency response and (5)
-    #   - complex eigenvalue second order (velocity) (7)
-    # analyses are supported.
+    """
+    Extract data at nodes - data-set 55. Currently:
+       - only normal mode (2)
+       - complex eigenvalue first order (displacement) (3)
+       - frequency response and (5)
+       - complex eigenvalue second order (velocity) (7) analyses are supported.
+    """
     dset = {'type': 55}
     try:
         splitData = blockData.splitlines(True)
@@ -181,11 +183,11 @@ def _extract55(blockData):
                 dset['r2'] = values[3:-3:7] + 1.j * values[4:-2:7]
                 dset['r3'] = values[5:-1:7] + 1.j * values[6::7]
             else:
-                raise UFFException('Cannot handle 6 points per node and complex data when reading data-set #55')
+                raise Exception('Cannot handle 6 points per node and complex data when reading data-set #55')
         else:
-            raise UFFException('Error reading data-set #55')
+            raise Exception('Error reading data-set #55')
     except:
-        raise UFFException('Error reading data-set #55')
+        raise Exception('Error reading data-set #55')
     del values
     return dset
 
@@ -225,18 +227,18 @@ def dict_55(
 
     R-Record, F-Field
 
-    :param id1: R1 F1, ID Line 1 
-    :param id2: R2 F1, ID Line 2
-    :param id3: R3 F1, ID Line 3
-    :param id4: R4 F1, ID Line 4
-    :param id5: R5 F1, ID Line 5
+    :param id1: R1 F1, ID Line 1, optional
+    :param id2: R2 F1, ID Line 2, optional
+    :param id3: R3 F1, ID Line 3, optional
+    :param id4: R4 F1, ID Line 4, optional
+    :param id5: R5 F1, ID Line 5, optional
 
-    :param model_type: R6 F1, Model type
+    :param model_type: R6 F1, Model type, optional
     :param analysis_type: R6 F2, Analysis type; currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported
     :param data_ch: R6 F3, Data characteristic number
     :param spec_data_type: R6 F4, Specific data type
-    :param data_type: R6 F5,  Data type
-    :param n_data_per_node: R6 F6, Number of data values per node
+    :param data_type: R6 F5,  Data type, ignored
+    :param n_data_per_node: R6 F6, Number of data values per node, ignored
 
     :param r1: Response array for DOF 1,
     :param r2: Response array for DOF 2,
@@ -247,12 +249,12 @@ def dict_55(
     :param load_case: R7 F3, Load case number 
     :param mode_n: R7 F4, Mode number
     :param freq: R8 F1, Frequency (Hertz) 
-    :param modal_m: R8 F2, Modal mass
-    :param modal_damp_vis: R8 F3, Modal viscous damping ratio
-    :param modal_damp_his: R8 F4, Modal hysteric damping ratio
+    :param modal_m: R8 F2, Modal mass, optional
+    :param modal_damp_vis: R8 F3, Modal viscous damping ratio, optional
+    :param modal_damp_his: R8 F4, Modal hysteric damping ratio, optional
     :param eig: R8 F1: Real part Eigenvalue, R8 F2: Imaginary part Eigenvalue
-    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A
-    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B
+    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A, optional
+    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B, optional
     :param freq_step_n: R7 F4, Frequency step number
     :param mode_nums: R9 F1 Node number
 

@@ -3,14 +3,14 @@ import struct
 import sys
 import os
 
-from ..tools import UFFException, _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
 def _write58(fh, dset, mode='add', _fileName=None):
-    # Writes function at nodal DOF - data-set 58 - to an open file fh.
+    """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         if not (dset['func_type'] in [1, 2, 3, 4, 6]):
-            raise UFFException('Unsupported function type')
+            raise ValueError('Unsupported function type')
         # handle optional fields - only those that are not calculated
         # automatically
         dict = {'units_description': '',
@@ -186,13 +186,13 @@ def _write58(fh, dset, mode='add', _fileName=None):
         fh.write('%6i\n' % -1)
         del data
     except KeyError as msg:
-        raise UFFException('The required key \'' + msg.args[0] + '\' not present when writing data-set #58')
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #58')
     except:
-        raise UFFException('Error writing data-set #58')
+        raise Exception('Error writing data-set #58')
 
 
 def _extract58(blockData):
-    # Extract function at nodal DOF - data-set 58.
+    """Extract function at nodal DOF - data-set 58."""
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
@@ -270,7 +270,7 @@ def _extract58(blockData):
                 for line in split_data:  # 1E13.5,2E20.12
                     values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
             else:
-                raise UFFException('Error reading data-set #58b; not proper data case.')
+                raise Exception('Error reading data-set #58b; not proper data case.')
 
             values = np.asarray(values)
             # values = np.asarray([float(str) for str in splitData],'d')
@@ -302,7 +302,7 @@ def _extract58(blockData):
                 dset['data'] = values[0:-1:2] + 1.j * values[1::2]
         del values
     except:
-        raise UFFException('Error reading data-set #58b')
+        raise Exception('Error reading data-set #58b')
     return dset
 
 
@@ -372,66 +372,66 @@ def dict_58(
 
     R-Record, F-Field
 
-    :param binary: 1 for binary, 0 for ascii,
-    :param id1: R1 F1, ID Line 1
-    :param id2: R2 F1, ID Line 2
-    :param id3: R3 F1, ID Line 3
-    :param id4: R4 F1, ID Line 4
-    :param id5: R5 F1, ID Line 5
+    :param binary: 1 for binary, 0 for ascii, optional
+    :param id1: R1 F1, ID Line 1, optional
+    :param id2: R2 F1, ID Line 2, optional
+    :param id3: R3 F1, ID Line 3, optional
+    :param id4: R4 F1, ID Line 4, optional
+    :param id5: R5 F1, ID Line 5, optional
 
-    :param func_type: R6 F1, Funtction type
-    :param ver_num: R6 F3, Version number
-    :param load_case_id: R6 F4, Load case identification number
-    :param rsp_ent_name: R6 F5, Response entity name
+    :param func_type: R6 F1, Function type
+    :param ver_num: R6 F3, Version number, optional
+    :param load_case_id: R6 F4, Load case identification number, optional
+    :param rsp_ent_name: R6 F5, Response entity name, optional
     :param rsp_node: R6 F6, Response node
     :param rsp_dir: R6 F7, Responde direction
-    :param ref_ent_name: R6 F8, Reference entity name
+    :param ref_ent_name: R6 F8, Reference entity name, optional
     :param ref_node: R6 F9, Reference node
     :param ref_dir: R6 F10, Reference direction
 
-    :param ord_data_type: R7 F1, Ordinate data type
-    :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa
-    :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even)
-    :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven)
-    :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven)
-    :param z_axis_value: R7 F6, Z-axis value (0.0 if unused)
+    :param ord_data_type: R7 F1, Ordinate data type, ignored
+    :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa, ignored
+    :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even), ignored
+    :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven), ignored
+    :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven), ignored
+    :param z_axis_value: R7 F6, Z-axis value (0.0 if unused), optional
 
-    :param abscissa_spec_data_type: R8 F1, Abscissa specific data type
-    :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent
-    :param abscissa_force_unit_exp: R8 F3, Abscissa force units exponent
-    :param abscissa_temp_unit_exp: R8 F4, Abscissa temperature units exponent
+    :param abscissa_spec_data_type: R8 F1, Abscissa specific data type, optional
+    :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent, optional
+    :param abscissa_force_unit_exp: R8 F3, Abscissa force units exponent, optional
+    :param abscissa_temp_unit_exp: R8 F4, Abscissa temperature units exponent, optional
     
-    :param abscissa_axis_units_lab: R8 F6, Abscissa units label ("None" if not used)
+    :param abscissa_axis_units_lab: R8 F6, Abscissa units label, optional
 
-    :param ordinate_spec_data_type: R9 F1, Ordinate specific data type
-    :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent
-    :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent
-    :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent
+    :param ordinate_spec_data_type: R9 F1, Ordinate specific data type, optional
+    :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent, optional
+    :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent, optional
+    :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent, optional
     
-    :param ordinate_axis_units_lab: R9 F6, Ordinate units label ("None" if not used)
+    :param ordinate_axis_units_lab: R9 F6, Ordinate units label, optional
 
-    :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type
-    :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent
-    :param orddenom_force_unit_exp: R10 F3, Ordinate Denominator force units exponent
-    :param orddenom_temp_unit_exp: R10 F4, Ordinate Denominator temperature units exponent
+    :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type, optional
+    :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent, optional
+    :param orddenom_force_unit_exp: R10 F3, Ordinate Denominator force units exponent, optional
+    :param orddenom_temp_unit_exp: R10 F4, Ordinate Denominator temperature units exponent, optional
     
-    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label ("None" if not used)
+    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label, optional
 
-    :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type
-    :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent
-    :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent
-    :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent
+    :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type, optional
+    :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent, optional
+    :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent, optional
+    :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent, optional
     
-    :param z_axis_axis_units_lab: R11 F6, Z-axis units label ("None" if not used)
+    :param z_axis_axis_units_lab: R11 F6, Z-axis units label, optional
 
     :param data: R12 F1, Data values
 
     :param x: Abscissa array
-    :param spec_data_type: Specific data type
-    :param byte_ordering: R1 F3, Byte ordering (only for binary)
-    :param fp_format: R1 F4 Floating-point format (only for binary)
-    :param n_ascii_lines: R1 F5, Number of ascii lines (only for binary)
-    :param n_bytes: R1 F6, Number of bytes (only for binary)
+    :param spec_data_type: Specific data type, optional
+    :param byte_ordering: R1 F3, Byte ordering (only for binary), ignored
+    :param fp_format: R1 F4 Floating-point format (only for binary), ignored
+    :param n_ascii_lines: R1 F5, Number of ascii lines (only for binary), ignored
+    :param n_bytes: R1 F6, Number of bytes (only for binary), ignored
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
