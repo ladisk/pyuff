@@ -9,6 +9,11 @@ Read from and write of data-set types **15, 55, 58, 58b, 82, 151, 164, 2411, 241
 
 Check out the `documentation <https://pyuff.readthedocs.io/en/latest/index.html>`_.
 
+To install the package, run:
+
+.. code:: python
+
+   pip install pyuff
 
 Showcase
 ---------
