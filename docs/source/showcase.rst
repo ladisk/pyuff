@@ -1,7 +1,7 @@
 Showcase
-==================
+=========
 
-If required, install pyuff and matplotlib
+If required, install pyuff and matplotlib.
 
 .. code:: python
     #!!pip install pyuff
@@ -95,7 +95,7 @@ In the next step we create a UFF file where we add dataset 58 for measurement co
     uffwrite = pyuff.UFF('./data/measurement.uff')
     uffwrite.write_sets(data,'add')
 
-Or we can use support function ``dict_58`` to prepare the dictionary for creating UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
+Or we can use support function ``dict_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
 
 .. code:: python
 

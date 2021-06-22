@@ -79,9 +79,6 @@ def dict_2412(
     :param color: R1 F5, Color, optional
     :param num_nodes: R1 F6, Number of nodes on element
     :param nodes_nums: R2 F1, Node labels defining element
-
-    **R3, R4?**
-
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
     
