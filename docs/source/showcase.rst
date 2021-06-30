@@ -4,10 +4,12 @@ Showcase
 If required, install pyuff and matplotlib.
 
 .. code:: python
+
     #!!pip install pyuff
     #!!pip install matplotlib
 
 .. code:: python
+
     import numpy as np
     import matplotlib.pyplot as plt
     %matplotlib inline
@@ -95,11 +97,11 @@ In the next step we create a UFF file where we add dataset 58 for measurement co
     uffwrite = pyuff.UFF('./data/measurement.uff')
     uffwrite.write_sets(data,'add')
 
-Or we can use support function ``dict_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
+Or we can use support function ``prepare_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
 
 .. code:: python
 
-    pyuff.dict_58(func_type=4, 
+    pyuff.prepare_58(func_type=4, 
                 rsp_node=response_node, 
                 rsp_dir=response_direction, 
                 ref_dir=reference_direction

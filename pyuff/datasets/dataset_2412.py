@@ -28,7 +28,7 @@ def _write2412(fh, dset):
         raise Exception('Error writing data-set #2412')
 
 
-def _extract2412(blockData):
+def _extract2412(block_data):
     """Extract element data - data-set 2412."""
     dset = {'type': 2412}
     # Define dictionary of possible elements types
@@ -36,12 +36,12 @@ def _extract2412(blockData):
     elt_type_dict = {'3': 'triangle', '4': 'quad'}
     # Read data
     try:
-        splitData = blockData.splitlines()
-        splitData = [a.split() for a in splitData][2:]
+        split_data = block_data.splitlines()
+        split_data = [a.split() for a in split_data][2:]
         # Extract Record 1
-        rec1 = np.array(splitData[::2], dtype=int) 
+        rec1 = np.array(split_data[::2], dtype=int) 
         # Extract Record 2
-        rec2 = splitData[1::2] 
+        rec2 = split_data[1::2] 
         # Look for the different types of elements stored in the dataset
         elts_types = list(set(rec1[:,5]))
         for elt_type in elts_types:
@@ -59,15 +59,15 @@ def _extract2412(blockData):
     return dset
 
 
-def dict_2412(
-    element_nums=None,
-    fe_descriptor=None,
-    phys_table=None,
-    mat_table=None,
-    color=None,
-    num_nodes=None,
-    nodes_nums=None,
-    return_full_dict=False):
+def prepare_2412(
+        element_nums=None,
+        fe_descriptor=None,
+        phys_table=None,
+        mat_table=None,
+        color=None,
+        num_nodes=None,
+        nodes_nums=None,
+        return_full_dict=False):
     """Name: Elements
 
     R-Record, F-Field
@@ -82,14 +82,16 @@ def dict_2412(
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
     
-    dataset={'type': 2412,
-            'element_nums': element_nums,
-            'fe_descriptor': fe_descriptor,
-            'phys_table': phys_table,
-            'mat_table': mat_table,
-            'color': color,
-            'num_nodes': num_nodes,
-            'nodes_nums': nodes_nums}
+    dataset={
+        'type': 2412,
+        'element_nums': element_nums,
+        'fe_descriptor': fe_descriptor,
+        'phys_table': phys_table,
+        'mat_table': mat_table,
+        'color': color,
+        'num_nodes': num_nodes,
+        'nodes_nums': nodes_nums
+        }
     
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)

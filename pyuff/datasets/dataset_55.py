@@ -45,16 +45,16 @@ def _write55(fh, dset):
             # unsupported analysis type
             raise ValueError('Error writing data-set #55: unsupported analysis type')
         # Some additional checking
-        dataType = 2
+        data_type = 2
         #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
         if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
             nDataPerNode = 6
         else:
             nDataPerNode = 3
         if np.iscomplexobj(dset['r1']):
-            dataType = 5
+            data_type = 5
         else:
-            dataType = 2
+            data_type = 2
         # Write strings to the file
         fh.write('%6i\n%6i%74s\n' % (-1, 55, ' '))
         fh.write('%-80s\n' % dset['id1'])
@@ -64,7 +64,7 @@ def _write55(fh, dset):
         fh.write('%-80s\n' % dset['id5'])
         fh.write('%10i%10i%10i%10i%10i%10i\n' %
                     (dset['model_type'], dset['analysis_type'], dset['data_ch'],
-                    dset['spec_data_type'], dataType, nDataPerNode))
+                    dset['spec_data_type'], data_type, nDataPerNode))
         if dset['analysis_type'] == 2:
             # Normal modes
             fh.write('%10i%10i%10i%10i\n' % (2, 4, dset['load_case'], dset['mode_n']))
@@ -83,7 +83,7 @@ def _write55(fh, dset):
         else:
             raise ValueError('Unsupported analysis type')
         n = len(dset['node_nums'])
-        if dataType == 2:
+        if data_type == 2:
             # Real data
             if nDataPerNode == 3:
                 for k in range(0, n):
@@ -95,7 +95,7 @@ def _write55(fh, dset):
                     fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
                                 (dset['r1'][k], dset['r2'][k], dset['r3'][k], dset['r4'][k], dset['r5'][k],
                                 dset['r6'][k]))
-        elif dataType == 5:
+        elif data_type == 5:
             # Complex data; n_data_per_node is assumed being 3
             for k in range(0, n):
                 fh.write('%10i\n' % dset['node_nums'][k])
@@ -111,7 +111,7 @@ def _write55(fh, dset):
         raise Exception('Error writing data-set #55')
 
 
-def _extract55(blockData):
+def _extract55(block_data):
     """
     Extract data at nodes - data-set 55. Currently:
        - only normal mode (2)
@@ -121,28 +121,28 @@ def _extract55(blockData):
     """
     dset = {'type': 55}
     try:
-        splitData = blockData.splitlines(True)
-        dset.update(_parse_header_line(splitData[2], 1, [80], [1], ['id1']))
-        dset.update(_parse_header_line(splitData[3], 1, [80], [1], ['id2']))
-        dset.update(_parse_header_line(splitData[4], 1, [80], [1], ['id3']))
-        dset.update(_parse_header_line(splitData[5], 1, [80], [1], ['id4']))
-        dset.update(_parse_header_line(splitData[6], 1, [80], [1], ['id5']))
-        dset.update(_parse_header_line(splitData[7], 6, [10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2],
+        split_data = block_data.splitlines(True)
+        dset.update(_parse_header_line(split_data[2], 1, [80], [1], ['id1']))
+        dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['id2']))
+        dset.update(_parse_header_line(split_data[4], 1, [80], [1], ['id3']))
+        dset.update(_parse_header_line(split_data[5], 1, [80], [1], ['id4']))
+        dset.update(_parse_header_line(split_data[6], 1, [80], [1], ['id5']))
+        dset.update(_parse_header_line(split_data[7], 6, [10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2],
                                             ['model_type', 'analysis_type', 'data_ch', 'spec_data_type',
                                                 'data_type', 'n_data_per_node']))
         if dset['analysis_type'] == 2:
             # normal mode
-            dset.update(_parse_header_line(splitData[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
+            dset.update(_parse_header_line(split_data[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
                                                 [-1, -1, 2, 2, -1, -1, -1, -1],
                                                 ['', '', 'load_case', 'mode_n', '', '', '', '']))
-            dset.update(_parse_header_line(splitData[9], 4, [13, 13, 13, 13, 13, 13], [3, 3, 3, 3, -1, -1],
+            dset.update(_parse_header_line(split_data[9], 4, [13, 13, 13, 13, 13, 13], [3, 3, 3, 3, -1, -1],
                                                 ['freq', 'modal_m', 'modal_damp_vis', 'modal_damp_his', '', '']))
         elif (dset['analysis_type'] == 3) or (dset['analysis_type'] == 7):
             # complex eigenvalue
-            dset.update(_parse_header_line(splitData[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
+            dset.update(_parse_header_line(split_data[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
                                                 [-1, -1, 2, 2, -1, -1, -1, -1],
                                                 ['', '', 'load_case', 'mode_n', '', '', '', '']))
-            dset.update(_parse_header_line(splitData[9], 4, [13, 13, 13, 13, 13, 13], [3, 3, 3, 3, 3, 3],
+            dset.update(_parse_header_line(split_data[9], 4, [13, 13, 13, 13, 13, 13], [3, 3, 3, 3, 3, 3],
                                                 ['eig_r', 'eig_i', 'modal_a_r', 'modal_a_i', 'modal_b_r',
                                                     'modal_b_i']))
             dset.update({'modal_a': dset['modal_a_r'] + 1.j * dset['modal_a_i']})
@@ -152,14 +152,14 @@ def _extract55(blockData):
             del dset['eig_r'], dset['eig_i']
         elif dset['analysis_type'] == 5:
             # frequency response
-            dset.update(_parse_header_line(splitData[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
+            dset.update(_parse_header_line(split_data[8], 4, [10, 10, 10, 10, 10, 10, 10, 10],
                                                 [-1, -1, 2, 2, -1, -1, -1, -1],
                                                 ['', '', 'load_case', 'freq_step_n', '', '', '', '']))
-            dset.update(_parse_header_line(splitData[9], 1, [13, 13, 13, 13, 13, 13], [3, -1, -1, -1, -1, -1],
+            dset.update(_parse_header_line(split_data[9], 1, [13, 13, 13, 13, 13, 13], [3, -1, -1, -1, -1, -1],
                                                 ['freq', '', '', '', '', '']))
             # Body
-        splitData = ''.join(splitData[10:])
-        values = np.asarray([float(str) for str in splitData.split()], 'd')
+        split_data = ''.join(split_data[10:])
+        values = np.asarray([float(str) for str in split_data.split()], 'd')
         if dset['data_type'] == 2:
             # real data
             if dset['n_data_per_node'] == 3:
@@ -192,36 +192,36 @@ def _extract55(blockData):
     return dset
 
 
-def dict_55(
-    id1=None,
-    id2=None,
-    id3=None,
-    id4=None,
-    id5=None,
-    model_type=None,
-    analysis_type=None,
-    data_ch=None,
-    spec_data_type=None,
-    data_type=None,
-    n_data_per_node=None,
-    r1=None,
-    r2=None,
-    r3=None,
-    r4=None,
-    r5=None,
-    r6=None,
-    load_case=None,
-    mode_n=None,
-    freq=None,
-    modal_m=None,
-    modal_damp_vis=None,
-    modal_damp_his=None,
-    eig=None,
-    modal_a=None,
-    modal_b=None,
-    freq_step_n=None,
-    node_nums=None,
-    return_full_dict=False):
+def prepare_55(
+        id1=None,
+        id2=None,
+        id3=None,
+        id4=None,
+        id5=None,
+        model_type=None,
+        analysis_type=None,
+        data_ch=None,
+        spec_data_type=None,
+        data_type=None,
+        n_data_per_node=None,
+        r1=None,
+        r2=None,
+        r3=None,
+        r4=None,
+        r5=None,
+        r6=None,
+        load_case=None,
+        mode_n=None,
+        freq=None,
+        modal_m=None,
+        modal_damp_vis=None,
+        modal_damp_his=None,
+        eig=None,
+        modal_a=None,
+        modal_b=None,
+        freq_step_n=None,
+        node_nums=None,
+        return_full_dict=False):
     """
     Name:   Data at Nodes
 
@@ -259,40 +259,74 @@ def dict_55(
     :param mode_nums: R9 F1 Node number
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_55**
+
+    >>> uff_datasets = []
+    >>> modes = [1, 2, 3]
+    >>> node_nums = [1, 2, 3, 4]
+    >>> freqs = [10.0, 12.0, 13.0]
+    >>> for i, b in enumerate(modes):
+    >>>     mode_shape = np.random.normal(size=len(node_nums))
+    >>>     name = 'TestCase'
+    >>>     data=pyuff.prepare_55(
+    >>>         model_type = 1,
+    >>>         id1 = 'NONE',
+    >>>         id2 = 'NONE',
+    >>>         id3 = 'NONE',
+    >>>         id4 = 'NONE',
+    >>>         id5 = 'NONE',
+    >>>         analysis_type = 2,
+    >>>         data_ch = 2,
+    >>>         spec_data_type = 8,
+    >>>         data_type = 2,
+    >>>         r1 = mode_shape,
+    >>>         r2 = mode_shape,
+    >>>         r3 = mode_shape,
+    >>>         n_data_per_node = 3,
+    >>>         node_nums = [1, 2, 3, 4],
+    >>>         load_case = 1,
+    >>>         mode_n = i + 1,
+    >>>         modal_m = 0,
+    >>>         freq = freqs[i],
+    >>>         modal_damp_vis = 0,
+    >>>         modal_damp_his = 0)
+    >>>     uff_datasets.append(data.copy())
+    >>> uff_datasets
     """
 
 
     dataset = {
-            'type': 55,
-            'id1': id1,
-            'id2': id2,
-            'id3': id3,
-            'id4': id4,
-            'id5': id5,
-            'model_type':model_type,
-            'analysis_type': analysis_type,
-            'data_ch': data_ch,
-            'spec_data_type': spec_data_type,
-            'data_type': data_type,
-            'n_data_per_node': n_data_per_node,
-            'r1': r1,
-            'r2': r2,
-            'r3': r3,
-            'r4': r4,
-            'r5': r5,
-            'r6': r6,
-            'load_case': load_case,
-            'mode_n': mode_n,
-            'freq': freq,
-            'modal_m': modal_m,
-            'modal_damp_vis': modal_damp_vis,
-            'modal_damp_his': modal_damp_his,
-            'eig': eig,
-            'modal_a': modal_a,
-            'modal_b': modal_b,
-            'freq_step_n': freq_step_n,
-            'node_nums': node_nums
-            }
+        'type': 55,
+        'id1': id1,
+        'id2': id2,
+        'id3': id3,
+        'id4': id4,
+        'id5': id5,
+        'model_type':model_type,
+        'analysis_type': analysis_type,
+        'data_ch': data_ch,
+        'spec_data_type': spec_data_type,
+        'data_type': data_type,
+        'n_data_per_node': n_data_per_node,
+        'r1': r1,
+        'r2': r2,
+        'r3': r3,
+        'r4': r4,
+        'r5': r5,
+        'r6': r6,
+        'load_case': load_case,
+        'mode_n': mode_n,
+        'freq': freq,
+        'modal_m': modal_m,
+        'modal_damp_vis': modal_damp_vis,
+        'modal_damp_his': modal_damp_his,
+        'eig': eig,
+        'modal_a': modal_a,
+        'modal_b': modal_b,
+        'freq_step_n': freq_step_n,
+        'node_nums': node_nums
+        }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)
@@ -300,45 +334,3 @@ def dict_55(
     return dataset
 
 
-def prepare_test_55(save_to_file=''):
-    if save_to_file:
-        if os.path.exists(save_to_file):
-            os.remove(save_to_file)
-    uff_datasets = []
-    modes = [1, 2, 3]
-    node_nums = [1, 2, 3, 4]
-    freqs = [10.0, 12.0, 13.0]
-    for i, b in enumerate(modes):
-        mode_shape = np.random.normal(size=len(node_nums))
-        name = 'TestCase'
-        data = {
-            'type': 55,
-            'model_type': 1,
-            'id1': 'NONE',
-            'id2': 'NONE',
-            'id3': 'NONE',
-            'id4': 'NONE',
-            'id5': 'NONE',
-            'analysis_type': 2,
-            'data_ch': 2,
-            'spec_data_type': 8,
-            'data_type': 2,
-            'data_ch': 2,
-            'r1': mode_shape,
-            'r2': mode_shape,
-            'r3': mode_shape,
-            'n_data_per_node': 3,
-            'node_nums': [1, 2, 3, 4],
-            'load_case': 1,
-            'mode_n': i + 1,
-            'modal_m': 0,
-            'freq': freqs[i],
-            'modal_damp_vis': 0,
-            'modal_damp_his': 0,
-        }
-
-        uff_datasets.append(data.copy())
-        if save_to_file:
-            uffwrite = pyuff.UFF(save_to_file)
-            uffwrite._write_set(data, 'add')
-    return uff_datasets

@@ -22,15 +22,15 @@ def _write2411(fh, dset):
         raise Exception('Error writing data-set #2411')
 
 
-def _extract2411(blockData):
+def _extract2411(block_data):
     """Extract coordinate data - data-set 15."""
     dset = {'type': 15}
     try:
         # Body
-        splitData = blockData.splitlines(True)  # Keep the line breaks!
-        splitData = ''.join(splitData[2:])  # ..as they are again needed
-        splitData = splitData.split()
-        values = np.asarray([float(str) for str in splitData], 'd')
+        split_data = block_data.splitlines(True)  # Keep the line breaks!
+        split_data = ''.join(split_data[2:])  # ..as they are again needed
+        split_data = split_data.split()
+        values = np.asarray([float(str) for str in split_data], 'd')
         dset['node_nums'] = values[::7].copy()
         dset['def_cs'] = values[1::7].copy()
         dset['disp_cs'] = values[2::7].copy()
@@ -43,15 +43,15 @@ def _extract2411(blockData):
     return dset
 
 
-def dict_2411(
-    node_nums=None,
-    def_cs=None,
-    disp_cs=None,
-    color=None,
-    x=None,
-    y=None,
-    z=None,
-    return_full_dict=False):
+def prepare_2411(
+        node_nums=None,
+        def_cs=None,
+        disp_cs=None,
+        color=None,
+        x=None,
+        y=None,
+        z=None,
+        return_full_dict=False):
     """Name: Nodes - Double Precision
 
     R-Record, F-Field
@@ -68,14 +68,16 @@ def dict_2411(
     Records 1 and 2 are repeated for each node in the model.
     """
 
-    dataset={'type': 2411,
-            'node_nums': node_nums,
-            'def_cs': def_cs,
-            'disp_cs': disp_cs,
-            'color': color,
-            'x':  x,
-            'y': y,
-            'z': z}
+    dataset={
+        'type': 2411,
+        'node_nums': node_nums,
+        'def_cs': def_cs,
+        'disp_cs': disp_cs,
+        'color': color,
+        'x':  x,
+        'y': y,
+        'z': z
+        }
     
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)

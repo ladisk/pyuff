@@ -112,12 +112,12 @@ class UFF:
         the file is refreshed automatically (when needed).
         """
         # Some "private" members
-        self._fileName = fileName
-        self._blockInd = []  # an array of block indices: start-end pairs in rows
+        self._filename = fileName
+        self._block_ind = []  # an array of block indices: start-end pairs in rows
         self._refreshed = False
-        self._nSets = 0  # number of sets found in file
-        self._setTypes = np.array(())  # list of set-type numbers
-        self._setFormats = np.array(())  # list of set-format numbers (0=ascii,1=binary)
+        self._n_sets = 0  # number of sets found in file
+        self._set_types = np.array(())  # list of set-type numbers
+        self._set_formats = np.array(())  # list of set-format numbers (0=ascii,1=binary)
         # Refresh
         self.refresh()
 
@@ -130,7 +130,7 @@ class UFF:
         Returns the number of valid sets found in the file."""
         if not self._refreshed:
             self.refresh()
-        return self._nSets
+        return self._n_sets
 
     def get_set_types(self):
         """
@@ -140,17 +140,17 @@ class UFF:
         """
         if not self._refreshed:
             self.refresh()
-        return self._setTypes
+        return self._set_types
 
     def get_set_formats(self):
         """Returns an array of data-set formats: 0=ascii, 1=binary."""
         if not self._refreshed:
             self.refresh()
-        return self._setFormats
+        return self._set_formats
 
     def get_file_name(self):
         """Returns the file name (as a string) associated with the uff object."""
-        return self._fileName
+        return self._filename
 
     def file_exists(self):
         """
@@ -158,7 +158,7 @@ class UFF:
         not exist, invoking one of the read methods would raise the Exception
         exception.
         """
-        return os.path.exists(self._fileName)
+        return os.path.exists(self._filename)
 
     def get_status(self):
         """
@@ -178,10 +178,10 @@ class UFF:
         if not self.file_exists():
             return False  # cannot read the file if it does not exist
         try:
-            fh = open(self._fileName, 'rb')
-        #             fh = open(self._fileName, 'rt')
+            fh = open(self._filename, 'rb')
+        #             fh = open(self._filename, 'rt')
         except:
-            raise Exception('Cannot access the file %s' % self._fileName)
+            raise Exception('Cannot access the file %s' % self._filename)
         else:
             try:
                 # Parses the entire file for '    -1' tags and extracts
@@ -189,50 +189,50 @@ class UFF:
                 data = fh.read()
                 dataLen = len(data)
                 ind = -1
-                blockInd = []
+                block_ind = []
                 while True:
                     ind = data.find(b'    -1', ind + 1)
                     if ind == -1:
                         break
-                    blockInd.append(ind)
-                blockInd = np.asarray(blockInd, dtype='int64')
+                    block_ind.append(ind)
+                block_ind = np.asarray(block_ind, dtype='int64')
 
                 # Constructs block indices of start and end values; each pair
                 # points to start and end offset of the data-set (block) data,
                 # but, the start '    -1' tag is included while the end one is
                 # excluded.
-                nBlocks = int(np.floor(len(blockInd) / 2.0))
-                if nBlocks == 0:
+                n_blocks = int(np.floor(len(block_ind) / 2.0))
+                if n_blocks == 0:
                     # No valid blocks found but the file is still considered
                     # being refreshed
                     fh.close()
                     self._refreshed = True
                     return self._refreshed
-                self._blockInd = np.zeros((nBlocks, 2), dtype='int64')
-                self._blockInd[:, 0] = blockInd[:-1:2].copy()
-                self._blockInd[:, 1] = blockInd[1::2].copy() - 1
+                self._block_ind = np.zeros((n_blocks, 2), dtype='int64')
+                self._block_ind[:, 0] = block_ind[:-1:2].copy()
+                self._block_ind[:, 1] = block_ind[1::2].copy() - 1
 
                 # Go through all the data-sets (blocks) and extract data-set
                 # type and the property whether the data-set is in binary
                 # or ascii format
-                self._nSets = nBlocks
-                self._setTypes = np.zeros(nBlocks).astype(int)
-                self._setFormats = np.zeros(nBlocks)
-                for ii in range(0, self._nSets):
-                    si = self._blockInd[ii, 0]
-                    ei = self._blockInd[ii, 1]
+                self._n_sets = n_blocks
+                self._set_types = np.zeros(n_blocks).astype(int)
+                self._set_formats = np.zeros(n_blocks)
+                for ii in range(0, self._n_sets):
+                    si = self._block_ind[ii, 0]
+                    ei = self._block_ind[ii, 1]
                     try:
-                        blockData = data[si:ei + 1].splitlines()
-                        self._setTypes[ii] = int(blockData[1][0:6])
-                        if blockData[1][6].lower() == 'b':
-                            self._setFormats[ii] = 1
+                        block_data = data[si:ei + 1].splitlines()
+                        self._set_types[ii] = int(block_data[1][0:6])
+                        if block_data[1][6].lower() == 'b':
+                            self._set_formats[ii] = 1
                     except:
                         # Some non-valid blocks found; ignore the exception
                         pass
-                del blockInd
+                del block_ind
             except:
                 fh.close()
-                raise Exception('Error refreshing UFF file: ' + self._fileName)
+                raise Exception('Error refreshing UFF file: ' + self._filename)
             else:
                 self._refreshed = True
                 fh.close()
@@ -252,19 +252,19 @@ class UFF:
         """
         dset = []
         if setn is None:
-            readRange = range(0, self._nSets)
+            read_range = range(0, self._n_sets)
         else:
             if (not type(setn).__name__ == 'list'):
-                readRange = [setn]
+                read_range = [setn]
             else:
-                readRange = setn
+                read_range = setn
         if not self.file_exists():
-            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._filename)
         if not self._refreshed:
             if not self._refresh():
-                raise Exception('Cannot read from the file: ' + self._fileName)
+                raise Exception('Cannot read from the file: ' + self._filename)
         try:
-            for ii in readRange:
+            for ii in read_range:
                 dset.append(self._read_set(ii))
         except Exception as msg:
             raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
@@ -292,18 +292,18 @@ class UFF:
         """
         if (not type(dsets).__name__ == 'list'):
             dsets = [dsets]
-        nSets = len(dsets)
-        if nSets < 1:
+        n_sets = len(dsets)
+        if n_sets < 1:
             raise Exception('Nothing to write')
         if mode.lower() == 'overwrite':
             # overwrite mode; first set is written in the overwrite mode, others
             # in add mode
             self._write_set(dsets[0], 'overwrite')
-            for ii in range(1, nSets):
+            for ii in range(1, n_sets):
                 self._write_set(dsets[ii], 'add')
         elif mode.lower() == 'add':
             # add mode; all the sets are written in the add mode
-            for ii in range(0, nSets):
+            for ii in range(0, n_sets):
                 self._write_set(dsets[ii], 'add')
         else:
             raise Exception('Unknown mode: ' + mode)
@@ -311,7 +311,7 @@ class UFF:
     def _read_set(self, n):
         """
         Reads n-th set from UFF file. 
-        n can be an integer between 0 and nSets-1. 
+        n can be an integer between 0 and n_sets-1. 
         User must be sure that, since the last reading/writing/refreshing, 
         the data has not changed by some other means than through the
         UFF object. The method returns dset dictionary.
@@ -319,57 +319,57 @@ class UFF:
         
         dset = {}
         if not self.file_exists():
-            raise Exception('Cannot read from a non-existing file: ' + self._fileName)
+            raise Exception('Cannot read from a non-existing file: ' + self._filename)
         if not self._refreshed:
             if not self.refresh():
-                raise Exception('Cannot read from the file: ' + self._fileName + '. The file cannot be refreshed.')
-        if (n > self._nSets - 1) or (n < 0):
+                raise Exception('Cannot read from the file: ' + self._filename + '. The file cannot be refreshed.')
+        if (n > self._n_sets - 1) or (n < 0):
             raise Exception('Cannot read data-set: ' + str(int(n)) + \
                                '. Data-set number to high or to low.')
         # Read n-th data-set data (one block)
         try:
-            fh = open(self._fileName, 'rb')
+            fh = open(self._filename, 'rb')
         except:
-            raise Exception('Cannot access the file: ' + self._fileName + ' to read from.')
+            raise Exception('Cannot access the file: ' + self._filename + ' to read from.')
         else:
             try:
-                si = self._blockInd[n][0]  # start offset
-                ei = self._blockInd[n][1]  # end offset
+                si = self._block_ind[n][0]  # start offset
+                ei = self._block_ind[n][1]  # end offset
                 fh.seek(si)
-                if self._setTypes[int(n)] == 58:
-                    blockData = fh.read(ei - si + 1)  # decoding is handled later in _extract58
+                if self._set_types[int(n)] == 58:
+                    block_data = fh.read(ei - si + 1)  # decoding is handled later in _extract58
                 else:
-                    blockData = fh.read(ei - si + 1).decode('utf-8', errors='replace')
+                    block_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
             except:
                 fh.close()
                 raise Exception('Error reading data-set #: ' + int(n))
             else:
                 fh.close()
         # Extracts the dset
-        if self._setTypes[int(n)] == 15:
-            dset = _extract15(blockData)
-        elif self._setTypes[int(n)] == 18:
-            dset = _extract18(blockData)  # TEMP ADD
-        elif self._setTypes[int(n)] == 55:
-            dset = _extract55(blockData)
-        elif self._setTypes[int(n)] == 58:
-            dset = _extract58(blockData)
-        elif self._setTypes[int(n)] == 82:
-            dset = _extract82(blockData)
-        elif self._setTypes[int(n)] == 151:
-            dset = _extract151(blockData)
-        elif self._setTypes[int(n)] == 164:
-            dset = _extract164(blockData)
-        elif self._setTypes[int(n)] == 2411:
-            dset = _extract2411(blockData)  # TEMP ADD
-        elif self._setTypes[int(n)] == 2412:
-            dset = _extract2412(blockData)
-        elif self._setTypes[int(n)] == 2414:
-            dset = _extract2414(blockData) 
-        elif self._setTypes[int(n)] == 2420:
-            dset = _extract2420(blockData)
+        if self._set_types[int(n)] == 15:
+            dset = _extract15(block_data)
+        elif self._set_types[int(n)] == 18:
+            dset = _extract18(block_data)  # TEMP ADD
+        elif self._set_types[int(n)] == 55:
+            dset = _extract55(block_data)
+        elif self._set_types[int(n)] == 58:
+            dset = _extract58(block_data)
+        elif self._set_types[int(n)] == 82:
+            dset = _extract82(block_data)
+        elif self._set_types[int(n)] == 151:
+            dset = _extract151(block_data)
+        elif self._set_types[int(n)] == 164:
+            dset = _extract164(block_data)
+        elif self._set_types[int(n)] == 2411:
+            dset = _extract2411(block_data)  # TEMP ADD
+        elif self._set_types[int(n)] == 2412:
+            dset = _extract2412(block_data)
+        elif self._set_types[int(n)] == 2414:
+            dset = _extract2414(block_data) 
+        elif self._set_types[int(n)] == 2420:
+            dset = _extract2420(block_data)
         else:
-            dset['type'] = self._setTypes[int(n)]
+            dset['type'] = self._set_types[int(n)]
             # Unsupported data-set - do nothing
             pass
         return dset
@@ -393,21 +393,21 @@ class UFF:
         if mode.lower() == 'overwrite':
             # overwrite mode
             try:
-                fh = open(self._fileName, 'wt')
+                fh = open(self._filename, 'wt')
             except:
-                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         elif mode.lower() == 'add':
             # add (append) mode
             try:
-                fh = open(self._fileName, 'at')
+                fh = open(self._filename, 'at')
             except:
-                raise Exception('Cannot access the file: ' + self._fileName + ' to write to.')
+                raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         else:
             raise Exception('Unknown mode: ' + mode)
         try:
             # Actual writing
             try:
-                setType = dset['type']
+                set_type = dset['type']
             except:
                 fh.close()
                 raise Exception('Data-set\'s dictionary is missing the required \'type\' key')
@@ -415,25 +415,25 @@ class UFF:
             if 'data' in dset.keys():
                 dset['data'] = np.nan_to_num(dset['data'])
 
-            if setType == 15:
+            if set_type == 15:
                 _write15(fh, dset)
-            elif setType == 55:
+            elif set_type == 55:
                 _write55(fh, dset)
-            elif setType == 58:
-                _write58(fh, dset, mode, _fileName=self._fileName)
-            elif setType == 82:
+            elif set_type == 58:
+                _write58(fh, dset, mode, _filename=self._filename)
+            elif set_type == 82:
                 _write82(fh, dset)
-            elif setType == 151:
+            elif set_type == 151:
                 _write151(fh, dset)
-            elif setType == 164:
+            elif set_type == 164:
                 _write164(fh, dset)
-            elif setType == 2411:
+            elif set_type == 2411:
                 _write2411(fh, dset)
-            elif setType == 2412:
+            elif set_type == 2412:
                 _write2412(fh, dset)
-            elif setType == 2414:
+            elif set_type == 2414:
                 _write2414(fh, dset)
-            elif setType == 2420:
+            elif set_type == 2420:
                 _write2420(fh, dset)
             else:
                 # Unsupported data-set - do nothing
