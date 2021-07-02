@@ -50,15 +50,30 @@ def test_read_write_read_given_data_base(file=''):
         print('Testing string: ', k, a[k])
         np.testing.assert_string_equal(a[k], b[k])
 
-
 def test_write_read_164():
     save_to_file = './data/test.uff'
-    a = pyuff.prepare_test_164(save_to_file=save_to_file)
+
+    dataset = pyuff.prepare_164(
+        units_code=1,
+        units_description='SI units',
+        temp_mode=1,
+        length=3.28083989501312334,
+        force=2.24808943099710480e-01,
+        temp=1.8,
+        temp_offset=459.67)
+    
+    dataset_out = dataset.copy()
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+    
+    a = dataset_out
     uff_read = pyuff.UFF(save_to_file)
     b = uff_read.read_sets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
-
 
     labels = [_ for _ in a.keys() if any(_[-len(w):]==w for w in ['_lab', '_name', '_description'])]
     string_keys = []
@@ -66,7 +81,6 @@ def test_write_read_164():
 
     string_keys = list(set(string_keys).union(set(labels)).difference(set(exclude_keys)))
     numeric_keys = list((set(a.keys()).difference(set(string_keys)).difference(set(exclude_keys))))
-
 
     for k in numeric_keys:
         print('Testing: ', k)

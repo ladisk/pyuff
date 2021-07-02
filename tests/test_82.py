@@ -67,7 +67,22 @@ def test_read_write_read_given_data2():
 		
 def test_write_read_test_data():
     save_to_file = './data/trace_lines.uff'
-    uff_dataset_origin = pyuff.prepare_test_82(save_to_file=save_to_file)
+
+    dataset = pyuff.prepare_82(
+        trace_num=2,
+        n_nodes=7,
+        color=30,
+        id='Identification line',
+        nodes=np.array([0, 10, 13, 14, 15, 16, 17]))
+    
+    dataset_out = dataset.copy()
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+    
+    uff_dataset_origin = dataset_out
     uff_read = pyuff.UFF(save_to_file)
     uff_dataset_read = uff_read.read_sets()
     if os.path.exists(save_to_file):

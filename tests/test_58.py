@@ -69,12 +69,51 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
 
 def test_write_read_58():
     save_to_file = './data/measurement.uff'
-    uff_dataset_origin = pyuff.prepare_test_58(save_to_file=save_to_file)
+
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+    uff_datasets = []
+    binary = [0, 1, 0]  # ascii of binary
+    frequency = np.arange(10)
+    np.random.seed(0)
+    for i, b in enumerate(binary):
+        print('Adding point {}'.format(i + 1))
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        
+        # this is an artificial 'frf'
+        acceleration_complex = np.random.normal(size=len(frequency)) + 1j * np.random.normal(size=len(frequency))
+        name = 'TestCase'
+        data=pyuff.prepare_58(
+            binary=binary[i],
+            func_type=4,
+            rsp_node=response_node,
+            rsp_dir=response_direction,
+            ref_dir=reference_direction,
+            ref_node=reference_node,
+            data=acceleration_complex,
+            x=frequency,
+            id1='id1',
+            rsp_ent_name=name,
+            ref_ent_name=name,
+            abscissa_spacing=1,
+            abscissa_spec_data_type=18,
+            ordinate_spec_data_type=12,
+            orddenom_spec_data_type=13)
+        
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = pyuff.UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    
+    uff_dataset_origin = uff_datasets
     uff_read = pyuff.UFF(save_to_file)
     uff_dataset_read = uff_read.read_sets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
-
 
     string_keys = ['id1', 'rsp_ent_name', 'ref_ent_name']
     numeric_keys = list(set(uff_dataset_origin[0].keys()) - set(string_keys))
