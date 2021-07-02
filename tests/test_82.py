@@ -98,5 +98,23 @@ def test_write_read_test_data():
     for k in string_keys:
         np.testing.assert_string_equal(a[k], b[k])
 
+def test_prepare_82():
+    dict_82 = pyuff.prepare_82(
+        trace_num=2,
+        n_nodes=7,
+        color=30,
+        id='Identification line',
+        nodes=np.array([0, 10, 13, 14, 15, 16, 17]))
+    x = sorted(list(dict_82.keys()))
+    y=sorted(['type', 'trace_num', 'n_nodes', 'color', 'id', 'nodes'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_82()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 82:
+        raise Exception('Not correct type')
+
 if __name__ == '__mains__':
     np.testing.run_module_suite()

@@ -101,6 +101,45 @@ def test_write_read_151():
     for k in string_keys:
         np.testing.assert_string_equal(a[k], b[k])
 
+def test_prepare_151():
+    dict_151 = pyuff.prepare_151(
+        model_name='Model file name',
+        description='Model file description',
+        db_app='Program which created DB',
+        date_db_created='27-Jan-16',
+        time_db_created='14:38:15',
+        version_db1=1,
+        version_db2=2,
+        file_type=0,
+        date_db_saved='28-Jan-16',
+        time_db_saved='14:38:16',
+        program='OpenModal',
+        date_db_written='29-Jan-16',
+        time_db_written='14:38:17')
+    x = sorted(list(dict_151.keys()))
+    y = sorted(['type',
+        'model_name',
+        'description',
+        'db_app',
+        'date_db_created',
+        'time_db_created',
+        'version_db1',
+        'version_db2',
+        'file_type',
+        'date_db_saved',
+        'time_db_saved',
+        'program',
+        'date_db_written',
+        'time_db_written'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_151()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 151:
+        raise Exception('Not correct type')
+
 if __name__ == '__main__':
     test_write_read_151()
 

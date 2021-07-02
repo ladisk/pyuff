@@ -88,5 +88,34 @@ def test_write_read_164():
     for k in string_keys:
         np.testing.assert_string_equal(a[k], b[k])
 
+def test_prepare_164():
+    dict_164 = pyuff.prepare_164(
+        units_code=1,
+        units_description='SI units',
+        temp_mode=1,
+        length=3.28083989501312334,
+        force=2.24808943099710480e-01,
+        temp=1.8,
+        temp_offset=459.67)
+    
+    x = sorted(list(dict_164.keys()))
+    y = sorted(['type',
+                'units_code',
+                'units_description',
+                'temp_mode',
+                'length',
+                'force',
+                'temp',
+                'temp_offset'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_164()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 164:
+        raise Exception('Not correct type')
+
+
 if __name__ == '__mains__':
     np.testing.run_module_suite()
