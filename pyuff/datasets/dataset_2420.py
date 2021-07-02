@@ -86,6 +86,21 @@ def prepare_2420(
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
 
+    if np.array(Part_UID).dtype != int and Part_UID != None:
+        raise TypeError('Part_UID must be integer')
+    if type(Part_Name) != str and Part_Name != None:
+        raise TypeError('Part_Name must be str')
+    if np.array(CS_sys_labels).dtype != int and CS_sys_labels != None:
+        raise TypeError('CS_sys_labels must be integer')
+    if CS_types not in (0, 1, 2, None):
+        raise ValueError('CS_types can be 0, 1, 2')
+    if np.array(CS_colors).dtype != int and CS_colors != None:
+        raise TypeError('CS_colors must be integer')
+    if type(CS_names) != str and CS_names != None:
+        raise TypeError('CS_names must be str')
+    if np.array(CS_matrices).dtype != float and CS_matrices != None:
+        raise TypeError('CS_matrices must be float')
+
     dataset={
         'type': 2420,
         'Part_UID':Part_UID,

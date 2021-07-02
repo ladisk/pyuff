@@ -81,7 +81,21 @@ def prepare_2412(
     :param nodes_nums: R2 F1, Node labels defining element
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
-    
+    if np.array(element_nums).dtype != int and element_nums != None:
+        raise TypeError('element_nums must be integer')
+    if np.array(fe_descriptor).dtype != int and fe_descriptor != None:
+        raise TypeError('fe_descriptor must be integer')
+    if np.array(phys_table).dtype != int and phys_table != None:
+        raise TypeError('phys_table must be integer')
+    if np.array(mat_table).dtype != int and mat_table != None:
+        raise TypeError('mat_table must be integer')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integer')
+    if np.array(num_nodes).dtype != int and num_nodes != None:
+        raise TypeError('num_nodes must be integer')
+    if np.array(nodes_nums).dtype != int and nodes_nums != None:
+        raise TypeError('nodes_nums must be integer')
+
     dataset={
         'type': 2412,
         'element_nums': element_nums,

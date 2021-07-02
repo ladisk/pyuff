@@ -169,7 +169,8 @@ def prepare_2414(
 
     :param analysis_dataset_label: R1 F1, Analysis dataset label
     :param analysis_dataset_name: R2 F1, Analysis dataset name 
-    :param dataset_location: R3 F1, Dataset location
+    :param dataset_location: R3 F1, Dataset location, 1:Data at nodes, 2:Data on elements, 3:Data at nodes on elements, 5:Data at points
+
     :param id1: R4 F1, ID line 1
     :param id2: R5 F1, ID line 2
     :param id3: R6 F1, ID line 3
@@ -219,7 +220,92 @@ def prepare_2414(
     
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
+    if np.array(analysis_dataset_label).dtype != int and analysis_dataset_label != None:
+        raise TypeError('analysis_dataset_label must be integer')
+    if type(analysis_dataset_name) != str and analysis_dataset_name != None:
+         raise TypeError('analysis_dataset_name must be string')
+    if dataset_location not in (1, 2, 3, 5, None):
+        raise ValueError('dataset_location can be: 1, 2, 3, 5')
+    if type(id1) != str and id1 != None:
+         raise TypeError('id1 must be string')
+    if type(id2) != str and id2 != None:
+         raise TypeError('id2 must be string')
+    if type(id3) != str and id3 != None:
+         raise TypeError('id3 must be string')
+    if type(id4) != str and id4 != None:
+         raise TypeError('id4 must be string')    
+    if type(id5) != str and id5 != None:
+         raise TypeError('id5 must be string')
 
+    if model_type not in (0, 1, 2, 3, None):
+        raise ValueError('model_type can be: 0, 1, 2, 3')
+    if analysis_type not in (0, 1, 2, 3, 4, 6, 7, 9, None):
+        raise ValueError('analysis_type can be: 0, 1, 2, 3, 4, 6, 7, 9')
+    if data_characteristic not in (0, 1, 2, 3, 4, 6, None):
+        raise ValueError('data_characteristic can be: 0, 1, 2, 3, 4, 6')
+    if type(result_type) != int and result_type != None:
+        raise TypeError('result type must be integer')
+    if data_type not in (1, 2, 4, 5, 6, None):
+        raise ValueError('data_characteristic can be: 1, 2, 4, 5, 6')
+    if np.array(number_of_data_values_for_the_data_component).dtype != int and number_of_data_values_for_the_data_component != None:
+        raise TypeError('number_of_data_values_for_the_data_component type must be integer')
+    if np.array(design_set_id).dtype != int and design_set_id != None:
+        raise TypeError('design_set_id must be integer')
+    if np.array(iteration_number).dtype != int and iteration_number != None:
+        raise TypeError('iteration_number must be integer')
+    if np.array(solution_set_id).dtype != int and solution_set_id != None:
+        raise TypeError('solution_set_id must be integer')
+    if np.array(boundary_condition).dtype != int and boundary_condition != None:
+        raise TypeError('boundary_condition must be integer')
+    if np.array(load_set).dtype != int and load_set != None:
+        raise TypeError('load_set must be integer')
+    if np.array(mode_number).dtype != int and mode_number != None:
+        raise TypeError('mode_number must be integer')
+    if np.array(time_step_number).dtype != int and time_step_number != None:
+        raise TypeError('time_step_number must be integer')
+    if np.array(frequency_number).dtype != int and frequency_number != None:
+        raise TypeError('frequency_number must be integer')
+    
+    if np.array(creation_option).dtype != int and creation_option != None:
+        raise TypeError('creation_option must be integer')
+    if np.array(number_retained).dtype != int and number_retained != None:
+        raise TypeError('number_retained must be integer')
+    
+    if np.array(time).dtype != float and time != None:
+        raise TypeError('time must be float')
+    if np.array(frequency).dtype != float and frequency != None:
+        raise TypeError('frequency must be float')
+    if np.array(eigenvalue).dtype != float and eigenvalue != None:
+        raise TypeError('eigenvalue must be float')
+    if np.array(modal_mass).dtype != float and modal_mass != None:
+        raise TypeError('modal_mass must be float')
+    if np.array(viscous_damping).dtype != float and viscous_damping != None:
+        raise TypeError('viscous_damping must be float')
+    if np.array(hysteretic_damping).dtype != float and hysteretic_damping != None:
+        raise TypeError('hysteretic_damping must be float')
+    if np.array(real_part_eigenvalue).dtype != float and real_part_eigenvalue != None:
+        raise TypeError('real_part_eigenvalue must be float')
+    if np.array(imaginary_part_eigenvalue).dtype != float and imaginary_part_eigenvalue != None:
+        raise TypeError('imaginary_part_eigenvalue must be float')
+    if np.array(real_part_of_modal_A_or_modal_mass).dtype != float and real_part_of_modal_A_or_modal_mass != None:
+        raise TypeError('real_part_of_modal_A_or_modal_mass must be float')
+    if np.array(imaginary_part_of_modal_A_or_modal_mass).dtype != float and imaginary_part_of_modal_A_or_modal_mass != None:
+        raise TypeError('imaginary_part_of_modal_A_or_modal_mass must be float')
+    if np.array(real_part_of_modal_B_or_modal_mass).dtype != float and real_part_of_modal_B_or_modal_mass != None:
+        raise TypeError('real_part_of_modal_B_or_modal_mass must be float')
+    if np.array(imaginary_part_of_modal_B_or_modal_mass).dtype != float and imaginary_part_of_modal_B_or_modal_mass != None:
+        raise TypeError('imaginary_part_of_modal_B_or_modal_mass must be float')
+    
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integer')
+    if np.array(d).dtype != float and d != None:
+        raise TypeError('d must be float')
+    if np.array(x).dtype != float and x != None:
+        raise TypeError('x must be float')
+    if np.array(y).dtype != float and y != None:
+        raise TypeError('y must be float')
+    if np.array(z).dtype != float and z != None:
+        raise TypeError('z must be float')
 
     dataset={
         'type': 2414,
@@ -257,7 +343,7 @@ def prepare_2414(
         'imaginary_part_eigenvalue': imaginary_part_eigenvalue,
         'real_part_of_modal_A_or_modal_mass,': real_part_of_modal_A_or_modal_mass, 
         'imaginary_part_of_modal_A_or_modal_mass': imaginary_part_of_modal_A_or_modal_mass,
-        'real_part_of_modal_B_or_modal_mass,': real_part_of_modal_B_or_modal_mass, 
+        'real_part_of_modal_B_or_modal_mass': real_part_of_modal_B_or_modal_mass, 
         'imaginary_part_of_modal_B_or_modal_mass': imaginary_part_of_modal_B_or_modal_mass,
         'd': d,
         'node_nums': node_nums,

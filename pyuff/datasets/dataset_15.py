@@ -99,15 +99,42 @@ def prepare_15(
 
     **Test prepare_15**
 
-    >>> pyuff.prepare_15(
-    >>>     node_nums = [16, 17, 18, 19, 20],  
-    >>>     def_cs = [11, 11, 11, 12, 12], 
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_15(
+    >>>     node_nums = [16, 17, 18, 19, 20],
+    >>>     def_cs = [11, 11, 11, 12, 12],
     >>>     disp_cs = [16, 16, 17, 18, 19],
-    >>>     color = [1, 3, 4, 5, 6],
+    >>>     color = [1, 3, 4, 5, 6],  # I10,
     >>>     x = [0.0, 1.53, 0.0, 1.53, 0.0],
     >>>     y = [0.0, 0.0, 3.84, 3.84, 0.0],
     >>>     z = [0.0, 0.0, 0.0, 0.0, 1.83])
+    >>> dataset_out = dataset.copy() 
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset_out
     """
+
+    if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:
+        raise TypeError('node_nums must be either list, tuple or numpy.ndarray')
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integers.')
+    if np.array(def_cs).dtype != int and def_cs != None:
+        raise TypeError('def_cs must be integers.')
+    if np.array(disp_cs).dtype != int and disp_cs != None:
+        raise TypeError('disp_cs must be integers.')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integers.')
+    if np.array(x).dtype != float and x != None:
+        raise TypeError('x must be float.')
+    if np.array(y).dtype != float and y != None:
+        raise TypeError('y must be float.')
+    if np.array(z).dtype != float and z != None:
+        raise TypeError('z must be float.')
+    
+
     dataset={
         'type': 15,
         'node_nums': node_nums,

@@ -67,6 +67,20 @@ def prepare_2411(
     
     Records 1 and 2 are repeated for each node in the model.
     """
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integer')
+    if np.array(def_cs).dtype != int and def_cs != None:
+        raise TypeError('def_cs must be integer')
+    if np.array(disp_cs).dtype != int and disp_cs != None:
+        raise TypeError('disp_cs must be integer')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integer')
+    if np.array(x).dtype != float and x != None:
+        raise TypeError('x must be float')
+    if np.array(y).dtype != float and y != None:
+        raise TypeError('y must be float')
+    if np.array(z).dtype != float and z != None:
+        raise TypeError('z must be float')
 
     dataset={
         'type': 2411,

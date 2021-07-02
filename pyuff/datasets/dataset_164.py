@@ -56,8 +56,17 @@ def prepare_164(
 
     R-Record, F-Field
 
-    :param units_code: R1 F1, Units code
-    :param units_description: R1 F2, Units description, optional
+    :param units_code: R1 F1, Units code: 
+        1 - SI: Meter (newton),
+        2 - BG: Foot (pound f),
+        3 - MG: Meter (kilogram f),
+        4 - BA: Foot (poundal),
+        5 - MM: mm (milli newton),
+        6 - CM: cm (centi newton),
+        7 - IN: Inch (pound f),
+        8 - GM: mm (kilogram f),
+        9 - US: USER_DEFINED
+    :param units_description: R1 F2, Units cription, optional
     :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative), optional
     :param length: R2 F1, Length
     :param force: R2 F2, Force
@@ -67,7 +76,8 @@ def prepare_164(
 
     **Test prepare_164**
 
-    >>> pyuff.prepare_164(
+    >>> save_to_file='test_pyuff'
+    >>> dataset = pyuff.prepare_164(
     >>>     units_code = 1,
     >>>     units_description = 'SI units',
     >>>     temp_mode = 1,
@@ -75,7 +85,29 @@ def prepare_164(
     >>>     force = 2.24808943099710480e-01,
     >>>     temp = 1.8,
     >>>     temp_offset = 459.67)
+    >>> dataset_out = dataset.copy()
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset_out
     """
+
+    if units_code not in np.arange(10) and units_code != None:
+        raise ValueError('units code must be integer between 0 and 9')
+    if type(units_description) != str and units_description != None:
+        raise TypeError('units_decription must be string')
+    if temp_mode not in (1, 2, None):
+        raise ValueError('temp_mode can be either 1 or 2')
+    if type(length) != float and length != None:
+        raise TypeError('length must be float')
+    if type(force) != float and force != None:
+        raise TypeError('force must be float')
+    if type(temp) != float and temp != None:
+        raise TypeError('temp must be float')
+    if type(temp_offset) != float and temp_offset != None:
+        raise TypeError('temp_offset must be float')
 
     dataset={
         'type': 164,

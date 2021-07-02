@@ -379,6 +379,8 @@ def prepare_58(
     :param id4: R4 F1, ID Line 4, optional
     :param id5: R5 F1, ID Line 5, optional
 
+    **DOF identification**
+
     :param func_type: R6 F1, Function type
     :param ver_num: R6 F3, Version number, optional
     :param load_case_id: R6 F4, Load case identification number, optional
@@ -389,12 +391,16 @@ def prepare_58(
     :param ref_node: R6 F9, Reference node
     :param ref_dir: R6 F10, Reference direction
 
+    **Data form**
+
     :param ord_data_type: R7 F1, Ordinate data type, ignored
     :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa, ignored
     :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even), ignored
     :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven), ignored
     :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven), ignored
     :param z_axis_value: R7 F6, Z-axis value (0.0 if unused), optional
+
+    **Abscissa data characteristics**
 
     :param abscissa_spec_data_type: R8 F1, Abscissa specific data type, optional
     :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent, optional
@@ -403,12 +409,16 @@ def prepare_58(
     
     :param abscissa_axis_units_lab: R8 F6, Abscissa units label, optional
 
+    **Ordinate (or ordinate numerator) data characteristics**
+
     :param ordinate_spec_data_type: R9 F1, Ordinate specific data type, optional
     :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent, optional
     :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent, optional
     :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent, optional
     
     :param ordinate_axis_units_lab: R9 F6, Ordinate units label, optional
+
+    **Ordinate denominator data characteristics**
 
     :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type, optional
     :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent, optional
@@ -417,12 +427,16 @@ def prepare_58(
     
     :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label, optional
 
+    **Z-axis data characteristics**
+
     :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type, optional
     :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent, optional
     :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent, optional
     :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent, optional
     
     :param z_axis_axis_units_lab: R11 F6, Z-axis units label, optional
+
+    **Data values**
 
     :param data: R12 F1, Data values
 
@@ -436,7 +450,11 @@ def prepare_58(
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
 
     **Test prepare_58**
-    
+
+    >>> save_to_file = 'test_pyuff'
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
     >>> uff_datasets = []
     >>> binary = [0, 1, 0]  # ascii of binary
     >>> frequency = np.arange(10)
@@ -467,8 +485,106 @@ def prepare_58(
     >>>         ordinate_spec_data_type = 12,
     >>>         orddenom_spec_data_type = 13)
     >>>     uff_datasets.append(data.copy())
+    >>>     if save_to_file:
+    >>>         uffwrite = pyuff.UFF(save_to_file)
+    >>>         uffwrite._write_set(data, 'add')
     >>> uff_datasets
     """
+
+    if binary not in (0, 1, None):
+        raise ValueError('binary can be 0 or 1')
+    if type(id1) != str and id1 != None:
+        raise TypeError('id1 must be string.')
+    if type(id2) != str and id2 != None:
+        raise TypeError('id2 must be string.')
+    if type(id3) != str and id3 != None:
+        raise TypeError('id3 must be string.')
+    if type(id4) != str and id4 != None:
+        raise TypeError('id4 must be string.')
+    if type(id5) != str and id5 != None:
+        raise TypeError('id5 must be string.')
+    
+    if func_type not in np.arange(28) and func_type != None:
+        raise ValueError('func_type must be integer between 0 and 27')
+    if np.array(ver_num).dtype != int and ver_num != None:
+        raise TypeError('ver_num must be integer')
+    if np.array(load_case_id).dtype != int and load_case_id != None:
+        raise TypeError('load_case_id must be integer')
+    if type(rsp_ent_name) != str and rsp_ent_name != None:
+        raise TypeError('rsp_ent_name must be string')
+    if np.array(rsp_node).dtype != int and rsp_node != None:
+        raise TypeError('rsp_node must be integer')
+    if rsp_dir not in np.arange(-6,7) and rsp_dir != None:
+        raise ValueError('rsp_dir must be integer between -6 and 6')
+    if type(ref_ent_name) != str and ref_ent_name != None:
+        raise TypeError('rsp_ent_name must be string')
+    if np.array(ref_node).dtype != int and ref_node != None:
+        raise TypeError('ref_node must be int')
+    if ref_dir not in np.arange(-6,7) and ref_dir != None:
+        raise ValueError('ref_dir must be integer between -6 and 6')
+    
+    if ord_data_type not in (2, 4, 5, 6, None):
+        raise ValueError('ord_data_type can be: 2,4,5,6')
+    if np.array(num_pts).dtype != int and num_pts != None:
+        raise TypeError('num_pts must be integer')
+    if abscissa_spacing not in (0, 1, None):
+        raise ValueError('abscissa_spacing can be 0:uneven, 1:even')
+    if np.array(abscissa_min).dtype != float and abscissa_min != None:
+        raise TypeError('abscissa_min must be float')
+    if np.array(abscissa_inc).dtype != float and abscissa_inc != None:
+        raise TypeError('abscissa_inc must be float')
+    if np.array(z_axis_value).dtype != float and z_axis_value != None:
+        raise TypeError('z_axis_value must be float')
+    
+    if abscissa_spec_data_type not in np.arange(21) and abscissa_spec_data_type != None:
+        raise ValueError('abscissa_spec_data_type must be integer between 0 nd 21')
+    if np.array(abscissa_len_unit_exp).dtype != int and abscissa_len_unit_exp != None:
+        raise TypeError('abscissa_len_unit_exp must be integer')
+    if np.array(abscissa_force_unit_exp).dtype != int and abscissa_force_unit_exp != None:
+        raise TypeError('abscissa_force_unit_exp must be integer')
+    if np.array(abscissa_temp_unit_exp).dtype != int and abscissa_temp_unit_exp != None:
+        raise TypeError('abscissa_temp_unit_exp must be integer')
+    if type(abscissa_axis_units_lab) != str and abscissa_axis_units_lab != None:
+        raise TypeError('abscissa_axis_units_lab must be string')
+
+    if ordinate_spec_data_type not in np.arange(21) and ordinate_spec_data_type != None:
+        raise ValueError('ordinate_spec_data_type must be integer between 0 nd 21')
+    if np.array(ordinate_len_unit_exp).dtype != int and ordinate_len_unit_exp != None:
+        raise TypeError('ordinate_len_unit_exp must be integer')
+    if np.array(ordinate_force_unit_exp).dtype != int and ordinate_force_unit_exp != None:
+        raise TypeError('ordinate_force_unit_exp must be integer')
+    if np.array(ordinate_temp_unit_exp).dtype != int and ordinate_temp_unit_exp != None:
+        raise TypeError('ordinate_temp_unit_exp must be integer')
+    if type(ordinate_axis_units_lab) != str and ordinate_axis_units_lab != None:
+        raise TypeError('ordinate_axis_units_lab must be string')
+
+    if orddenom_spec_data_type not in np.arange(21) and orddenom_spec_data_type != None:
+        raise ValueError('orddenom_spec_data_type must be integer between 0 nd 21')
+    if np.array(orddenom_len_unit_exp).dtype != int and orddenom_len_unit_exp != None:
+        raise TypeError('orddenom_len_unit_exp must be integer')
+    if np.array(orddenom_force_unit_exp).dtype != int and orddenom_force_unit_exp != None:
+        raise TypeError('orddenom_force_unit_exp must be integer')
+    if np.array(orddenom_temp_unit_exp).dtype != int and orddenom_temp_unit_exp != None:
+        raise TypeError('orddenom_temp_unit_exp must be integer')
+    if type(orddenom_axis_units_lab) != str and orddenom_axis_units_lab != None:
+        raise TypeError('orddenom_axis_units_lab must be string')
+
+    if z_axis_spec_data_type not in np.arange(21) and z_axis_spec_data_type != None:
+        raise ValueError('z_axis_spec_data_type must be integer between 0 nd 21')
+    if np.array(z_axis_len_unit_exp).dtype != int and z_axis_len_unit_exp != None:
+        raise TypeError('z_axis_len_unit_exp must be integer')
+    if np.array(z_axis_force_unit_exp).dtype != int and z_axis_force_unit_exp != None:
+        raise TypeError('z_axis_force_unit_exp must be integer')
+    if np.array(z_axis_temp_unit_exp).dtype != int and z_axis_temp_unit_exp != None:
+        raise TypeError('z_axis_temp_unit_exp must be integer')
+    if type(z_axis_axis_units_lab) != str and z_axis_axis_units_lab != None:
+        raise TypeError('z_axis_axis_units_lab must be string')
+    
+    if np.array(data).dtype != float and np.array(data).dtype != complex:
+        if data != None:
+            raise TypeError('data must be float')
+    
+
 
     dataset={
         'type': 58,

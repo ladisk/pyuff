@@ -85,7 +85,7 @@ def prepare_151(
     :param time_db_created: R4 F2, Time database created, optional
     :param version_db1: R4 F3, Version string 1 of the database, optional
     :param version_db2: R4 F4, Version string 2 of the database, optional
-    :param file_type: R4 F5, File type, optional
+    :param file_type: R4 F5, File type. 0:Universal, 1:Archive, 2:Other, optional
     :param date_db_saved: R5 F1, Date database last saved, optional
     :param time_db_saved: R5 F2, Time database last saved, optional
     :param program: R6 F1, Program which created universal file
@@ -96,7 +96,8 @@ def prepare_151(
     
     **Test prepare_151**
 
-    >>> pyuff.prepare_151(
+    >>> save_to_file='test_pyuff'
+    >>> dataset = pyuff.prepare_151(
     >>>     model_name = 'Model file name',
     >>>     description = 'Model file description',
     >>>     db_app = 'Program which created DB',
@@ -110,7 +111,41 @@ def prepare_151(
     >>>     program = 'OpenModal',
     >>>     date_db_written = '29-Jan-16',
     >>>     time_db_written = '14:38:17')
+    >>> dataset_out = dataset.copy()
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset_out
     """
+    if type(model_name) != str and model_name != None:
+        raise TypeError('model_name must be string')
+    if type(description) != str and description != None:
+        raise TypeError('description must be string')
+    if type(db_app) != str and db_app != None:
+        raise TypeError('db_app must be string')
+    if type(date_db_created) != str and date_db_created != None:
+        raise TypeError('date_db_created must be string')
+    if type(time_db_created) != str and time_db_created != None:
+        raise TypeError('time_db_created must be string')
+    if np.array(version_db1).dtype != int and version_db1 != None:
+        raise TypeError('version_db1 must be integer')
+    if np.array(version_db2).dtype != int and version_db2 != None:
+        raise TypeError('version_db2 must be integer')
+    if file_type not in (0, 1, 2, None):
+        raise ValueError('file type can be 0:Universal, 1:Archive, 2:Other')
+    if type(date_db_saved) != str and date_db_saved != None:
+        raise TypeError('date_db_saved must be string')
+    if type(time_db_saved) != str and time_db_saved != None:
+        raise TypeError('time_db_saved must be string')
+    if type(program) != str and program != None:
+        raise TypeError('program must be string')
+    if type(date_db_written) != str and date_db_written != None:
+        raise TypeError('date_db_written must be string')
+    if type(time_db_written) != str and time_db_written != None:
+        raise TypeError('time_db_written must be string')
+
 
     dataset={
         'type': 151,

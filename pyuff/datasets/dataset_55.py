@@ -48,9 +48,9 @@ def _write55(fh, dset):
         data_type = 2
         #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
         if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
-            nDataPerNode = 6
+            n_data_per_node = 6
         else:
-            nDataPerNode = 3
+            n_data_per_node = 3
         if np.iscomplexobj(dset['r1']):
             data_type = 5
         else:
@@ -64,7 +64,7 @@ def _write55(fh, dset):
         fh.write('%-80s\n' % dset['id5'])
         fh.write('%10i%10i%10i%10i%10i%10i\n' %
                     (dset['model_type'], dset['analysis_type'], dset['data_ch'],
-                    dset['spec_data_type'], data_type, nDataPerNode))
+                    dset['spec_data_type'], data_type, n_data_per_node))
         if dset['analysis_type'] == 2:
             # Normal modes
             fh.write('%10i%10i%10i%10i\n' % (2, 4, dset['load_case'], dset['mode_n']))
@@ -85,7 +85,7 @@ def _write55(fh, dset):
         n = len(dset['node_nums'])
         if data_type == 2:
             # Real data
-            if nDataPerNode == 3:
+            if n_data_per_node == 3:
                 for k in range(0, n):
                     fh.write('%10i\n' % dset['node_nums'][k])
                     fh.write('%13.5e%13.5e%13.5e\n' % (dset['r1'][k], dset['r2'][k], dset['r3'][k]))
@@ -240,6 +240,8 @@ def prepare_55(
     :param data_type: R6 F5,  Data type, ignored
     :param n_data_per_node: R6 F6, Number of data values per node, ignored
 
+    R7 and R8 are analysis type specific:
+
     :param r1: Response array for DOF 1,
     :param r2: Response array for DOF 2,
     :param r3: Response array for DOF 3,
@@ -256,12 +258,16 @@ def prepare_55(
     :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A, optional
     :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B, optional
     :param freq_step_n: R7 F4, Frequency step number
-    :param mode_nums: R9 F1 Node number
+    :param node_nums: R9 F1 Node number
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
 
     **Test prepare_55**
 
+    >>> save_to_file = 'test_pyuff'
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
     >>> uff_datasets = []
     >>> modes = [1, 2, 3]
     >>> node_nums = [1, 2, 3, 4]
@@ -289,12 +295,68 @@ def prepare_55(
     >>>         mode_n = i + 1,
     >>>         modal_m = 0,
     >>>         freq = freqs[i],
-    >>>         modal_damp_vis = 0,
-    >>>         modal_damp_his = 0)
+    >>>         modal_damp_vis = 0.,
+    >>>         modal_damp_his = 0.)
     >>>     uff_datasets.append(data.copy())
+    >>>     if save_to_file:
+    >>>         uffwrite = pyuff.UFF(save_to_file)
+    >>>         uffwrite._write_set(data, 'add')
     >>> uff_datasets
     """
 
+    if type(id1) != str and id1 != None:
+        raise TypeError('id1 must be string.')
+    if type(id2) != str and id2 != None:
+        raise TypeError('id2 must be string.')
+    if type(id3) != str and id3 != None:
+        raise TypeError('id3 must be string.')
+    if type(id4) != str and id4 != None:
+        raise TypeError('id4 must be string.')
+    if type(id5) != str and id5 != None:
+        raise TypeError('id5 must be string.')
+    
+    if model_type not in (0, 1, 2, 3, None):
+        raise ValueError('model_type can be 0:Unknown, 1:Structural, 2:Heat Transfer, 3:Fluid Flow')
+    if analysis_type not in (2, 3, 5, 7, None):
+        raise ValueError('analysis_type: Currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported.')
+    if data_ch not in (0, 1, 2, 3, 4, 5, None):
+        raise ValueError('data_ch can be: 0,1,2,4,5')
+    if spec_data_type not in np.arange(19) and spec_data_type != None:
+        raise ValueError('spec_data_type must be integer between 0 and 18')
+    if data_type not in (2, 5, None):
+        raise ValueError('data_type can be 2:Real or 5:Complex')
+    if np.array(n_data_per_node).dtype != int and n_data_per_node != None:
+        raise TypeError('n_data_per_node must be integers')
+    if np.array(r1).dtype != float and r1 != None:
+        raise TypeError('r1 must have float values')
+    if np.array(r2).dtype != float and r2 != None:
+        raise TypeError('r2 must have float values')
+    if np.array(r3).dtype != float and r3 != None:
+        raise TypeError('r3 must have float values')
+    if np.array(r4).dtype != float and r4 != None:
+        raise TypeError('r4 must have float values')
+    if np.array(r5).dtype != float and r5 != None:
+        raise TypeError('r5 must have float values')
+    if np.array(r6).dtype != float and r6 != None:
+        raise TypeError('r6 must have float values')
+    if type(load_case) != int and load_case != None:
+        raise TypeError('load_case must be integer')
+    if type(mode_n) != int and mode_n != None:
+        raise TypeError('mode_n must be integer')
+    if type(modal_damp_vis) != float and modal_damp_vis != None:
+        raise TypeError('modal_damp_vis must be float')
+    if type(modal_damp_his) != float and modal_damp_his != None:
+        raise TypeError('modal_damp_his must be float')
+    if np.array(eig).dtype != float and eig != None:
+        raise TypeError('eig must be float')
+    if np.array(modal_a).dtype != float and modal_a != None:
+        raise TypeError('modal_a must be float')   
+    if np.array(modal_b).dtype != float and modal_b != None:
+        raise TypeError('modal_b must be float')
+    if type(freq_step_n) != int and freq_step_n != None:
+        raise TypeError('freq_step_n must be int')
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('mode_nums must be int')
 
     dataset = {
         'type': 55,

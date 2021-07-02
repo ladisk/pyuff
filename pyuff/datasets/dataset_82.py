@@ -76,13 +76,34 @@ def prepare_82(
     
     **Test prepare_82**
 
-    >>> pyuff.prepare_82(
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_82(
     >>>     trace_num = 2,
     >>>     n_nodes = 7,
     >>>     color = 30,
     >>>     id = 'Identification line',
     >>>     nodes = np.array([0, 10, 13, 14, 15, 16, 17]))
+    >>> dataset_out = dataset.copy()
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset_out
+
     """
+
+    if np.array(trace_num).dtype != int and trace_num != None:
+        raise TypeError('trace_num must be integer')
+    if np.array(n_nodes).dtype != int and n_nodes != None:
+        raise TypeError('n_nodes must be integer')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integer')
+    if type(id) != str and id != None:
+        raise TypeError(('id must be string'))
+    if np.array(nodes).dtype != int and nodes != None:
+        raise TypeError('nodes must be integers')
+    
 
     dataset={
         'type': 82,
