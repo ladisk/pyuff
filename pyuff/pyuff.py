@@ -61,6 +61,8 @@ Notes:
 """
 import os
 import numpy as np
+import warnings
+warnings.simplefilter("default")
 
 
 from .datasets.dataset_15 import _write15, _extract15
@@ -100,7 +102,7 @@ class UFF:
     All array-type data are read/written using numpy's ``np.array`` module.
     """
 
-    def __init__(self, fileName):
+    def __init__(self, filename=None, fileName=None):
         """
         Initializes the uff object and extract the basic info: 
         the number of sets, types of the sets and format of the sets (ascii
@@ -112,7 +114,15 @@ class UFF:
         the file is refreshed automatically (when needed).
         """
         # Some "private" members
-        self._filename = fileName
+        if filename != None:
+            self._filename = filename
+        
+        elif fileName != None:
+            self._filename = fileName
+            warnings.warn('Argument ``fileName`` will be deprecated in the future. Please use ``filename``')
+        
+
+        
         self._block_ind = []  # an array of block indices: start-end pairs in rows
         self._refreshed = False
         self._n_sets = 0  # number of sets found in file
@@ -187,7 +197,7 @@ class UFF:
                 # Parses the entire file for '    -1' tags and extracts
                 # the corresponding indices
                 data = fh.read()
-                dataLen = len(data)
+                data_len = len(data)
                 ind = -1
                 block_ind = []
                 while True:
