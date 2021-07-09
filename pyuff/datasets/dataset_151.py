@@ -96,28 +96,28 @@ def prepare_151(
     
     **Test prepare_151**
 
-    >>> save_to_file='test_pyuff'
+    >>> save_to_file = 'test_pyuff'
     >>> dataset = pyuff.prepare_151(
-    >>>     model_name = 'Model file name',
-    >>>     description = 'Model file description',
-    >>>     db_app = 'Program which created DB',
-    >>>     date_db_created = '27-Jan-16',
-    >>>     time_db_created = '14:38:15',
-    >>>     version_db1 = 1,
-    >>>     version_db2 = 2,
-    >>>     file_type = 0,
-    >>>     date_db_saved = '28-Jan-16',
-    >>>     time_db_saved = '14:38:16',
-    >>>     program = 'OpenModal',
-    >>>     date_db_written = '29-Jan-16',
-    >>>     time_db_written = '14:38:17')
-    >>> dataset_out = dataset.copy()
+    >>>     model_name='Model file name',
+    >>>     description='Model file description',
+    >>>     db_app='Program which created DB',
+    >>>     date_db_created='27-Jan-16',
+    >>>     time_db_created='14:38:15',
+    >>>     version_db1=1,
+    >>>     version_db2=2,
+    >>>     file_type=0,
+    >>>     date_db_saved='28-Jan-16',
+    >>>     time_db_saved='14:38:16',
+    >>>     program='OpenModal',
+    >>>     date_db_written='29-Jan-16',
+    >>>     time_db_written='14:38:17')
+    >>> dataset
     >>> if save_to_file:
     >>>     if os.path.exists(save_to_file):
     >>>         os.remove(save_to_file)
     >>>     uffwrite = pyuff.UFF(save_to_file)
     >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset_out
+    >>> dataset
     """
     if type(model_name) != str and model_name != None:
         raise TypeError('model_name must be string')

@@ -85,6 +85,31 @@ def prepare_2420(
     :param CS_matrices: R5-8 F1-3, Transformation Matrix
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
+    # **Test prepare_2414**
+    #save_to_file = 'test_pyuff'
+    #dataset = pyuff.prepare_2420(
+    #    Part_UID = 1,
+    #    Part_Name = 'None',
+    #    CS_sys_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    #    CS_types = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #    CS_colors = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+    #    CS_names = ['CS1', 'CS2', 'CS3', 'CS4', 'CS5', 'CS6', 'CS7', 'CS8', 'CS9', 'CS10'],
+    #    CS_matrices = [np.array([[-0.44807362, 0., 0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]])])
+    #if save_to_file:
+    #    if os.path.exists(save_to_file):
+    #        os.remove(save_to_file)
+    #    uffwrite = pyuff.UFF(save_to_file)
+    #    uffwrite.write_sets(dataset, mode='add')
+    #dataset
 
     if np.array(Part_UID).dtype != int and Part_UID != None:
         raise TypeError('Part_UID must be integer')
@@ -92,12 +117,24 @@ def prepare_2420(
         raise TypeError('Part_Name must be str')
     if np.array(CS_sys_labels).dtype != int and CS_sys_labels != None:
         raise TypeError('CS_sys_labels must be integer')
-    if CS_types not in (0, 1, 2, None):
+    if type(CS_types) in (np.ndarray, list, tuple):
+        for i in CS_types:
+            if i not in (0, 1, 2):
+                raise ValueError('CS_types can be 0, 1, 2')
+    if np.array(CS_types).dtype != int and CS_types != None:
         raise ValueError('CS_types can be 0, 1, 2')
     if np.array(CS_colors).dtype != int and CS_colors != None:
         raise TypeError('CS_colors must be integer')
-    if type(CS_names) != str and CS_names != None:
-        raise TypeError('CS_names must be str')
+    if type(CS_names) not in (np.ndarray, list, str) and CS_names != None:
+        raise TypeError('CS_names datatype must be str')
+    if type(CS_names) == np.ndarray:
+        for i in CS_names:
+            if type(i) != np.str_: 
+                raise TypeError('CS_names datatype must be str')
+    if type(CS_names) == list:
+        for i in CS_names:
+            if type(i) != str: 
+                raise TypeError('CS_names datatype must be str')
     if np.array(CS_matrices).dtype != float and CS_matrices != None:
         raise TypeError('CS_matrices must be float')
 

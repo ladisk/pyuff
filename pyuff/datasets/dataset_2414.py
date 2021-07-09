@@ -213,12 +213,63 @@ def prepare_2414(
     :param real_part_of_modal_B_or_modal_mass,: R13 F1,
     :param imaginary_part_of_modal_B_or_modal_mass: R13 F1,
     :param node_nums: R14 F1, Node number
-    :param d: R15 F1, Data at this node (NDVAL real or complex values) **check**
+    :param d: R15 F1, Data at this node (NDVAL real or complex values)
     :param x: R15 F1,
     :param y: R15 F1,
     :param z: R15 F1,
-    
+
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_2414**
+
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_2414(
+    >>>     analysis_dataset_label=1,
+    >>>     analysis_dataset_name='Solid displacement at 1.00000e+02 Hz',
+    >>>     dataset_location=1,
+    >>>     id1='FEMTown to UNV output driver',
+    >>>     id2=' Analysis',
+    >>>     id3='Solid displacement at 1.00000e+02 Hz',
+    >>>     id4='LoadCase 1',
+    >>>     id5='none',
+    >>>     model_type=0,
+    >>>     analysis_type=5,
+    >>>     data_characteristic=2,
+    >>>     result_type=8,
+    >>>     data_type=5,
+    >>>     number_of_data_values_for_the_data_component=3,
+    >>>     design_set_id=1,
+    >>>     iteration_number=0,
+    >>>     solution_set_id=1,
+    >>>     boundary_condition=0,
+    >>>     load_set=1,
+    >>>     mode_number=0,
+    >>>     time_step_number=0,
+    >>>     frequency_number=0,
+    >>>     creation_option=1,
+    >>>     number_retained=1,
+    >>>     time=0.0,
+    >>>     frequency=100.0,
+    >>>     eigenvalue=100.0,
+    >>>     modal_mass=0.0,
+    >>>     viscous_damping=0.0,
+    >>>     hysteretic_damping=0.0,
+    >>>     real_part_eigenvalue=0.0,
+    >>>     imaginary_part_eigenvalue=0.0,
+    >>>     real_part_of_modal_A_or_modal_mass=0.0,
+    >>>     imaginary_part_of_modal_A_or_modal_mass=0.0,
+    >>>     real_part_of_modal_B_or_modal_mass=0.0,
+    >>>     imaginary_part_of_modal_B_or_modal_mass=0.0,
+    >>>     node_nums=np.array([29, 30, 31]),
+    >>>     x=np.array([2.84811e-09+1.73733e-09j, 3.11873e-09+1.19904e-09j, 3.28182e-09+6.12300e-10j]),
+    >>>     y=np.array([-7.13813e-10+6.53419e-10j, -4.95859e-10+8.07390e-10j, -2.52772e-10+9.05991e-10j]),
+    >>>     z=np.array([4.28828e-10+2.47563e-10j, 4.65334e-10+1.70107e-10j, 4.87383e-10+8.66597e-11j]))
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite.write_sets(dataset, mode='add')
+    >>> dataset
     """
     if np.array(analysis_dataset_label).dtype != int and analysis_dataset_label != None:
         raise TypeError('analysis_dataset_label must be integer')
@@ -239,7 +290,7 @@ def prepare_2414(
 
     if model_type not in (0, 1, 2, 3, None):
         raise ValueError('model_type can be: 0, 1, 2, 3')
-    if analysis_type not in (0, 1, 2, 3, 4, 6, 7, 9, None):
+    if analysis_type not in (0, 1, 2, 3, 4, 5, 6, 7, 9, None):
         raise ValueError('analysis_type can be: 0, 1, 2, 3, 4, 6, 7, 9')
     if data_characteristic not in (0, 1, 2, 3, 4, 6, None):
         raise ValueError('data_characteristic can be: 0, 1, 2, 3, 4, 6')
@@ -300,11 +351,11 @@ def prepare_2414(
         raise TypeError('node_nums must be integer')
     if np.array(d).dtype != float and d != None:
         raise TypeError('d must be float')
-    if np.array(x).dtype != float and x != None:
+    if np.array(x).dtype != float and np.array(x).dtype != complex and x != None:
         raise TypeError('x must be float')
-    if np.array(y).dtype != float and y != None:
+    if np.array(y).dtype != float and np.array(y).dtype != complex and y != None:
         raise TypeError('y must be float')
-    if np.array(z).dtype != float and z != None:
+    if np.array(z).dtype != float and np.array(z).dtype != complex and z != None:
         raise TypeError('z must be float')
 
     dataset={
@@ -341,7 +392,7 @@ def prepare_2414(
         'hysteretic_damping': hysteretic_damping,
         'real_part_eigenvalue': real_part_eigenvalue,
         'imaginary_part_eigenvalue': imaginary_part_eigenvalue,
-        'real_part_of_modal_A_or_modal_mass,': real_part_of_modal_A_or_modal_mass, 
+        'real_part_of_modal_A_or_modal_mass': real_part_of_modal_A_or_modal_mass, 
         'imaginary_part_of_modal_A_or_modal_mass': imaginary_part_of_modal_A_or_modal_mass,
         'real_part_of_modal_B_or_modal_mass': real_part_of_modal_B_or_modal_mass, 
         'imaginary_part_of_modal_B_or_modal_mass': imaginary_part_of_modal_B_or_modal_mass,

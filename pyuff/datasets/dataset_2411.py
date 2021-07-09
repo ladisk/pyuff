@@ -64,9 +64,26 @@ def prepare_2411(
     :param y: R2 F2, Node coordinates in the part coordinate system
     :param z: R2 F3, Node coordinates in the part coordinate system
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
-    
+
     Records 1 and 2 are repeated for each node in the model.
     """
+    # **Test prepare_2414**
+    #>>> save_to_file = 'test_pyuff'
+    #>>> dataset = pyuff.prepare_2411(
+    #>>>     node_nums=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     def_cs=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    #>>>     disp_cs=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     color=np.array([8, 8, 8, 8, 8, 8, 8, 8, 8, 8]),
+    #>>>     x=np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ]),
+    #>>>     y=np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
+    #>>>     z=np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+    #>>> if save_to_file:
+    #>>>     if os.path.exists(save_to_file):
+    #>>>         os.remove(save_to_file)
+    #>>>     uffwrite = pyuff.UFF(save_to_file)
+    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>> dataset
+
     if np.array(node_nums).dtype != int and node_nums != None:
         raise TypeError('node_nums must be integer')
     if np.array(def_cs).dtype != int and def_cs != None:

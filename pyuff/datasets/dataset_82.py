@@ -78,18 +78,17 @@ def prepare_82(
 
     >>> save_to_file = 'test_pyuff'
     >>> dataset = pyuff.prepare_82(
-    >>>     trace_num = 2,
-    >>>     n_nodes = 7,
-    >>>     color = 30,
-    >>>     id = 'Identification line',
-    >>>     nodes = np.array([0, 10, 13, 14, 15, 16, 17]))
-    >>> dataset_out = dataset.copy()
+    >>>     trace_num=2,
+    >>>     n_nodes=7,
+    >>>     color=30,
+    >>>     id='Identification line',
+    >>>     nodes=np.array([0, 10, 13, 14, 15, 16, 17]))
     >>> if save_to_file:
     >>>     if os.path.exists(save_to_file):
     >>>         os.remove(save_to_file)
     >>>     uffwrite = pyuff.UFF(save_to_file)
     >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset_out
+    >>> dataset
 
     """
 

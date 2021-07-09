@@ -101,20 +101,19 @@ def prepare_15(
 
     >>> save_to_file = 'test_pyuff'
     >>> dataset = pyuff.prepare_15(
-    >>>     node_nums = [16, 17, 18, 19, 20],
-    >>>     def_cs = [11, 11, 11, 12, 12],
-    >>>     disp_cs = [16, 16, 17, 18, 19],
-    >>>     color = [1, 3, 4, 5, 6],  # I10,
-    >>>     x = [0.0, 1.53, 0.0, 1.53, 0.0],
-    >>>     y = [0.0, 0.0, 3.84, 3.84, 0.0],
-    >>>     z = [0.0, 0.0, 0.0, 0.0, 1.83])
-    >>> dataset_out = dataset.copy() 
+    >>>     node_nums=[16, 17, 18, 19, 20],
+    >>>     def_cs=[11, 11, 11, 12, 12],
+    >>>     disp_cs=[16, 16, 17, 18, 19],
+    >>>     color=[1, 3, 4, 5, 6],  # I10,
+    >>>     x=[0.0, 1.53, 0.0, 1.53, 0.0],
+    >>>     y=[0.0, 0.0, 3.84, 3.84, 0.0],
+    >>>     z=[0.0, 0.0, 0.0, 0.0, 1.83])
     >>> if save_to_file:
     >>>     if os.path.exists(save_to_file):
     >>>         os.remove(save_to_file)
     >>>     uffwrite = pyuff.UFF(save_to_file)
     >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset_out
+    >>> dataset
     """
 
     if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:

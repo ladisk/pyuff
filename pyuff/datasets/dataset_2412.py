@@ -80,6 +80,24 @@ def prepare_2412(
     :param num_nodes: R1 F6, Number of nodes on element
     :param nodes_nums: R2 F1, Node labels defining element
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_2412**
+    
+    >>> save_to_file = 'test_pyuff'
+    >>> data = pyuff.prepare_2412(
+    >>>     element_nums=np.array([69552, 98919, 69304]),
+    >>>     fe_descriptor=np.array([94, 94, 94]),
+    >>>     phys_table=np.array([2, 2, 2]),
+    >>>     mat_table=np.array([1, 1, 1]),
+    >>>     color=np.array([2, 2, 2]),
+    >>>     nodes_nums=np.array([[   29,  2218,  2219,30],[81619, 83403,  2218,    29],[   30,  2219,  2119,    31],[  31, 2119, 1659,   32]]))
+    >>> dataset = {'type':2412, 'quad':data}
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite.write_sets(dataset, mode='add')
+    >>> dataset
     """
     if np.array(element_nums).dtype != int and element_nums != None:
         raise TypeError('element_nums must be integer')

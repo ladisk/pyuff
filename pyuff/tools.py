@@ -1,41 +1,41 @@
 
-def _opt_fields(dict, fieldsDict):
+def _opt_fields(dict, fields_dict):
     """Sets the optional fields of the dict dictionary. 
     
-    Optionally fields are given in fieldsDict dictionary.
+    Optionally fields are given in fields_dict dictionary.
     
     :param dict: dictionary to be updated
-    :param fieldsDict: dictionary with default values
+    :param fields_dict: dictionary with default values
     """
 
-    for key in fieldsDict:
+    for key in fields_dict:
         #             if not dict.has_key(key):
         if not key in dict:
-            dict.update({key: fieldsDict[key]})
+            dict.update({key: fields_dict[key]})
     return dict
 
-def _parse_header_line(line, minValues, widths, types, names):
+def _parse_header_line(line, min_values, widths, types, names):
     """Parses the given line (a record in terms of UFF file) and returns all
     the fields. 
 
     Fields are split according to their widths as given in widths.
-    minValues specifies how many values (fields) are mandatory to read
+    min_values specifies how many values (fields) are mandatory to read
     from the line. Also, number of values found must not exceed the
     number of fields requested by fieldsIn.
     On the output, a dictionary of field names and corresponding
     filed values is returned.
     
     :param line: a string representing the whole line.
-    :param minValues: specifies how many values (fields) are mandatory to read
+    :param min_values: specifies how many values (fields) are mandatory to read
         from the line
     :param widths: fields widths to be read
     :param types: field types 1=string, 2=int, 3=float, -1=ignore the field
     :param names: a list of key (field) names
     """
     fields = {}
-    nFieldsReq = len(names)
-    fieldsFromLine = []
-    fieldsOut = {}
+    n_fields_req = len(names)
+    fields_from_line = []
+    fields_out = {}
 
     # Extend the line if shorter than 80 chars
     ll = len(line)
@@ -44,42 +44,42 @@ def _parse_header_line(line, minValues, widths, types, names):
     # Parse the line for fields
     si = 0
     for n in range(0, len(widths)):
-        fieldsFromLine.append(line[si:si + widths[n]].strip())
+        fields_from_line.append(line[si:si + widths[n]].strip())
         si += widths[n]
     # Check for the number of fields,...
-    nFields = len(fieldsFromLine)
-    if (nFieldsReq < nFields) or (minValues > nFields):
+    n_fields = len(fields_from_line)
+    if (n_fields_req < n_fields) or (min_values > n_fields):
         raise Exception('Error parsing header section; too many or to less' + \
                             'fields found')
     # Mandatory fields
-    for key, n in zip(names[:minValues], range(0, minValues)):
+    for key, n in zip(names[:min_values], range(0, min_values)):
         if types[n] == -1:
             pass
         elif types[n] == 1:
-            fieldsOut.update({key: fieldsFromLine[n]})
+            fields_out.update({key: fields_from_line[n]})
         elif types[n] == 2:
-            fieldsOut.update({key: int(fieldsFromLine[n])})
+            fields_out.update({key: int(fields_from_line[n])})
         else:
-            fieldsOut.update({key: float(fieldsFromLine[n])})
+            fields_out.update({key: float(fields_from_line[n])})
     # Optional fields
-    for key, n in zip(names[minValues:nFields], range(minValues, nFields)):
+    for key, n in zip(names[min_values:n_fields], range(min_values, n_fields)):
         try:
             if types[n] == -1:
                 pass
             elif types[n] == 1:
-                fieldsOut.update({key: fieldsFromLine[n]})
+                fields_out.update({key: fields_from_line[n]})
             elif types[n] == 2:
-                fieldsOut.update({key: int(fieldsFromLine[n])})
+                fields_out.update({key: int(fields_from_line[n])})
             else:
-                fieldsOut.update({key: float(fieldsFromLine[n])})
+                fields_out.update({key: float(fields_from_line[n])})
         except ValueError:
             if types[n] == 1:
-                fieldsOut.update({key: ''})
+                fields_out.update({key: ''})
             elif types[n] == 2:
-                fieldsOut.update({key: 0})
+                fields_out.update({key: 0})
             else:
-                fieldsOut.update({key: 0.0})
-    return fieldsOut
+                fields_out.update({key: 0.0})
+    return fields_out
 
 def _write_record(fh, values, formats, multiline=False, fstring=True):
     """Write a record to the open file using the specified formats.

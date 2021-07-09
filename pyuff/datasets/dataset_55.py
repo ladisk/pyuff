@@ -275,28 +275,28 @@ def prepare_55(
     >>> for i, b in enumerate(modes):
     >>>     mode_shape = np.random.normal(size=len(node_nums))
     >>>     name = 'TestCase'
-    >>>     data=pyuff.prepare_55(
-    >>>         model_type = 1,
-    >>>         id1 = 'NONE',
-    >>>         id2 = 'NONE',
-    >>>         id3 = 'NONE',
-    >>>         id4 = 'NONE',
-    >>>         id5 = 'NONE',
-    >>>         analysis_type = 2,
-    >>>         data_ch = 2,
-    >>>         spec_data_type = 8,
-    >>>         data_type = 2,
-    >>>         r1 = mode_shape,
-    >>>         r2 = mode_shape,
-    >>>         r3 = mode_shape,
-    >>>         n_data_per_node = 3,
-    >>>         node_nums = [1, 2, 3, 4],
-    >>>         load_case = 1,
-    >>>         mode_n = i + 1,
-    >>>         modal_m = 0,
-    >>>         freq = freqs[i],
-    >>>         modal_damp_vis = 0.,
-    >>>         modal_damp_his = 0.)
+    >>>     data = pyuff.prepare_55(
+    >>>         model_type=1,
+    >>>         id1='NONE',
+    >>>         id2='NONE',
+    >>>         id3='NONE',
+    >>>         id4='NONE',
+    >>>         id5='NONE',
+    >>>         analysis_type=2,
+    >>>         data_ch=2,
+    >>>         spec_data_type=8,
+    >>>         data_type=2,
+    >>>         r1=mode_shape,
+    >>>         r2=mode_shape,
+    >>>         r3=mode_shape,
+    >>>         n_data_per_node=3,
+    >>>         node_nums=[1, 2, 3, 4],
+    >>>         load_case=1,
+    >>>         mode_n=i + 1,
+    >>>         modal_m=0,
+    >>>         freq=freqs[i],
+    >>>         modal_damp_vis=0.,
+    >>>         modal_damp_his=0.)
     >>>     uff_datasets.append(data.copy())
     >>>     if save_to_file:
     >>>         uffwrite = pyuff.UFF(save_to_file)
@@ -314,7 +314,6 @@ def prepare_55(
         raise TypeError('id4 must be string.')
     if type(id5) != str and id5 != None:
         raise TypeError('id5 must be string.')
-    
     if model_type not in (0, 1, 2, 3, None):
         raise ValueError('model_type can be 0:Unknown, 1:Structural, 2:Heat Transfer, 3:Fluid Flow')
     if analysis_type not in (2, 3, 5, 7, None):
@@ -343,6 +342,10 @@ def prepare_55(
         raise TypeError('load_case must be integer')
     if type(mode_n) != int and mode_n != None:
         raise TypeError('mode_n must be integer')
+    if np.array(mode_n).dtype != int and mode_n != None:
+        raise TypeError('r6 must be integer')
+    if np.array(freq).dtype != float and freq != None:
+        raise TypeError('freq must be float')
     if type(modal_damp_vis) != float and modal_damp_vis != None:
         raise TypeError('modal_damp_vis must be float')
     if type(modal_damp_his) != float and modal_damp_his != None:

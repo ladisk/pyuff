@@ -76,22 +76,21 @@ def prepare_164(
 
     **Test prepare_164**
 
-    >>> save_to_file='test_pyuff'
+    >>> save_to_file = 'test_pyuff'
     >>> dataset = pyuff.prepare_164(
-    >>>     units_code = 1,
-    >>>     units_description = 'SI units',
-    >>>     temp_mode = 1,
-    >>>     length = 3.28083989501312334,
-    >>>     force = 2.24808943099710480e-01,
-    >>>     temp = 1.8,
-    >>>     temp_offset = 459.67)
-    >>> dataset_out = dataset.copy()
+    >>>     units_code=1,
+    >>>     units_description='SI units',
+    >>>     temp_mode=1,
+    >>>     length=3.28083989501312334,
+    >>>     force=2.24808943099710480e-01,
+    >>>     temp=1.8,
+    >>>     temp_offset=459.67)
     >>> if save_to_file:
     >>>     if os.path.exists(save_to_file):
     >>>         os.remove(save_to_file)
     >>>     uffwrite = pyuff.UFF(save_to_file)
     >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset_out
+    >>> dataset
     """
 
     if units_code not in np.arange(10) and units_code != None:

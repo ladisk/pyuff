@@ -468,22 +468,22 @@ def prepare_58(
     >>>     # this is an artificial 'frf'
     >>>     acceleration_complex = np.random.normal(size=len(frequency)) + 1j * np.random.normal(size=len(frequency))
     >>>     name = 'TestCase'
-    >>>     data=pyuff.prepare_58(
-    >>>         binary = binary[i],
-    >>>         func_type = 4,
-    >>>         rsp_node = response_node,
-    >>>         rsp_dir = response_direction,
-    >>>         ref_dir = reference_direction,
-    >>>         ref_node = reference_node,
-    >>>         data = acceleration_complex,
-    >>>         x = frequency,
-    >>>         id1 = 'id1',
-    >>>         rsp_ent_name = name,
-    >>>         ref_ent_name = name,
-    >>>         abscissa_spacing = 1,
-    >>>         abscissa_spec_data_type = 18,
-    >>>         ordinate_spec_data_type = 12,
-    >>>         orddenom_spec_data_type = 13)
+    >>>     data = pyuff.prepare_58(
+    >>>         binary=binary[i],
+    >>>         func_type=4,
+    >>>         rsp_node=response_node,
+    >>>         rsp_dir=response_direction,
+    >>>         ref_dir=reference_direction,
+    >>>         ref_node=reference_node,
+    >>>         data=acceleration_complex,
+    >>>         x=frequency,
+    >>>         id1='id1',
+    >>>         rsp_ent_name=name,
+    >>>         ref_ent_name=name,
+    >>>         abscissa_spacing=1,
+    >>>         abscissa_spec_data_type=18,
+    >>>         ordinate_spec_data_type=12,
+    >>>         orddenom_spec_data_type=13)
     >>>     uff_datasets.append(data.copy())
     >>>     if save_to_file:
     >>>         uffwrite = pyuff.UFF(save_to_file)

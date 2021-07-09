@@ -68,7 +68,7 @@ def test_prepare_2414():
                 'hysteretic_damping',
                 'real_part_eigenvalue',
                 'imaginary_part_eigenvalue',
-                'real_part_of_modal_A_or_modal_mass,',
+                'real_part_of_modal_A_or_modal_mass',
                 'imaginary_part_of_modal_A_or_modal_mass',
                 'real_part_of_modal_B_or_modal_mass',
                 'imaginary_part_of_modal_B_or_modal_mass',

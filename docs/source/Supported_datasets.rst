@@ -41,8 +41,8 @@ Dataset 55
 .. autofunction:: pyuff.prepare_55
 
 
-Dataset 58<b>
--------------
+Dataset 58 and 58b
+------------------
 
 .. autofunction:: pyuff.prepare_58
 
