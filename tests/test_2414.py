@@ -88,5 +88,4 @@ def test_prepare_2414():
         raise Exception('Not correct type')
 
 if __name__ == '__main__':
-    #test_read_2412()
     test_write_2414()

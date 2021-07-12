@@ -1,4 +1,4 @@
-__version__ = "1.27"
+__version__ = "2.0beta"
 from .pyuff import *
 from .datasets import *
 
