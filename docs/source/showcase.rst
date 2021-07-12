@@ -4,10 +4,12 @@ Showcase
 If required, install pyuff and matplotlib.
 
 .. code:: python
+
     #!!pip install pyuff
     #!!pip install matplotlib
 
 .. code:: python
+
     import numpy as np
     import matplotlib.pyplot as plt
     %matplotlib inline
@@ -63,56 +65,80 @@ Most important keys are ``x``: x-axis and ``data``: y-axis that define the store
 Writing measurement data to UFF file
 --------------------------------------
 
-Here you can see a minimal working example for writing measured accelerance FRF data to the UFF file. First we load the accelerance:
+Here you can see a minimal working example for writing measured accelerance FRF data to the UFF file. First we load the accelerances:
 
 .. code:: python
 
-    measurement = np.genfromtxt('data/meas_point_1.txt', dtype=complex)
+    measurement_point_1 = np.genfromtxt('data/meas_point_1.txt', dtype=complex)
+    measurement_point_2 = np.genfromtxt('data/meas_point_2.txt', dtype=complex)
+    measurement_point_3 = np.genfromtxt('data/meas_point_3.txt', dtype=complex)
 
 .. code:: python
 
-    measurement = np.nan*(1+1.j)
+    measurement_point_1[0] = np.nan*(1+1.j)
+
+.. code:: python
+
+    measurement = [measurement_point_1, measurement_point_2, measurement_point_3]
 
 In the next step we create a UFF file where we add dataset 58 for measurement consisting of the dictionary-like keys containing the measurement data and the information about the mesurement.
 
 .. code:: python
 
-    data = {'type':58, 
-            'func_type':4, 
-            'rsp_node': response_node, 
-            'rsp_dir': response_direction, 
-            'ref_dir': reference_direction, 
-            'ref_node': reference_node,
-            'data': acceleration_complex,
-            'x': frequency,
-            'id1': 'id1', 
-            'rsp_ent_name': name,
-            'ref_ent_name': name,
-            'abscissa_spacing':1,
-            'abscissa_spec_data_type':18,
-            'ordinate_spec_data_type':12,
-            'orddenom_spec_data_type':13}
-    uffwrite = pyuff.UFF('./data/measurement.uff')
-    uffwrite.write_sets(data,'add')
+    for i in range(3):
+        print('Adding point {:}'.format(i + 1))
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        acceleration_complex = measurement[i]
+        frequency = np.arange(0, 1001)
+        name = 'TestCase'
+        data = {'type':58, 
+                'func_type': 4, 
+                'rsp_node': response_node, 
+                'rsp_dir': response_direction, 
+                'ref_dir': reference_direction, 
+                'ref_node': reference_node,
+                'data': acceleration_complex,
+                'x': frequency,
+                'id1': 'id1', 
+                'rsp_ent_name': name,
+                'ref_ent_name': name,
+                'abscissa_spacing':1,
+                'abscissa_spec_data_type':18,
+                'ordinate_spec_data_type':12,
+                'orddenom_spec_data_type':13}
+        uffwrite = pyuff.UFF('./data/measurement.uff')
+        uffwrite._write_set(data,'add')
 
-Or we can use support function ``dict_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
+Or we can use support function ``prepare_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found  in :doc:`Supported_datasets` 
 
 .. code:: python
 
-    pyuff.dict_58(func_type=4, 
-                rsp_node=response_node, 
-                rsp_dir=response_direction, 
-                ref_dir=reference_direction
-                ref_node=reference_node,
-                data=acceleration_complex,
-                x=frequency,
-                id1='id1', 
-                rsp_ent_name=name,
-                ref_ent_name=name,
-                abscissa_spacing=1,
-                abscissa_spec_data_type=18,
-                ordinate_spec_data_type=12,
-                orddenom_spec_data_type=13)
+    for i in range(3):
+        print('Adding point {:}'.format(i + 1))
+        response_node = 1
+        response_direction = 1
+        reference_node = i + 1
+        reference_direction = 1
+        acceleration_complex = measurement[i]
+        frequency = np.arange(0, 1001)
+        name = 'TestCase'
+        pyuff.prepare_58(func_type=4, 
+                    rsp_node=response_node, 
+                    rsp_dir=response_direction, 
+                    ref_dir=reference_direction,
+                    ref_node=reference_node,
+                    data=acceleration_complex,
+                    x=frequency,
+                    id1='id1', 
+                    rsp_ent_name=name,
+                    ref_ent_name=name,
+                    abscissa_spacing=1,
+                    abscissa_spec_data_type=18,
+                    ordinate_spec_data_type=12,
+                    orddenom_spec_data_type=13)
 
 
 

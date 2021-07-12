@@ -6,7 +6,7 @@ import os
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
-def _write58(fh, dset, mode='add', _fileName=None):
+def _write58(fh, dset, mode='add', _filename=None):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         if not (dset['func_type'] in [1, 2, 3, 4, 6]):
@@ -55,25 +55,25 @@ def _write58(fh, dset, mode='add', _fileName=None):
         dset = _opt_fields(dset, dict)
         # Write strings to the file - always in double precision => ord_data_type = 2
         # for real data and 6 for complex data
-        numPts = len(dset['data'])
-        isR = not np.iscomplexobj(dset['data'])
-        if isR:
+        num_pts = len(dset['data'])
+        is_r = not np.iscomplexobj(dset['data'])
+        if is_r:
             # real data
             dset['ord_data_type'] = 4
-            nBytes = numPts * 8
+            n_bytes = num_pts * 8
             if 'n_bytes' in dset.keys():
-                dset['n_bytes'] = nBytes
-            ordDataType = dset['ord_data_type']
+                dset['n_bytes'] = n_bytes
+            ord_data_type = dset['ord_data_type']
         else:
             # complex data
             dset['ord_data_type'] = 6
-            nBytes = numPts * 8
-            ordDataType = 6
+            n_bytes = num_pts * 8
+            ord_data_type = 6
 
-        isEven = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
+        is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
 
         # handling abscissa spacing automatically
-        # isEven = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
+        # is_even = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
         # decode utf to ascii
         for k, v in dset.items():
             if type(v) == str:
@@ -87,7 +87,7 @@ def _write58(fh, dset, mode='add', _fileName=None):
                 bo = 1
             else:
                 bo = 2
-            fh.write('b%6i%6i%12i%12i%6i%6i%12i%12i\n' % (bo, 2, 11, nBytes, 0, 0, 0, 0))
+            fh.write('b%6i%6i%12i%12i%6i%6i%12i%12i\n' % (bo, 2, 11, n_bytes, 0, 0, 0, 0))
         else:
             fh.write('%74s\n' % ' ')
         fh.write('%-80s\n' % dset['id1'])
@@ -99,8 +99,8 @@ def _write58(fh, dset, mode='add', _fileName=None):
                     (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
                     dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
                     dset['ref_node'], dset['ref_dir']))
-        fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ordDataType, numPts, isEven,
-                                                        isEven * dset['abscissa_min'], isEven * dx,
+        fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ord_data_type, num_pts, is_even,
+                                                        is_even * dset['abscissa_min'], is_even * dx,
                                                         dset['z_axis_value']))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
                                                     dset['abscissa_len_unit_exp'], dset['abscissa_force_unit_exp'],
@@ -118,20 +118,20 @@ def _write58(fh, dset, mode='add', _fileName=None):
                                                     dset['z_axis_len_unit_exp'], dset['z_axis_force_unit_exp'],
                                                     dset['z_axis_temp_unit_exp'], dset['z_axis_axis_lab'],
                                                     dset['z_axis_axis_units_lab']))
-        if isR:
-            if isEven:
+        if is_r:
+            if is_even:
                 data = dset['data'].copy()
             else:
-                data = np.zeros(2 * numPts, 'd')
+                data = np.zeros(2 * num_pts, 'd')
                 data[0:-1:2] = dset['x']
                 data[1::2] = dset['data']
         else:
-            if isEven:
-                data = np.zeros(2 * numPts, 'd')
+            if is_even:
+                data = np.zeros(2 * num_pts, 'd')
                 data[0:-1:2] = dset['data'].real
                 data[1::2] = dset['data'].imag
             else:
-                data = np.zeros(3 * numPts, 'd')
+                data = np.zeros(3 * num_pts, 'd')
                 data[0:-2:3] = dset['x']
                 data[1:-1:3] = dset['data'].real
                 data[2::3] = dset['data'].imag
@@ -139,9 +139,9 @@ def _write58(fh, dset, mode='add', _fileName=None):
         if dset['binary']:
             fh.close()
             if mode.lower() == 'overwrite':
-                fh = open(_fileName, 'wb')
+                fh = open(_filename, 'wb')
             elif mode.lower() == 'add':
-                fh = open(_fileName, 'ab')
+                fh = open(_filename, 'ab')
             # write data
             if bo == 1:
                 [fh.write(struct.pack('<d', datai)) for datai in data]
@@ -149,40 +149,40 @@ def _write58(fh, dset, mode='add', _fileName=None):
                 [fh.write(struct.pack('>d', datai)) for datai in data]
             fh.close()
             if mode.lower() == 'overwrite':
-                fh = open(_fileName, 'wt')
+                fh = open(_filename, 'wt')
             elif mode.lower() == 'add':
-                fh = open(_fileName, 'at')
+                fh = open(_filename, 'at')
         else:
-            n4Blocks = len(data) // 4
-            remVals = len(data) % 4
-            if isR:
-                if isEven:
-                    fh.write(n4Blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4Blocks]))
-                    if remVals > 0:
-                        fh.write((remVals * '%20.11e' + '\n') % tuple(data[4 * n4Blocks:]))
+            n4_blocks = len(data) // 4
+            rem_vals = len(data) % 4
+            if is_r:
+                if is_even:
+                    fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                    if rem_vals > 0:
+                        fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
                 else:
-                    fh.write(n4Blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4Blocks]))
-                    if remVals > 0:
+                    fh.write(n4_blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                    if rem_vals > 0:
                         fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
-                        fh.write((''.join(fmt[remVals]) + '\n') % tuple(data[4 * n4Blocks:]))
+                        fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
             else:
-                if isEven:
-                    fh.write(n4Blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4Blocks]))
-                    if remVals > 0:
-                        fh.write((remVals * '%20.11e' + '\n') % tuple(data[4 * n4Blocks:]))
+                if is_even:
+                    fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                    if rem_vals > 0:
+                        fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
                 else:
-                    n3Blocks = len(data) / 3
-                    remVals = len(data) % 3
+                    n3_blocks = len(data) / 3
+                    rem_vals = len(data) % 3
                     # TODO: It breaks here for long measurements. Implement exceptions.
-                    # n3Blocks seems to be a natural number but of the wrong type. Convert for now,
+                    # n3_blocks seems to be a natural number but of the wrong type. Convert for now,
                     # but make assertion to prevent werid things from happening.
-                    if float(n3Blocks - int(n3Blocks)) != 0.0:
+                    if float(n3_blocks - int(n3_blocks)) != 0.0:
                         print('Warning: Something went wrong when savning the uff file.')
-                    n3Blocks = int(n3Blocks)
-                    fh.write(n3Blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3Blocks]))
-                    if remVals > 0:
+                    n3_blocks = int(n3_blocks)
+                    fh.write(n3_blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3_blocks]))
+                    if rem_vals > 0:
                         fmt = ['%13.5e', '%20.11e', '%20.11e']
-                        fh.write((''.join(fmt[remVals]) + '\n') % tuple(data[3 * n3Blocks:]))
+                        fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[3 * n3_blocks:]))
         fh.write('%6i\n' % -1)
         del data
     except KeyError as msg:
@@ -191,12 +191,12 @@ def _write58(fh, dset, mode='add', _fileName=None):
         raise Exception('Error writing data-set #58')
 
 
-def _extract58(blockData):
+def _extract58(block_data):
     """Extract function at nodal DOF - data-set 58."""
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
-        split_header = b''.join(blockData.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
+        split_header = b''.join(block_data.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
         if len(split_header[1]) >= 7:
             if split_header[1][6].lower() == 'b':
                 # Read some addititional fields from the header section
@@ -236,9 +236,9 @@ def _extract58(blockData):
                                                 'z_axis_force_unit_exp', 'z_axis_temp_unit_exp', 'z_axis_axis_lab',
                                                 'z_axis_axis_units_lab']))
         # Body
-        # splitData = ''.join(splitData[13:])
+        # split_data = ''.join(split_data[13:])
         if binary:
-            split_data = b''.join(blockData.splitlines(True)[13:])
+            split_data = b''.join(block_data.splitlines(True)[13:])
             if dset['byte_ordering'] == 1:
                 bo = '<'
             else:
@@ -251,7 +251,7 @@ def _extract58(blockData):
                 values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
         else:
             values = []
-            split_data = blockData.decode('utf-8', errors='replace').splitlines(True)[13:]
+            split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
             if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                 for line in split_data[:-1]:  # '6E13.5'
                     values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
@@ -273,7 +273,7 @@ def _extract58(blockData):
                 raise Exception('Error reading data-set #58b; not proper data case.')
 
             values = np.asarray(values)
-            # values = np.asarray([float(str) for str in splitData],'d')
+            # values = np.asarray([float(str) for str in split_data],'d')
         if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
             # Non-complex ordinate data
             if (dset['abscissa_spacing'] == 0):
@@ -282,10 +282,10 @@ def _extract58(blockData):
                 dset['data'] = values[1::2].copy()
             else:
                 # Even abscissa
-                nVal = len(values)
-                minVal = dset['abscissa_min']
+                n_val = len(values)
+                min_val = dset['abscissa_min']
                 d = dset['abscissa_inc']
-                dset['x'] = np.arange(minVal, minVal + nVal * d, d)
+                dset['x'] = np.arange(min_val, min_val + n_val * d, d)
                 dset['data'] = values.copy()
         elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
             # Complex ordinate data
@@ -295,10 +295,10 @@ def _extract58(blockData):
                 dset['data'] = values[1:-1:3] + 1.j * values[2::3]
             else:
                 # Even abscissa
-                nVal = len(values) / 2
-                minVal = dset['abscissa_min']
+                n_val = len(values) / 2
+                min_val = dset['abscissa_min']
                 d = dset['abscissa_inc']
-                dset['x'] = np.arange(minVal, minVal + nVal * d, d)
+                dset['x'] = np.arange(min_val, min_val + n_val * d, d)
                 dset['data'] = values[0:-1:2] + 1.j * values[1::2]
         del values
     except:
@@ -306,67 +306,67 @@ def _extract58(blockData):
     return dset
 
 
-def dict_58(
-    binary=None,
-    id1=None,
-    id2=None,
-    id3=None,
-    id4=None,
-    id5=None,
+def prepare_58(
+        binary=None,
+        id1=None,
+        id2=None,
+        id3=None,
+        id4=None,
+        id5=None,
 
-    func_type=None,
-    ver_num=None,
-    load_case_id=None,
-    rsp_ent_name=None,
-    rsp_node=None,
-    rsp_dir=None,
-    ref_ent_name=None,
-    ref_node=None,
-    ref_dir=None,
+        func_type=None,
+        ver_num=None,
+        load_case_id=None,
+        rsp_ent_name=None,
+        rsp_node=None,
+        rsp_dir=None,
+        ref_ent_name=None,
+        ref_node=None,
+        ref_dir=None,
 
-    ord_data_type=None,
-    num_pts=None,
-    abscissa_spacing=None,
-    abscissa_min=None,
-    abscissa_inc=None,
-    z_axis_value=None,
+        ord_data_type=None,
+        num_pts=None,
+        abscissa_spacing=None,
+        abscissa_min=None,
+        abscissa_inc=None,
+        z_axis_value=None,
 
-    abscissa_spec_data_type=None,
-    abscissa_len_unit_exp=None,
-    abscissa_force_unit_exp=None,
-    abscissa_temp_unit_exp=None,
-    
-    abscissa_axis_units_lab=None,
+        abscissa_spec_data_type=None,
+        abscissa_len_unit_exp=None,
+        abscissa_force_unit_exp=None,
+        abscissa_temp_unit_exp=None,
+        
+        abscissa_axis_units_lab=None,
 
-    ordinate_spec_data_type=None,
-    ordinate_len_unit_exp=None,
-    ordinate_force_unit_exp=None,
-    ordinate_temp_unit_exp=None,
-    
-    ordinate_axis_units_lab=None,
+        ordinate_spec_data_type=None,
+        ordinate_len_unit_exp=None,
+        ordinate_force_unit_exp=None,
+        ordinate_temp_unit_exp=None,
+        
+        ordinate_axis_units_lab=None,
 
-    orddenom_spec_data_type=None,
-    orddenom_len_unit_exp=None,
-    orddenom_force_unit_exp=None,
-    orddenom_temp_unit_exp=None,
-    
-    orddenom_axis_units_lab=None,
+        orddenom_spec_data_type=None,
+        orddenom_len_unit_exp=None,
+        orddenom_force_unit_exp=None,
+        orddenom_temp_unit_exp=None,
+        
+        orddenom_axis_units_lab=None,
 
-    z_axis_spec_data_type=None,
-    z_axis_len_unit_exp=None,
-    z_axis_force_unit_exp=None,
-    z_axis_temp_unit_exp=None,
-    
-    z_axis_axis_units_lab=None,
+        z_axis_spec_data_type=None,
+        z_axis_len_unit_exp=None,
+        z_axis_force_unit_exp=None,
+        z_axis_temp_unit_exp=None,
+        
+        z_axis_axis_units_lab=None,
 
-    data=None,
-    x=None,
-    spec_data_type=None,
-    byte_ordering=None,
-    fp_format=None,
-    n_ascii_lines=None,
-    n_bytes=None,
-    return_full_dict=False):
+        data=None,
+        x=None,
+        spec_data_type=None,
+        byte_ordering=None,
+        fp_format=None,
+        n_ascii_lines=None,
+        n_bytes=None,
+        return_full_dict=False):
 
     """Name:   Function at Nodal DOF
 
@@ -379,6 +379,8 @@ def dict_58(
     :param id4: R4 F1, ID Line 4, optional
     :param id5: R5 F1, ID Line 5, optional
 
+    **DOF identification**
+
     :param func_type: R6 F1, Function type
     :param ver_num: R6 F3, Version number, optional
     :param load_case_id: R6 F4, Load case identification number, optional
@@ -389,12 +391,16 @@ def dict_58(
     :param ref_node: R6 F9, Reference node
     :param ref_dir: R6 F10, Reference direction
 
+    **Data form**
+
     :param ord_data_type: R7 F1, Ordinate data type, ignored
     :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa, ignored
     :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even), ignored
     :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven), ignored
     :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven), ignored
     :param z_axis_value: R7 F6, Z-axis value (0.0 if unused), optional
+
+    **Abscissa data characteristics**
 
     :param abscissa_spec_data_type: R8 F1, Abscissa specific data type, optional
     :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent, optional
@@ -403,12 +409,16 @@ def dict_58(
     
     :param abscissa_axis_units_lab: R8 F6, Abscissa units label, optional
 
+    **Ordinate (or ordinate numerator) data characteristics**
+
     :param ordinate_spec_data_type: R9 F1, Ordinate specific data type, optional
     :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent, optional
     :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent, optional
     :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent, optional
     
     :param ordinate_axis_units_lab: R9 F6, Ordinate units label, optional
+
+    **Ordinate denominator data characteristics**
 
     :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type, optional
     :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent, optional
@@ -417,12 +427,16 @@ def dict_58(
     
     :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label, optional
 
+    **Z-axis data characteristics**
+
     :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type, optional
     :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent, optional
     :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent, optional
     :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent, optional
     
     :param z_axis_axis_units_lab: R11 F6, Z-axis units label, optional
+
+    **Data values**
 
     :param data: R12 F1, Data values
 
@@ -434,117 +448,209 @@ def dict_58(
     :param n_bytes: R1 F6, Number of bytes (only for binary), ignored
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_58**
+
+    >>> save_to_file = 'test_pyuff'
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>> uff_datasets = []
+    >>> binary = [0, 1, 0]  # ascii of binary
+    >>> frequency = np.arange(10)
+    >>> np.random.seed(0)
+    >>> for i, b in enumerate(binary):
+    >>>     print('Adding point {}'.format(i + 1))
+    >>>     response_node = 1
+    >>>     response_direction = 1
+    >>>     reference_node = i + 1
+    >>>     reference_direction = 1
+    >>>     # this is an artificial 'frf'
+    >>>     acceleration_complex = np.random.normal(size=len(frequency)) + 1j * np.random.normal(size=len(frequency))
+    >>>     name = 'TestCase'
+    >>>     data = pyuff.prepare_58(
+    >>>         binary=binary[i],
+    >>>         func_type=4,
+    >>>         rsp_node=response_node,
+    >>>         rsp_dir=response_direction,
+    >>>         ref_dir=reference_direction,
+    >>>         ref_node=reference_node,
+    >>>         data=acceleration_complex,
+    >>>         x=frequency,
+    >>>         id1='id1',
+    >>>         rsp_ent_name=name,
+    >>>         ref_ent_name=name,
+    >>>         abscissa_spacing=1,
+    >>>         abscissa_spec_data_type=18,
+    >>>         ordinate_spec_data_type=12,
+    >>>         orddenom_spec_data_type=13)
+    >>>     uff_datasets.append(data.copy())
+    >>>     if save_to_file:
+    >>>         uffwrite = pyuff.UFF(save_to_file)
+    >>>         uffwrite._write_set(data, 'add')
+    >>> uff_datasets
     """
 
+    if binary not in (0, 1, None):
+        raise ValueError('binary can be 0 or 1')
+    if type(id1) != str and id1 != None:
+        raise TypeError('id1 must be string.')
+    if type(id2) != str and id2 != None:
+        raise TypeError('id2 must be string.')
+    if type(id3) != str and id3 != None:
+        raise TypeError('id3 must be string.')
+    if type(id4) != str and id4 != None:
+        raise TypeError('id4 must be string.')
+    if type(id5) != str and id5 != None:
+        raise TypeError('id5 must be string.')
+    
+    if func_type not in np.arange(28) and func_type != None:
+        raise ValueError('func_type must be integer between 0 and 27')
+    if np.array(ver_num).dtype != int and ver_num != None:
+        raise TypeError('ver_num must be integer')
+    if np.array(load_case_id).dtype != int and load_case_id != None:
+        raise TypeError('load_case_id must be integer')
+    if type(rsp_ent_name) != str and rsp_ent_name != None:
+        raise TypeError('rsp_ent_name must be string')
+    if np.array(rsp_node).dtype != int and rsp_node != None:
+        raise TypeError('rsp_node must be integer')
+    if rsp_dir not in np.arange(-6,7) and rsp_dir != None:
+        raise ValueError('rsp_dir must be integer between -6 and 6')
+    if type(ref_ent_name) != str and ref_ent_name != None:
+        raise TypeError('rsp_ent_name must be string')
+    if np.array(ref_node).dtype != int and ref_node != None:
+        raise TypeError('ref_node must be int')
+    if ref_dir not in np.arange(-6,7) and ref_dir != None:
+        raise ValueError('ref_dir must be integer between -6 and 6')
+    
+    if ord_data_type not in (2, 4, 5, 6, None):
+        raise ValueError('ord_data_type can be: 2,4,5,6')
+    if np.array(num_pts).dtype != int and num_pts != None:
+        raise TypeError('num_pts must be integer')
+    if abscissa_spacing not in (0, 1, None):
+        raise ValueError('abscissa_spacing can be 0:uneven, 1:even')
+    if np.array(abscissa_min).dtype != float and abscissa_min != None:
+        raise TypeError('abscissa_min must be float')
+    if np.array(abscissa_inc).dtype != float and abscissa_inc != None:
+        raise TypeError('abscissa_inc must be float')
+    if np.array(z_axis_value).dtype != float and z_axis_value != None:
+        raise TypeError('z_axis_value must be float')
+    
+    if abscissa_spec_data_type not in np.arange(21) and abscissa_spec_data_type != None:
+        raise ValueError('abscissa_spec_data_type must be integer between 0 nd 21')
+    if np.array(abscissa_len_unit_exp).dtype != int and abscissa_len_unit_exp != None:
+        raise TypeError('abscissa_len_unit_exp must be integer')
+    if np.array(abscissa_force_unit_exp).dtype != int and abscissa_force_unit_exp != None:
+        raise TypeError('abscissa_force_unit_exp must be integer')
+    if np.array(abscissa_temp_unit_exp).dtype != int and abscissa_temp_unit_exp != None:
+        raise TypeError('abscissa_temp_unit_exp must be integer')
+    if type(abscissa_axis_units_lab) != str and abscissa_axis_units_lab != None:
+        raise TypeError('abscissa_axis_units_lab must be string')
 
-    dataset={'type': 58,
-            'binary': binary,
-            'id1': id1,
-            'id2': id2,
-            'id3': id3,
-            'id4': id4,
-            'id5': id5,
+    if ordinate_spec_data_type not in np.arange(21) and ordinate_spec_data_type != None:
+        raise ValueError('ordinate_spec_data_type must be integer between 0 nd 21')
+    if np.array(ordinate_len_unit_exp).dtype != int and ordinate_len_unit_exp != None:
+        raise TypeError('ordinate_len_unit_exp must be integer')
+    if np.array(ordinate_force_unit_exp).dtype != int and ordinate_force_unit_exp != None:
+        raise TypeError('ordinate_force_unit_exp must be integer')
+    if np.array(ordinate_temp_unit_exp).dtype != int and ordinate_temp_unit_exp != None:
+        raise TypeError('ordinate_temp_unit_exp must be integer')
+    if type(ordinate_axis_units_lab) != str and ordinate_axis_units_lab != None:
+        raise TypeError('ordinate_axis_units_lab must be string')
 
-            'func_type': func_type,
-            'ver_num': ver_num,
-            'load_case_id': load_case_id,
-            'rsp_ent_name': rsp_ent_name,
-            'rsp_node': rsp_node,
-            'rsp_dir': rsp_dir,
-            'ref_ent_name': ref_ent_name,
-            'ref_node': ref_node,
-            'ref_dir': ref_dir,
+    if orddenom_spec_data_type not in np.arange(21) and orddenom_spec_data_type != None:
+        raise ValueError('orddenom_spec_data_type must be integer between 0 nd 21')
+    if np.array(orddenom_len_unit_exp).dtype != int and orddenom_len_unit_exp != None:
+        raise TypeError('orddenom_len_unit_exp must be integer')
+    if np.array(orddenom_force_unit_exp).dtype != int and orddenom_force_unit_exp != None:
+        raise TypeError('orddenom_force_unit_exp must be integer')
+    if np.array(orddenom_temp_unit_exp).dtype != int and orddenom_temp_unit_exp != None:
+        raise TypeError('orddenom_temp_unit_exp must be integer')
+    if type(orddenom_axis_units_lab) != str and orddenom_axis_units_lab != None:
+        raise TypeError('orddenom_axis_units_lab must be string')
 
-            'ord_data_type': ord_data_type,
-            'num_pts': num_pts,
-            'abscissa_spacing': abscissa_spacing,
-            'abscissa_min': abscissa_min,
-            'abscissa_inc': abscissa_inc,
-            'z_axis_value': z_axis_value,
+    if z_axis_spec_data_type not in np.arange(21) and z_axis_spec_data_type != None:
+        raise ValueError('z_axis_spec_data_type must be integer between 0 nd 21')
+    if np.array(z_axis_len_unit_exp).dtype != int and z_axis_len_unit_exp != None:
+        raise TypeError('z_axis_len_unit_exp must be integer')
+    if np.array(z_axis_force_unit_exp).dtype != int and z_axis_force_unit_exp != None:
+        raise TypeError('z_axis_force_unit_exp must be integer')
+    if np.array(z_axis_temp_unit_exp).dtype != int and z_axis_temp_unit_exp != None:
+        raise TypeError('z_axis_temp_unit_exp must be integer')
+    if type(z_axis_axis_units_lab) != str and z_axis_axis_units_lab != None:
+        raise TypeError('z_axis_axis_units_lab must be string')
+    
+    if np.array(data).dtype != float and np.array(data).dtype != complex:
+        if data != None:
+            raise TypeError('data must be float')
+    
 
-            'abscissa_spec_data_type': abscissa_spec_data_type,
-            'abscissa_len_unit_exp': abscissa_len_unit_exp,
-            'abscissa_force_unit_exp': abscissa_force_unit_exp,
-            'abscissa_temp_unit_exp': abscissa_temp_unit_exp,
-            
-            'abscissa_axis_units_lab': abscissa_axis_units_lab,
 
-            'ordinate_spec_data_type': ordinate_spec_data_type,
-            'ordinate_len_unit_exp': ordinate_len_unit_exp,
-            'ordinate_force_unit_exp': ordinate_force_unit_exp,
-            'ordinate_temp_unit_exp': ordinate_temp_unit_exp,
-            
-            'ordinate_axis_units_lab': ordinate_axis_units_lab,
+    dataset={
+        'type': 58,
+        'binary': binary,
+        'id1': id1,
+        'id2': id2,
+        'id3': id3,
+        'id4': id4,
+        'id5': id5,
 
-            'orddenom_spec_data_type': orddenom_spec_data_type,
-            'orddenom_len_unit_exp': orddenom_len_unit_exp,
-            'orddenom_force_unit_exp': orddenom_force_unit_exp,
-            'orddenom_temp_unit_exp': orddenom_temp_unit_exp,
-            
-            'orddenom_axis_units_lab': orddenom_axis_units_lab,
+        'func_type': func_type,
+        'ver_num': ver_num,
+        'load_case_id': load_case_id,
+        'rsp_ent_name': rsp_ent_name,
+        'rsp_node': rsp_node,
+        'rsp_dir': rsp_dir,
+        'ref_ent_name': ref_ent_name,
+        'ref_node': ref_node,
+        'ref_dir': ref_dir,
 
-            'z_axis_spec_data_type': z_axis_spec_data_type,
-            'z_axis_len_unit_exp': z_axis_len_unit_exp,
-            'z_axis_force_unit_exp': z_axis_force_unit_exp,
-            'z_axis_temp_unit_exp': z_axis_temp_unit_exp,
-            
-            'z_axis_axis_units_lab': z_axis_axis_units_lab,
+        'ord_data_type': ord_data_type,
+        'num_pts': num_pts,
+        'abscissa_spacing': abscissa_spacing,
+        'abscissa_min': abscissa_min,
+        'abscissa_inc': abscissa_inc,
+        'z_axis_value': z_axis_value,
 
-            'data': data,
-            'x': x,
-            'spec_data_type': spec_data_type,
-            'byte_ordering': byte_ordering,
-            'fp_format': fp_format,
-            'n_ascii_lines': n_ascii_lines,
-            'n_bytes': n_bytes
-             }
+        'abscissa_spec_data_type': abscissa_spec_data_type,
+        'abscissa_len_unit_exp': abscissa_len_unit_exp,
+        'abscissa_force_unit_exp': abscissa_force_unit_exp,
+        'abscissa_temp_unit_exp': abscissa_temp_unit_exp,
+        
+        'abscissa_axis_units_lab': abscissa_axis_units_lab,
+
+        'ordinate_spec_data_type': ordinate_spec_data_type,
+        'ordinate_len_unit_exp': ordinate_len_unit_exp,
+        'ordinate_force_unit_exp': ordinate_force_unit_exp,
+        'ordinate_temp_unit_exp': ordinate_temp_unit_exp,
+        
+        'ordinate_axis_units_lab': ordinate_axis_units_lab,
+
+        'orddenom_spec_data_type': orddenom_spec_data_type,
+        'orddenom_len_unit_exp': orddenom_len_unit_exp,
+        'orddenom_force_unit_exp': orddenom_force_unit_exp,
+        'orddenom_temp_unit_exp': orddenom_temp_unit_exp,
+        
+        'orddenom_axis_units_lab': orddenom_axis_units_lab,
+
+        'z_axis_spec_data_type': z_axis_spec_data_type,
+        'z_axis_len_unit_exp': z_axis_len_unit_exp,
+        'z_axis_force_unit_exp': z_axis_force_unit_exp,
+        'z_axis_temp_unit_exp': z_axis_temp_unit_exp,
+        
+        'z_axis_axis_units_lab': z_axis_axis_units_lab,
+
+        'data': data,
+        'x': x,
+        'spec_data_type': spec_data_type,
+        'byte_ordering': byte_ordering,
+        'fp_format': fp_format,
+        'n_ascii_lines': n_ascii_lines,
+        'n_bytes': n_bytes
+        }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)
 
 
     return dataset
-
-
-def prepare_test_58(save_to_file=''):
-    if save_to_file:
-        if os.path.exists(save_to_file):
-            os.remove(save_to_file)
-
-    uff_datasets = []
-    binary = [0, 1, 0]  # ascii of binary
-    frequency = np.arange(10)
-    np.random.seed(0)
-    for i, b in enumerate(binary):
-        print('Adding point {}'.format(i + 1))
-        response_node = 1
-        response_direction = 1
-        reference_node = i + 1
-        reference_direction = 1
-        # this is an artificial 'frf'
-        acceleration_complex = np.random.normal(size=len(frequency)) + \
-                               1j * np.random.normal(size=len(frequency))
-        name = 'TestCase'
-        data = {'type': 58,
-                'binary': binary[i],
-                'func_type': 4,
-                'rsp_node': response_node,
-                'rsp_dir': response_direction,
-                'ref_dir': reference_direction,
-                'ref_node': reference_node,
-                'data': acceleration_complex,
-                'x': frequency,
-                'id1': 'id1',
-                'rsp_ent_name': name,
-                'ref_ent_name': name,
-                'abscissa_spacing': 1,
-                'abscissa_spec_data_type': 18,
-                'ordinate_spec_data_type': 12,
-                'orddenom_spec_data_type': 13}
-        uff_datasets.append(data.copy())
-        if save_to_file:
-            uffwrite = pyuff.UFF(save_to_file)
-            uffwrite._write_set(data, 'add')
-    return uff_datasets
-
-

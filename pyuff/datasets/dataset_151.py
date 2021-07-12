@@ -38,41 +38,41 @@ def _write151(fh, dset):
         raise Exception('Error writing data-set #151')
 
 
-def _extract151(blockData):
+def _extract151(block_data):
     """Extract dset data - data-set 151."""
     dset = {'type': 151}
     try:
-        splitData = blockData.splitlines(True)
-        dset.update(_parse_header_line(splitData[2], 1, [80], [1], ['model_name']))
-        dset.update(_parse_header_line(splitData[3], 1, [80], [1], ['description']))
-        dset.update(_parse_header_line(splitData[4], 1, [80], [1], ['db_app']))
-        dset.update(_parse_header_line(splitData[5], 2, [10, 10, 10, 10, 10], [1, 1, 2, 2, 2],
+        split_data = block_data.splitlines(True)
+        dset.update(_parse_header_line(split_data[2], 1, [80], [1], ['model_name']))
+        dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['description']))
+        dset.update(_parse_header_line(split_data[4], 1, [80], [1], ['db_app']))
+        dset.update(_parse_header_line(split_data[5], 2, [10, 10, 10, 10, 10], [1, 1, 2, 2, 2],
                                             ['date_db_created', 'time_db_created', 'version_db1', 'version_db2',
                                                 'file_type']))
-        dset.update(_parse_header_line(splitData[6], 1, [10, 10], [1, 1], ['date_db_saved', 'time_db_saved']))
-        dset.update(_parse_header_line(splitData[7], 1, [80], [1], ['program']))
+        dset.update(_parse_header_line(split_data[6], 1, [10, 10], [1, 1], ['date_db_saved', 'time_db_saved']))
+        dset.update(_parse_header_line(split_data[7], 1, [80], [1], ['program']))
         dset.update(
-            _parse_header_line(splitData[8], 1, [10, 10], [1, 1], ['date_file_written', 'time_file_written']))
+            _parse_header_line(split_data[8], 1, [10, 10], [1, 1], ['date_file_written', 'time_file_written']))
     except:
         raise Exception('Error reading data-set #151')
     return dset
 
 
-def dict_151(
-    model_name=None,
-    description=None,
-    db_app=None,
-    date_db_created=None,
-    time_db_created=None,
-    version_db1=None,
-    version_db2=None,
-    file_type=None,
-    date_db_saved=None,
-    time_db_saved=None,
-    program=None,
-    date_file_written=None,
-    time_file_written=None,
-    return_full_dict=False):
+def prepare_151(
+        model_name=None,
+        description=None,
+        db_app=None,
+        date_db_created=None,
+        time_db_created=None,
+        version_db1=None,
+        version_db2=None,
+        file_type=None,
+        date_db_saved=None,
+        time_db_saved=None,
+        program=None,
+        date_db_written=None,
+        time_db_written=None,
+        return_full_dict=False):
 
     """Name: Header
 
@@ -85,32 +85,84 @@ def dict_151(
     :param time_db_created: R4 F2, Time database created, optional
     :param version_db1: R4 F3, Version string 1 of the database, optional
     :param version_db2: R4 F4, Version string 2 of the database, optional
-    :param file_type: R4 F5, File type, optional
+    :param file_type: R4 F5, File type. 0:Universal, 1:Archive, 2:Other, optional
     :param date_db_saved: R5 F1, Date database last saved, optional
     :param time_db_saved: R5 F2, Time database last saved, optional
     :param program: R6 F1, Program which created universal file
-    :param date_file_written: R7 F1, Date universal file was written, optional
-    :param time_file_written: R7 F2 Time universal file was written, optional
+    :param date_db_written: R7 F1, Date universal file was written, optional
+    :param time_db_written: R7 F2 Time universal file was written, optional
 
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     
-    """
+    **Test prepare_151**
 
-    dataset={'type': 151,
-            'model_name': model_name,
-            'description': description,
-            'db_app': db_app,
-            'date_db_created': date_db_created,
-            'time_db_created': time_db_created,
-            'version_db1': version_db1,
-            'version_db2': version_db2,
-            'file_type': file_type,
-            'date_db_saved': date_db_saved,
-            'time_db_saved': time_db_saved,
-            'program': program,
-            'date_file_written': date_file_written,
-            'time_file_written': time_file_written,
-            }
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_151(
+    >>>     model_name='Model file name',
+    >>>     description='Model file description',
+    >>>     db_app='Program which created DB',
+    >>>     date_db_created='27-Jan-16',
+    >>>     time_db_created='14:38:15',
+    >>>     version_db1=1,
+    >>>     version_db2=2,
+    >>>     file_type=0,
+    >>>     date_db_saved='28-Jan-16',
+    >>>     time_db_saved='14:38:16',
+    >>>     program='OpenModal',
+    >>>     date_db_written='29-Jan-16',
+    >>>     time_db_written='14:38:17')
+    >>> dataset
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset
+    """
+    if type(model_name) != str and model_name != None:
+        raise TypeError('model_name must be string')
+    if type(description) != str and description != None:
+        raise TypeError('description must be string')
+    if type(db_app) != str and db_app != None:
+        raise TypeError('db_app must be string')
+    if type(date_db_created) != str and date_db_created != None:
+        raise TypeError('date_db_created must be string')
+    if type(time_db_created) != str and time_db_created != None:
+        raise TypeError('time_db_created must be string')
+    if np.array(version_db1).dtype != int and version_db1 != None:
+        raise TypeError('version_db1 must be integer')
+    if np.array(version_db2).dtype != int and version_db2 != None:
+        raise TypeError('version_db2 must be integer')
+    if file_type not in (0, 1, 2, None):
+        raise ValueError('file type can be 0:Universal, 1:Archive, 2:Other')
+    if type(date_db_saved) != str and date_db_saved != None:
+        raise TypeError('date_db_saved must be string')
+    if type(time_db_saved) != str and time_db_saved != None:
+        raise TypeError('time_db_saved must be string')
+    if type(program) != str and program != None:
+        raise TypeError('program must be string')
+    if type(date_db_written) != str and date_db_written != None:
+        raise TypeError('date_db_written must be string')
+    if type(time_db_written) != str and time_db_written != None:
+        raise TypeError('time_db_written must be string')
+
+
+    dataset={
+        'type': 151,
+        'model_name': model_name,
+        'description': description,
+        'db_app': db_app,
+        'date_db_created': date_db_created,
+        'time_db_created': time_db_created,
+        'version_db1': version_db1,
+        'version_db2': version_db2,
+        'file_type': file_type,
+        'date_db_saved': date_db_saved,
+        'time_db_saved': time_db_saved,
+        'program': program,
+        'date_db_written': date_db_written,
+        'time_db_written': time_db_written,
+        }
     
 
     if return_full_dict is False:
@@ -118,32 +170,3 @@ def dict_151(
 
 
     return dataset
-
-
-def prepare_test_151(save_to_file=''):
-    dataset = {'type': 151,  # Header
-               'model_name': 'Model file name',  # 80A1, model file name
-               'description': 'Model file description',  # 80A1, model file description
-               'db_app': 'Program which created DB',  # 80A1, program which created DB
-               'date_db_created': '27-Jan-16',  # 10A1, date database created (DD-MMM-YY)
-               'time_db_created': '14:38:15',  # 10A1, time database created (HH:MM:SS)
-               'version_db1': 1,  # I10, Version from database
-               'version_db2': 2,  # I10, Subversion from database
-               'file_type': 0,  # I10, File type (0  Universal, 1 Archive, 2 Other)
-               'date_db_saved': '28-Jan-16',  # 10A1, date database saved (DD-MMM-YY)
-               'time_db_saved': '14:38:16',  # 10A1, time database saved (HH:MM:SS)
-               'program': 'OpenModal',  # 80A1, program which created DB
-               'date_db_written': '29-Jan-16',  # 10A1, date database written (DD-MMM-YY)
-               'time_db_written': '14:38:17',  # 10A1, time database written (HH:MM:SS)
-               }
-
-    dataset_out = dataset.copy()
-
-    if save_to_file:
-        if os.path.exists(save_to_file):
-            os.remove(save_to_file)
-        uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
-
-    return dataset_out
-

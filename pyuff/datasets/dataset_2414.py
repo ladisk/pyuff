@@ -71,13 +71,13 @@ def _write2414(fh, dset):
         raise Exception('Error writing data-set #2414')
 
 
-def _extract2414(blockData):
+def _extract2414(block_data):
     """Extract analysis data - data-set 2414."""
     dset = {'type': 2414}
     # Read data
     try:
         binary = False
-        split_header = blockData.splitlines(True)[:15]  # Keep the line breaks!
+        split_header = block_data.splitlines(True)[:15]  # Keep the line breaks!
         dset.update(_parse_header_line(split_header[2], 1, [80], [2], ['analysis_dataset_label'])) #Loadcase number
         dset.update(_parse_header_line(split_header[3], 1, [80], [1], ['analysis_dataset_name'])) # usually with the frequency
         dset.update(_parse_header_line(split_header[4], 1, [80], [2], ['dataset_location']))
@@ -105,10 +105,10 @@ def _extract2414(blockData):
                                             'real_part_of_modal_B_or_modal_mass', 'imaginary_part_of_modal_B_or_modal_mass']))
         if dset['analysis_type'] == 5:
             # frequency response 
-            splitData = ''.join(blockData.splitlines(True)[15:])
-            splitData = splitData.split()
+            split_data = ''.join(block_data.splitlines(True)[15:])
+            split_data = split_data.split()
             if dset['data_type'] == 5 and dset['number_of_data_values_for_the_data_component'] == 3:
-                values = np.asarray([float(str) for str in splitData], 'd')
+                values = np.asarray([float(str) for str in split_data], 'd')
                 dset['node_nums'] = np.array(values[::7].copy(), dtype=int)
                 dset['x'] = values[1::7].copy()+values[2::7].copy()*1j
                 dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
@@ -120,56 +120,57 @@ def _extract2414(blockData):
     return dset
 
 
-def dict_2414(
-    analysis_dataset_label=None,
-    analysis_dataset_name=None,
-    dataset_location=None,
-    id1=None,
-    id2=None,
-    id3=None,
-    id4=None,
-    id5=None,
-    model_type=None,
-    analysis_type=None,
-    data_characteristic=None,
-    result_type=None,
-    data_type=None,
-    number_of_data_values_for_the_data_component=None,
-    design_set_id=None,
-    iteration_number=None,
-    solution_set_id=None,
-    boundary_condition=None,
-    load_set=None,
-    mode_number=None,
-    time_step_number=None,
-    frequency_number=None,
-    creation_option=None,
-    number_retained=None,
-    time=None,
-    frequency=None,
-    eigenvalue=None,
-    modal_mass=None,
-    viscous_damping=None,
-    hysteretic_damping=None,
-    real_part_eigenvalue=None,
-    imaginary_part_eigenvalue=None,
-    real_part_of_modal_A_or_modal_mass=None,
-    imaginary_part_of_modal_A_or_modal_mass=None,
-    real_part_of_modal_B_or_modal_mass=None,
-    imaginary_part_of_modal_B_or_modal_mass=None,
-    d=None,
-    node_nums=None,
-    x=None,
-    y=None,
-    z=None,
-    return_full_dict=False):
+def prepare_2414(
+        analysis_dataset_label=None,
+        analysis_dataset_name=None,
+        dataset_location=None,
+        id1=None,
+        id2=None,
+        id3=None,
+        id4=None,
+        id5=None,
+        model_type=None,
+        analysis_type=None,
+        data_characteristic=None,
+        result_type=None,
+        data_type=None,
+        number_of_data_values_for_the_data_component=None,
+        design_set_id=None,
+        iteration_number=None,
+        solution_set_id=None,
+        boundary_condition=None,
+        load_set=None,
+        mode_number=None,
+        time_step_number=None,
+        frequency_number=None,
+        creation_option=None,
+        number_retained=None,
+        time=None,
+        frequency=None,
+        eigenvalue=None,
+        modal_mass=None,
+        viscous_damping=None,
+        hysteretic_damping=None,
+        real_part_eigenvalue=None,
+        imaginary_part_eigenvalue=None,
+        real_part_of_modal_A_or_modal_mass=None,
+        imaginary_part_of_modal_A_or_modal_mass=None,
+        real_part_of_modal_B_or_modal_mass=None,
+        imaginary_part_of_modal_B_or_modal_mass=None,
+        d=None,
+        node_nums=None,
+        x=None,
+        y=None,
+        z=None,
+        return_full_dict=False):
     """Name: Analysis Data
 
     R-Record, F-Field
 
     :param analysis_dataset_label: R1 F1, Analysis dataset label
     :param analysis_dataset_name: R2 F1, Analysis dataset name 
-    :param dataset_location: R3 F1, Dataset location
+    :param dataset_location: R3 F1, Dataset location, 1:Data at nodes, 2:Data on elements, 3:Data at nodes on elements, 5:Data at points
+
     :param id1: R4 F1, ID line 1
     :param id2: R5 F1, ID line 2
     :param id3: R6 F1, ID line 3
@@ -212,58 +213,195 @@ def dict_2414(
     :param real_part_of_modal_B_or_modal_mass,: R13 F1,
     :param imaginary_part_of_modal_B_or_modal_mass: R13 F1,
     :param node_nums: R14 F1, Node number
-    :param d: R15 F1, Data at this node (NDVAL real or complex values) **check**
+    :param d: R15 F1, Data at this node (NDVAL real or complex values)
     :param x: R15 F1,
     :param y: R15 F1,
     :param z: R15 F1,
-    
+
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_2414**
+
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_2414(
+    >>>     analysis_dataset_label=1,
+    >>>     analysis_dataset_name='Solid displacement at 1.00000e+02 Hz',
+    >>>     dataset_location=1,
+    >>>     id1='FEMTown to UNV output driver',
+    >>>     id2=' Analysis',
+    >>>     id3='Solid displacement at 1.00000e+02 Hz',
+    >>>     id4='LoadCase 1',
+    >>>     id5='none',
+    >>>     model_type=0,
+    >>>     analysis_type=5,
+    >>>     data_characteristic=2,
+    >>>     result_type=8,
+    >>>     data_type=5,
+    >>>     number_of_data_values_for_the_data_component=3,
+    >>>     design_set_id=1,
+    >>>     iteration_number=0,
+    >>>     solution_set_id=1,
+    >>>     boundary_condition=0,
+    >>>     load_set=1,
+    >>>     mode_number=0,
+    >>>     time_step_number=0,
+    >>>     frequency_number=0,
+    >>>     creation_option=1,
+    >>>     number_retained=1,
+    >>>     time=0.0,
+    >>>     frequency=100.0,
+    >>>     eigenvalue=100.0,
+    >>>     modal_mass=0.0,
+    >>>     viscous_damping=0.0,
+    >>>     hysteretic_damping=0.0,
+    >>>     real_part_eigenvalue=0.0,
+    >>>     imaginary_part_eigenvalue=0.0,
+    >>>     real_part_of_modal_A_or_modal_mass=0.0,
+    >>>     imaginary_part_of_modal_A_or_modal_mass=0.0,
+    >>>     real_part_of_modal_B_or_modal_mass=0.0,
+    >>>     imaginary_part_of_modal_B_or_modal_mass=0.0,
+    >>>     node_nums=np.array([29, 30, 31]),
+    >>>     x=np.array([2.84811e-09+1.73733e-09j, 3.11873e-09+1.19904e-09j, 3.28182e-09+6.12300e-10j]),
+    >>>     y=np.array([-7.13813e-10+6.53419e-10j, -4.95859e-10+8.07390e-10j, -2.52772e-10+9.05991e-10j]),
+    >>>     z=np.array([4.28828e-10+2.47563e-10j, 4.65334e-10+1.70107e-10j, 4.87383e-10+8.66597e-11j]))
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite.write_sets(dataset, mode='add')
+    >>> dataset
     """
+    if np.array(analysis_dataset_label).dtype != int and analysis_dataset_label != None:
+        raise TypeError('analysis_dataset_label must be integer')
+    if type(analysis_dataset_name) != str and analysis_dataset_name != None:
+         raise TypeError('analysis_dataset_name must be string')
+    if dataset_location not in (1, 2, 3, 5, None):
+        raise ValueError('dataset_location can be: 1, 2, 3, 5')
+    if type(id1) != str and id1 != None:
+         raise TypeError('id1 must be string')
+    if type(id2) != str and id2 != None:
+         raise TypeError('id2 must be string')
+    if type(id3) != str and id3 != None:
+         raise TypeError('id3 must be string')
+    if type(id4) != str and id4 != None:
+         raise TypeError('id4 must be string')    
+    if type(id5) != str and id5 != None:
+         raise TypeError('id5 must be string')
 
+    if model_type not in (0, 1, 2, 3, None):
+        raise ValueError('model_type can be: 0, 1, 2, 3')
+    if analysis_type not in (0, 1, 2, 3, 4, 5, 6, 7, 9, None):
+        raise ValueError('analysis_type can be: 0, 1, 2, 3, 4, 6, 7, 9')
+    if data_characteristic not in (0, 1, 2, 3, 4, 6, None):
+        raise ValueError('data_characteristic can be: 0, 1, 2, 3, 4, 6')
+    if type(result_type) != int and result_type != None:
+        raise TypeError('result type must be integer')
+    if data_type not in (1, 2, 4, 5, 6, None):
+        raise ValueError('data_characteristic can be: 1, 2, 4, 5, 6')
+    if np.array(number_of_data_values_for_the_data_component).dtype != int and number_of_data_values_for_the_data_component != None:
+        raise TypeError('number_of_data_values_for_the_data_component type must be integer')
+    if np.array(design_set_id).dtype != int and design_set_id != None:
+        raise TypeError('design_set_id must be integer')
+    if np.array(iteration_number).dtype != int and iteration_number != None:
+        raise TypeError('iteration_number must be integer')
+    if np.array(solution_set_id).dtype != int and solution_set_id != None:
+        raise TypeError('solution_set_id must be integer')
+    if np.array(boundary_condition).dtype != int and boundary_condition != None:
+        raise TypeError('boundary_condition must be integer')
+    if np.array(load_set).dtype != int and load_set != None:
+        raise TypeError('load_set must be integer')
+    if np.array(mode_number).dtype != int and mode_number != None:
+        raise TypeError('mode_number must be integer')
+    if np.array(time_step_number).dtype != int and time_step_number != None:
+        raise TypeError('time_step_number must be integer')
+    if np.array(frequency_number).dtype != int and frequency_number != None:
+        raise TypeError('frequency_number must be integer')
+    
+    if np.array(creation_option).dtype != int and creation_option != None:
+        raise TypeError('creation_option must be integer')
+    if np.array(number_retained).dtype != int and number_retained != None:
+        raise TypeError('number_retained must be integer')
+    
+    if np.array(time).dtype != float and time != None:
+        raise TypeError('time must be float')
+    if np.array(frequency).dtype != float and frequency != None:
+        raise TypeError('frequency must be float')
+    if np.array(eigenvalue).dtype != float and eigenvalue != None:
+        raise TypeError('eigenvalue must be float')
+    if np.array(modal_mass).dtype != float and modal_mass != None:
+        raise TypeError('modal_mass must be float')
+    if np.array(viscous_damping).dtype != float and viscous_damping != None:
+        raise TypeError('viscous_damping must be float')
+    if np.array(hysteretic_damping).dtype != float and hysteretic_damping != None:
+        raise TypeError('hysteretic_damping must be float')
+    if np.array(real_part_eigenvalue).dtype != float and real_part_eigenvalue != None:
+        raise TypeError('real_part_eigenvalue must be float')
+    if np.array(imaginary_part_eigenvalue).dtype != float and imaginary_part_eigenvalue != None:
+        raise TypeError('imaginary_part_eigenvalue must be float')
+    if np.array(real_part_of_modal_A_or_modal_mass).dtype != float and real_part_of_modal_A_or_modal_mass != None:
+        raise TypeError('real_part_of_modal_A_or_modal_mass must be float')
+    if np.array(imaginary_part_of_modal_A_or_modal_mass).dtype != float and imaginary_part_of_modal_A_or_modal_mass != None:
+        raise TypeError('imaginary_part_of_modal_A_or_modal_mass must be float')
+    if np.array(real_part_of_modal_B_or_modal_mass).dtype != float and real_part_of_modal_B_or_modal_mass != None:
+        raise TypeError('real_part_of_modal_B_or_modal_mass must be float')
+    if np.array(imaginary_part_of_modal_B_or_modal_mass).dtype != float and imaginary_part_of_modal_B_or_modal_mass != None:
+        raise TypeError('imaginary_part_of_modal_B_or_modal_mass must be float')
+    
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integer')
+    if np.array(d).dtype != float and d != None:
+        raise TypeError('d must be float')
+    if np.array(x).dtype != float and np.array(x).dtype != complex and x != None:
+        raise TypeError('x must be float')
+    if np.array(y).dtype != float and np.array(y).dtype != complex and y != None:
+        raise TypeError('y must be float')
+    if np.array(z).dtype != float and np.array(z).dtype != complex and z != None:
+        raise TypeError('z must be float')
 
-    dataset={'type': 2414,
-            'analysis_dataset_label': analysis_dataset_label,
-            'analysis_dataset_name': analysis_dataset_name,
-            'dataset_location': dataset_location,
-            'id1': id1,
-            'id2': id2,
-            'id3': id3,
-            'id4': id4,
-            'id5': id5,
-            'model_type': model_type,
-            'analysis_type': analysis_type,
-            'data_characteristic': data_characteristic,
-            'result_type': result_type,
-            'data_type': data_type,
-            'number_of_data_values_for_the_data_component': number_of_data_values_for_the_data_component,
-            'design_set_id': design_set_id,
-            'iteration_number': iteration_number,
-            'solution_set_id': solution_set_id,
-            'boundary_condition': boundary_condition,
-            'load_set': load_set,
-            'mode_number': mode_number,
-            'time_step_number': time_step_number,
-            'frequency_number': frequency_number,
-            'creation_option': creation_option,
-            'number_retained': number_retained,
-            'time': time,
-            'frequency': frequency,
-            'eigenvalue': eigenvalue,
-            'modal_mass': modal_mass,
-            'viscous_damping': viscous_damping,
-            'hysteretic_damping': hysteretic_damping,
-            'real_part_eigenvalue': real_part_eigenvalue,
-            'imaginary_part_eigenvalue': imaginary_part_eigenvalue,
-            'real_part_of_modal_A_or_modal_mass,': real_part_of_modal_A_or_modal_mass, 
-            'imaginary_part_of_modal_A_or_modal_mass': imaginary_part_of_modal_A_or_modal_mass,
-            'real_part_of_modal_B_or_modal_mass,': real_part_of_modal_B_or_modal_mass, 
-            'imaginary_part_of_modal_B_or_modal_mass': imaginary_part_of_modal_B_or_modal_mass,
-            'd': d,
-            'node_nums': node_nums,
-            'x': x,
-            'y': y,
-            'z': z
-            }
+    dataset={
+        'type': 2414,
+        'analysis_dataset_label': analysis_dataset_label,
+        'analysis_dataset_name': analysis_dataset_name,
+        'dataset_location': dataset_location,
+        'id1': id1,
+        'id2': id2,
+        'id3': id3,
+        'id4': id4,
+        'id5': id5,
+        'model_type': model_type,
+        'analysis_type': analysis_type,
+        'data_characteristic': data_characteristic,
+        'result_type': result_type,
+        'data_type': data_type,
+        'number_of_data_values_for_the_data_component': number_of_data_values_for_the_data_component,
+        'design_set_id': design_set_id,
+        'iteration_number': iteration_number,
+        'solution_set_id': solution_set_id,
+        'boundary_condition': boundary_condition,
+        'load_set': load_set,
+        'mode_number': mode_number,
+        'time_step_number': time_step_number,
+        'frequency_number': frequency_number,
+        'creation_option': creation_option,
+        'number_retained': number_retained,
+        'time': time,
+        'frequency': frequency,
+        'eigenvalue': eigenvalue,
+        'modal_mass': modal_mass,
+        'viscous_damping': viscous_damping,
+        'hysteretic_damping': hysteretic_damping,
+        'real_part_eigenvalue': real_part_eigenvalue,
+        'imaginary_part_eigenvalue': imaginary_part_eigenvalue,
+        'real_part_of_modal_A_or_modal_mass': real_part_of_modal_A_or_modal_mass, 
+        'imaginary_part_of_modal_A_or_modal_mass': imaginary_part_of_modal_A_or_modal_mass,
+        'real_part_of_modal_B_or_modal_mass': real_part_of_modal_B_or_modal_mass, 
+        'imaginary_part_of_modal_B_or_modal_mass': imaginary_part_of_modal_B_or_modal_mass,
+        'd': d,
+        'node_nums': node_nums,
+        'x': x,
+        'y': y,
+        'z': z
+        }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)

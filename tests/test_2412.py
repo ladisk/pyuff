@@ -32,6 +32,26 @@ def test_read_write_2412_mixed():
     np.testing.assert_array_equal(a['triangle']['nodes_nums'], b['triangle']['nodes_nums'])
     np.testing.assert_array_equal(a['quad']['nodes_nums'], b['quad']['nodes_nums'])
 
+def test_prepare_2412():
+    dict_2412 = pyuff.prepare_2412(return_full_dict=True)
+
+    x = sorted(list(dict_2412.keys()))
+    y = sorted(['type',
+                'element_nums',
+                'fe_descriptor',
+                'phys_table',
+                'mat_table',
+                'color',
+                'num_nodes',
+                'nodes_nums'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_2412()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 2412:
+        raise Exception('Not correct type')
 
 if __name__ == '__main__':
     # test_read_2412()

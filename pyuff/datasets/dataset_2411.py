@@ -22,15 +22,15 @@ def _write2411(fh, dset):
         raise Exception('Error writing data-set #2411')
 
 
-def _extract2411(blockData):
+def _extract2411(block_data):
     """Extract coordinate data - data-set 15."""
     dset = {'type': 15}
     try:
         # Body
-        splitData = blockData.splitlines(True)  # Keep the line breaks!
-        splitData = ''.join(splitData[2:])  # ..as they are again needed
-        splitData = splitData.split()
-        values = np.asarray([float(str) for str in splitData], 'd')
+        split_data = block_data.splitlines(True)  # Keep the line breaks!
+        split_data = ''.join(split_data[2:])  # ..as they are again needed
+        split_data = split_data.split()
+        values = np.asarray([float(str) for str in split_data], 'd')
         dset['node_nums'] = values[::7].copy()
         dset['def_cs'] = values[1::7].copy()
         dset['disp_cs'] = values[2::7].copy()
@@ -43,15 +43,15 @@ def _extract2411(blockData):
     return dset
 
 
-def dict_2411(
-    node_nums=None,
-    def_cs=None,
-    disp_cs=None,
-    color=None,
-    x=None,
-    y=None,
-    z=None,
-    return_full_dict=False):
+def prepare_2411(
+        node_nums=None,
+        def_cs=None,
+        disp_cs=None,
+        color=None,
+        x=None,
+        y=None,
+        z=None,
+        return_full_dict=False):
     """Name: Nodes - Double Precision
 
     R-Record, F-Field
@@ -64,18 +64,51 @@ def dict_2411(
     :param y: R2 F2, Node coordinates in the part coordinate system
     :param z: R2 F3, Node coordinates in the part coordinate system
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
-    
+
     Records 1 and 2 are repeated for each node in the model.
     """
+    # **Test prepare_2414**
+    #>>> save_to_file = 'test_pyuff'
+    #>>> dataset = pyuff.prepare_2411(
+    #>>>     node_nums=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     def_cs=np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    #>>>     disp_cs=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     color=np.array([8, 8, 8, 8, 8, 8, 8, 8, 8, 8]),
+    #>>>     x=np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1. ]),
+    #>>>     y=np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]),
+    #>>>     z=np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+    #>>> if save_to_file:
+    #>>>     if os.path.exists(save_to_file):
+    #>>>         os.remove(save_to_file)
+    #>>>     uffwrite = pyuff.UFF(save_to_file)
+    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>> dataset
 
-    dataset={'type': 2411,
-            'node_nums': node_nums,
-            'def_cs': def_cs,
-            'disp_cs': disp_cs,
-            'color': color,
-            'x':  x,
-            'y': y,
-            'z': z}
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integer')
+    if np.array(def_cs).dtype != int and def_cs != None:
+        raise TypeError('def_cs must be integer')
+    if np.array(disp_cs).dtype != int and disp_cs != None:
+        raise TypeError('disp_cs must be integer')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integer')
+    if np.array(x).dtype != float and x != None:
+        raise TypeError('x must be float')
+    if np.array(y).dtype != float and y != None:
+        raise TypeError('y must be float')
+    if np.array(z).dtype != float and z != None:
+        raise TypeError('z must be float')
+
+    dataset={
+        'type': 2411,
+        'node_nums': node_nums,
+        'def_cs': def_cs,
+        'disp_cs': disp_cs,
+        'color': color,
+        'x':  x,
+        'y': y,
+        'z': z
+        }
     
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)

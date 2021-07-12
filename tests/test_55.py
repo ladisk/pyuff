@@ -53,12 +53,51 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
 
 def test_write_read_55():
     save_to_file = './data/measurement.uff'
-    uff_dataset_origin = pyuff.prepare_test_55(save_to_file=save_to_file)
+    
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+    
+    uff_datasets = []
+    modes = [1, 2, 3]
+    node_nums = [1, 2, 3, 4]
+    freqs = [10.0, 12.0, 13.0]
+    for i, b in enumerate(modes):
+        mode_shape = np.random.normal(size=len(node_nums))
+        name = 'TestCase'
+        data=pyuff.prepare_55(
+            model_type=1,
+            id1='NONE',
+            id2='NONE',
+            id3='NONE',
+            id4='NONE',
+            id5='NONE',
+            analysis_type=2,
+            data_ch=2,
+            spec_data_type=8,
+            data_type=2,
+            r1=mode_shape,
+            r2=mode_shape,
+            r3=mode_shape,
+            n_data_per_node=3,
+            node_nums=[1, 2, 3, 4],
+            load_case=1,
+            mode_n=i + 1,
+            modal_m= 0,
+            freq=freqs[i],
+            modal_damp_vis=0.,
+            modal_damp_his=0.)
+        
+        uff_datasets.append(data.copy())
+        if save_to_file:
+            uffwrite = pyuff.UFF(save_to_file)
+            uffwrite._write_set(data, 'add')
+    
+    uff_dataset_origin = uff_datasets
     uff_read = pyuff.UFF(save_to_file)
     uff_dataset_read = uff_read.read_sets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
-
 
     string_keys = ['id1', 'id2', 'id3', 'id4', 'id5']
     numeric_keys = list(set(uff_dataset_origin[0].keys()) - set(string_keys))
@@ -69,6 +108,72 @@ def test_write_read_55():
             np.testing.assert_array_almost_equal(a[k], b[k], decimal=5)
         for k in string_keys:
             np.testing.assert_string_equal(a[k], b[k])
+
+def test_prepare_55():
+    uff_datasets = []
+    modes = [1, 2, 3]
+    node_nums = [1, 2, 3, 4]
+    freqs = [10.0, 12.0, 13.0]
+    for i, b in enumerate(modes):
+        mode_shape = np.random.normal(size=len(node_nums))
+        name = 'TestCase'
+        data=pyuff.prepare_55(
+            model_type=1,
+            id1='NONE',
+            id2='NONE',
+            id3='NONE',
+            id4='NONE',
+            id5='NONE',
+            analysis_type=2,
+            data_ch=2,
+            spec_data_type=8,
+            data_type=2,
+            r1=mode_shape,
+            r2=mode_shape,
+            r3=mode_shape,
+            n_data_per_node=3,
+            node_nums=[1, 2, 3, 4],
+            load_case=1,
+            mode_n=i + 1,
+            modal_m=0,
+            freq=freqs[i],
+            modal_damp_vis=0.,
+            modal_damp_his=0.)
+        
+        uff_datasets.append(data.copy())
+    
+    x = sorted(list(uff_datasets[0].keys()))
+    y = sorted(['type',
+                'id1',
+                'id2',
+                'id3',
+                'id4',
+                'id5',
+                'model_type',
+                'analysis_type',
+                'data_ch',
+                'spec_data_type',
+                'data_type',
+                'n_data_per_node',
+                'r1',
+                'r2',
+                'r3',
+                'load_case',
+                'mode_n',
+                'freq',
+                'modal_m',
+                'modal_damp_vis',
+                'modal_damp_his',
+                'node_nums'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_55()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 55:
+        raise Exception('Not correct type')
+
 
 if __name__ == '__main__':
     test_read_write_read_given_data()

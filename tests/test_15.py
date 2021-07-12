@@ -64,7 +64,25 @@ def test_read():
 
 def test_write_read():
     save_to_file = './data/nodes.uff'
-    uff_dataset_origin = pyuff.prepare_test_15(save_to_file=save_to_file)
+    
+    dataset = pyuff.prepare_15(
+        node_nums=[16, 17, 18, 19, 20],
+        def_cs=[11, 11, 11, 12, 12],
+        disp_cs=[16, 16, 17, 18, 19],
+        color=[1, 3, 4, 5, 6],
+        x=[0.0, 1.53, 0.0, 1.53, 0.0],
+        y=[0.0, 0.0, 3.84, 3.84, 0.0],
+        z=[0.0, 0.0, 0.0, 0.0, 1.83])
+
+    dataset_out = dataset.copy() 
+    
+    if save_to_file:
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+    
+    uff_dataset_origin = dataset_out
     uff_read = pyuff.UFF(save_to_file)
     uff_dataset_read = uff_read.read_sets()
     if os.path.exists(save_to_file):
@@ -77,6 +95,25 @@ def test_write_read():
         print('Testing: ', k)
         np.testing.assert_array_almost_equal(a[k], b[k])
 
+def test_prepare_15():
+    dict_15=pyuff.prepare_15(
+        node_nums=[16, 17, 18, 19, 20],  
+        def_cs=[11, 11, 11, 12, 12], 
+        disp_cs=[16, 16, 17, 18, 19],
+        color=[1, 3, 4, 5, 6],
+        x=[0.0, 1.53, 0.0, 1.53, 0.0],
+        y=[0.0, 0.0, 3.84, 3.84, 0.0],
+        z=[0.0, 0.0, 0.0, 0.0, 1.83])
+    x = sorted(list(dict_15.keys()))
+    y = sorted(['type', 'node_nums', 'def_cs', 'disp_cs', 'color', 'x', 'y','z'])
+    np.testing.assert_array_equal(x,y)
+
+    #empty dictionary test
+    x2=pyuff.prepare_15()
+    if 'type' not in x2.keys():
+        raise Exception('Not correct keys')
+    if x2['type'] != 15:
+        raise Exception('Not correct type')
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()

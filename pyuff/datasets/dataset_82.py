@@ -15,22 +15,22 @@ def _write82(fh, dset):
         # removed jul 2017: unique_nodes = set(dset['nodes'])
         # removed jul 2017:if 0 in unique_nodes: unique_nodes.remove(0)
         # number of changes of node need to
-        # nNodes = len(dset['nodes'])
-        nNodes = np.sum((dset['nodes'][1:] - dset['nodes'][:-1]) != 0) + 1
+        # n_nodes = len(dset['nodes'])
+        n_nodes = np.sum((dset['nodes'][1:] - dset['nodes'][:-1]) != 0) + 1
         fh.write('%6i\n%6i%74s\n' % (-1, 82, ' '))
-        fh.write('%10i%10i%10i\n' % (dset['trace_num'], nNodes, dset['color']))
+        fh.write('%10i%10i%10i\n' % (dset['trace_num'], n_nodes, dset['color']))
         fh.write('%-80s\n' % dset['id'])
         sl = 0
-        n8Blocks = nNodes // 8
-        remLines = nNodes % 8
-        if n8Blocks:
-            for ii in range(0, n8Blocks):
-                #                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:sl+8]],'')+'\n' )
-                fh.write(''.join(['%10i' % lineN for lineN in dset['nodes'][sl:sl + 8]]) + '\n')
+        n8_blocks = n_nodes // 8
+        rem_lines = n_nodes % 8
+        if n8_blocks:
+            for ii in range(0, n8_blocks):
+                #                 fh.write( string.join(['%10i'%line_n for line_n in dset['lines'][sl:sl+8]],'')+'\n' )
+                fh.write(''.join(['%10i' % line_n for line_n in dset['nodes'][sl:sl + 8]]) + '\n')
                 sl += 8
-        if remLines > 0:
-            fh.write(''.join(['%10i' % lineN for lineN in dset['nodes'][sl:]]) + '\n')
-        #                 fh.write( string.join(['%10i'%lineN for lineN in dset['lines'][sl:]],'')+'\n' )
+        if rem_lines > 0:
+            fh.write(''.join(['%10i' % line_n for line_n in dset['nodes'][sl:]]) + '\n')
+        #                 fh.write( string.join(['%10i'%line_n for line_n in dset['lines'][sl:]],'')+'\n' )
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
@@ -38,29 +38,29 @@ def _write82(fh, dset):
         raise Exception('Error writing data-set #82')
 
 
-def _extract82(blockData):
+def _extract82(block_data):
     """Extract line data - data-set 82."""
     dset = {'type': 82}
     try:
-        splitData = blockData.splitlines(True)
+        split_data = block_data.splitlines(True)
         dset.update(
-            _parse_header_line(splitData[2], 3, [10, 10, 10], [2, 2, 2], ['trace_num', 'n_nodes', 'color']))
-        dset.update(_parse_header_line(splitData[3], 1, [80], [1], ['id']))
-        splitData = ''.join(splitData[4:])
-        splitData = splitData.split()
-        dset['nodes'] = np.asarray([float(str) for str in splitData])
+            _parse_header_line(split_data[2], 3, [10, 10, 10], [2, 2, 2], ['trace_num', 'n_nodes', 'color']))
+        dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['id']))
+        split_data = ''.join(split_data[4:])
+        split_data = split_data.split()
+        dset['nodes'] = np.asarray([float(str) for str in split_data])
     except:
         raise Exception('Error reading data-set #82')
     return dset
 
 
-def dict_82(
-    trace_num=None,
-    n_nodes=None,
-    color=None,
-    id=None,
-    lines=None,
-    return_full_dict=False):
+def prepare_82(
+        trace_num=None,
+        n_nodes=None,
+        color=None,
+        id=None,
+        nodes=None,
+        return_full_dict=False):
 
     """Name: Tracelines
 
@@ -70,18 +70,48 @@ def dict_82(
     :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250), ignored
     :param color: R1 F3, color, optional
     :param id: R2 F1, identification line, optional
-    :param lines: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
+    :param nodes: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
     
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    
+    **Test prepare_82**
+
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_82(
+    >>>     trace_num=2,
+    >>>     n_nodes=7,
+    >>>     color=30,
+    >>>     id='Identification line',
+    >>>     nodes=np.array([0, 10, 13, 14, 15, 16, 17]))
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset
+
     """
 
-    dataset={'type': 82,
-            'trace_num': trace_num,
-            'n_nodes': n_nodes,
-            'color': color,
-            'id': id,
-            'lines': lines 
-            }
+    if np.array(trace_num).dtype != int and trace_num != None:
+        raise TypeError('trace_num must be integer')
+    if np.array(n_nodes).dtype != int and n_nodes != None:
+        raise TypeError('n_nodes must be integer')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integer')
+    if type(id) != str and id != None:
+        raise TypeError(('id must be string'))
+    if np.array(nodes).dtype != int and nodes != None:
+        raise TypeError('nodes must be integers')
+    
+
+    dataset={
+        'type': 82,
+        'trace_num': trace_num,
+        'n_nodes': n_nodes,
+        'color': color,
+        'id': id,
+        'nodes': nodes 
+        }
 
 
     if return_full_dict is False:
@@ -89,27 +119,4 @@ def dict_82(
 
 
     return dataset
-
-
-def prepare_test_82(save_to_file=''):
-    dataset = {'type': 82,  # Tracelines
-               'trace_num': 2,  # I10, trace line number
-               'n_nodes': 7,  # I10, number of nodes defining trace line (max 250)
-               'color': 30,  # I10, color
-               'id': 'Identification line',  # 80A1, Identification line
-               'nodes': np.array([0, 10, 13, 14, 15, 16, 17]),
-               # I10, nodes defining trace line:
-               #  > 0 draw line to node
-               #  = 0 move to node
-               }
-    dataset_out = dataset.copy()
-
-    if save_to_file:
-        if os.path.exists(save_to_file):
-            os.remove(save_to_file)
-        uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
-
-    return dataset_out
-
 

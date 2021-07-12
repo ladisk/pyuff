@@ -52,12 +52,12 @@ def _write15(fh, dset):
         raise Exception('Error writing data-set #15')
 
 
-def _extract15(blockData):
+def _extract15(block_data):
     """Extract coordinate data - data-set 15."""
     dset = {'type': 15}
     try:
         # Body
-        split_data = blockData.splitlines()
+        split_data = block_data.splitlines()
         split_data = ''.join(split_data[2:]).split()
         split_data = [float(_) for _ in split_data]
 
@@ -73,7 +73,16 @@ def _extract15(blockData):
     return dset
 
 
-def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None,z=None,return_full_dict=False):
+def prepare_15(
+        node_nums=None,
+        def_cs=None, 
+        disp_cs=None, 
+        color=None, 
+        x=None,
+        y=None,
+        z=None,
+        return_full_dict=False
+        ):
     """Name: Nodes
     
     R-Record, F-Field
@@ -87,37 +96,56 @@ def dict_15(node_nums=None, def_cs=None, disp_cs=None, color=None, x=None,y=None
     :param z: R1 F7, Dimensional coordinate of node in the definition system
     
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+
+    **Test prepare_15**
+
+    >>> save_to_file = 'test_pyuff'
+    >>> dataset = pyuff.prepare_15(
+    >>>     node_nums=[16, 17, 18, 19, 20],
+    >>>     def_cs=[11, 11, 11, 12, 12],
+    >>>     disp_cs=[16, 16, 17, 18, 19],
+    >>>     color=[1, 3, 4, 5, 6],  # I10,
+    >>>     x=[0.0, 1.53, 0.0, 1.53, 0.0],
+    >>>     y=[0.0, 0.0, 3.84, 3.84, 0.0],
+    >>>     z=[0.0, 0.0, 0.0, 0.0, 1.83])
+    >>> if save_to_file:
+    >>>     if os.path.exists(save_to_file):
+    >>>         os.remove(save_to_file)
+    >>>     uffwrite = pyuff.UFF(save_to_file)
+    >>>     uffwrite._write_set(dataset, 'add')
+    >>> dataset
     """
-    dataset={'type': 15,
+
+    if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:
+        raise TypeError('node_nums must be either list, tuple or numpy.ndarray')
+    if np.array(node_nums).dtype != int and node_nums != None:
+        raise TypeError('node_nums must be integers.')
+    if np.array(def_cs).dtype != int and def_cs != None:
+        raise TypeError('def_cs must be integers.')
+    if np.array(disp_cs).dtype != int and disp_cs != None:
+        raise TypeError('disp_cs must be integers.')
+    if np.array(color).dtype != int and color != None:
+        raise TypeError('color must be integers.')
+    if np.array(x).dtype != float and x != None:
+        raise TypeError('x must be float.')
+    if np.array(y).dtype != float and y != None:
+        raise TypeError('y must be float.')
+    if np.array(z).dtype != float and z != None:
+        raise TypeError('z must be float.')
+    
+
+    dataset={
+        'type': 15,
         'node_nums': node_nums,
         'def_cs': def_cs, 
         'disp_cs': disp_cs,  
         'color': color,  
         'x': x,  
         'y': y,  
-        'z': z }
+        'z': z 
+        }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)
 
     return dataset
-
-
-def prepare_test_15(save_to_file=''):
-    dataset = {'type': 15,  # Nodes
-               'node_nums': [16, 17, 18, 19, 20],  # I10, node label
-               'def_cs': [11, 11, 11, 12, 12],  # I10, definition coordinate system number
-               'disp_cs': [16, 16, 17, 18, 19],  # I10, displacement coordinate system number
-               'color': [1, 3, 4, 5, 6],  # I10, color
-               'x': [0.0, 1.53, 0.0, 1.53, 0.0],  # E13.5
-               'y': [0.0, 0.0, 3.84, 3.84, 0.0],  # E13.5
-               'z': [0.0, 0.0, 0.0, 0.0, 1.83]}  # E13.5
-    dataset_out = dataset.copy()
-
-    if save_to_file:
-        if os.path.exists(save_to_file):
-            os.remove(save_to_file)
-        uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
-
-    return dataset_out
