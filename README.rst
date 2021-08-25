@@ -153,6 +153,6 @@ Or we can use support function ``prepare_58`` to prepare the dictionary for crea
 |binder| to test the *pyuff Showcase.ipynb* online.
 
 .. |binder| image:: http://mybinder.org/badge.svg
-   :target: http://mybinder.org:/repo/openmodal/pyuff
+   :target: http://mybinder.org:/repo/ladisk/pyuff
 .. |travis| image:: https://www.travis-ci.com/ladisk/pyuff.svg?branch=master
     :target: https://travis-ci.com/ladisk/pyuff
