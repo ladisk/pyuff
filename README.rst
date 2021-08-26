@@ -106,7 +106,7 @@ Creating the UFF file where we add dataset 58 for measurement consisting of the 
                 'ordinate_spec_data_type':12,
                 'orddenom_spec_data_type':13}
         uffwrite = pyuff.UFF('./data/measurement.uff')
-        uffwrite._write_set(data,'add')
+        uffwrite.write_set(data,'add')
 
 Or we can use support function ``prepare_58`` to prepare the dictionary for creating the UFF file. Functions for other datasets can be found in `supported datasets <https://pyuff.readthedocs.io/en/latest/Supported_datasets.html>`_.
 
