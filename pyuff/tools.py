@@ -1,8 +1,9 @@
+
 def _opt_fields(dict, fields_dict):
-    """Sets the optional fields of the dict dictionary.
-
+    """Sets the optional fields of the dict dictionary. 
+    
     Optionally fields are given in fields_dict dictionary.
-
+    
     :param dict: dictionary to be updated
     :param fields_dict: dictionary with default values
     """
@@ -13,10 +14,9 @@ def _opt_fields(dict, fields_dict):
             dict.update({key: fields_dict[key]})
     return dict
 
-
 def _parse_header_line(line, min_values, widths, types, names):
     """Parses the given line (a record in terms of UFF file) and returns all
-    the fields.
+    the fields. 
 
     Fields are split according to their widths as given in widths.
     min_values specifies how many values (fields) are mandatory to read
@@ -24,7 +24,7 @@ def _parse_header_line(line, min_values, widths, types, names):
     number of fields requested by fieldsIn.
     On the output, a dictionary of field names and corresponding
     filed values is returned.
-
+    
     :param line: a string representing the whole line.
     :param min_values: specifies how many values (fields) are mandatory to read
         from the line
@@ -40,18 +40,17 @@ def _parse_header_line(line, min_values, widths, types, names):
     # Extend the line if shorter than 80 chars
     ll = len(line)
     if ll < 80:
-        line = line + " " * (80 - ll)
+        line = line + ' ' * (80 - ll)
     # Parse the line for fields
     si = 0
     for n in range(0, len(widths)):
-        fields_from_line.append(line[si : si + widths[n]].strip())
+        fields_from_line.append(line[si:si + widths[n]].strip())
         si += widths[n]
     # Check for the number of fields,...
     n_fields = len(fields_from_line)
     if (n_fields_req < n_fields) or (min_values > n_fields):
-        raise Exception(
-            "Error parsing header section; too many or to less" + "fields found"
-        )
+        raise Exception('Error parsing header section; too many or to less' + \
+                            'fields found')
     # Mandatory fields
     for key, n in zip(names[:min_values], range(0, min_values)):
         if types[n] == -1:
@@ -75,13 +74,12 @@ def _parse_header_line(line, min_values, widths, types, names):
                 fields_out.update({key: float(fields_from_line[n])})
         except ValueError:
             if types[n] == 1:
-                fields_out.update({key: ""})
+                fields_out.update({key: ''})
             elif types[n] == 2:
                 fields_out.update({key: 0})
             else:
                 fields_out.update({key: 0.0})
     return fields_out
-
 
 def _write_record(fh, values, formats, multiline=False, fstring=True):
     """Write a record to the open file using the specified formats.
@@ -91,32 +89,32 @@ def _write_record(fh, values, formats, multiline=False, fstring=True):
     :param formats: str or list, formats for each record
     :param multiline: if True, newline character is inserted after every value
     :param fstring: if True, f-string formatting is used (currently, only fstring=True
-        is supported)
+        is supported)    
     """
 
     if type(values) not in [list, tuple]:
         values = [values]
     if type(formats) not in [list, tuple]:
         formats = [formats]
-
-    to_write = ""
+    
+    
+    to_write = ''
 
     for v, f in zip(values, formats):
         if fstring:
             if type(v) == str:
-                align = "<"
+                align = '<'
             else:
-                align = ">"
-            to_write = to_write + f"{v:{align}{f}}"
+                align = '>'
+            to_write = to_write + f'{v:{align}{f}}'
 
             if multiline:
-                to_write = to_write + "\n"
-
+                to_write = to_write + '\n'
+    
     if not multiline:
-        to_write = to_write + "\n"
+        to_write = to_write + '\n'
 
     fh.write(to_write)
-
 
 def check_dict_for_none(dataset):
     dataset1 = {}
@@ -125,3 +123,5 @@ def check_dict_for_none(dataset):
             dataset1[k] = v
 
     return dataset1
+
+

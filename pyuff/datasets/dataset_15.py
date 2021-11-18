@@ -26,91 +26,65 @@ from .. import pyuff
 #         raise Exception('Error writing data-set #15')
 
 FORMATS = [
-    ["10.0f", "10.0f", "10.0f", "10.0f", "13.5f", "13.5f", "13.5f"],
+    ['10.0f', '10.0f', '10.0f', '10.0f', '13.5f', '13.5f', '13.5f'],
 ]
-
 
 def _write15(fh, dset):
     """Writes coordinate data - data-set 15 - to an open file fh"""
     try:
-        n = len(dset["node_nums"])
+        n = len(dset['node_nums'])
         # handle optional fields
-        dset = _opt_fields(
-            dset,
-            {
-                "def_cs": np.asarray([0 for ii in range(0, n)], "i"),
-                "disp_cs": np.asarray([0 for ii in range(0, n)], "i"),
-                "color": np.asarray([0 for ii in range(0, n)], "i"),
-            },
-        )
+        dset = _opt_fields(dset, {'def_cs': np.asarray([0 for ii in range(0, n)], 'i'),
+                                        'disp_cs': np.asarray([0 for ii in range(0, n)], 'i'),
+                                        'color': np.asarray([0 for ii in range(0, n)], 'i')})
         # write strings to the file
-        _write_record(
-            fh,
-            [-1, 15, " "],
-            formats=["6.0f", "6.0f", "74s"],
-            multiline=True,
-            fstring=True,
-        )
-
+        _write_record(fh, [-1, 15, ' '], formats=['6.0f', '6.0f', '74s'], multiline=True)
+        
         for ii in range(0, n):
-            _write_record(
-                fh,
-                values=[
-                    dset["node_nums"][ii],
-                    dset["def_cs"][ii],
-                    dset["disp_cs"][ii],
-                    dset["color"][ii],
-                    dset["x"][ii],
-                    dset["y"][ii],
-                    dset["z"][ii],
-                ],
-                formats=FORMATS[0],
-            )
+            _write_record(fh, 
+                values=[dset['node_nums'][ii], dset['def_cs'][ii], dset['disp_cs'][ii], dset['color'][ii], dset['x'][ii], dset['y'][ii], dset['z'][ii]], 
+                formats=FORMATS[0])
 
-        _write_record(fh, -1, "6.0f")
+        _write_record(fh, -1, '6.0f')
     except KeyError as msg:
-        raise Exception(
-            "The required key '"
-            + msg.args[0]
-            + "' not present when writing data-set #15"
-        )
+        raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
     except:
-        raise Exception("Error writing data-set #15")
+        raise Exception('Error writing data-set #15')
 
 
 def _extract15(block_data):
     """Extract coordinate data - data-set 15."""
-    dset = {"type": 15}
+    dset = {'type': 15}
     try:
         # Body
         split_data = block_data.splitlines()
-        split_data = "".join(split_data[2:]).split()
+        split_data = ''.join(split_data[2:]).split()
         split_data = [float(_) for _ in split_data]
 
-        dset["node_nums"] = split_data[::7]
-        dset["def_cs"] = split_data[1::7]
-        dset["disp_cs"] = split_data[2::7]
-        dset["color"] = split_data[3::7]
-        dset["x"] = split_data[4::7]
-        dset["y"] = split_data[5::7]
-        dset["z"] = split_data[6::7]
+        dset['node_nums'] = split_data[::7]
+        dset['def_cs'] = split_data[1::7]
+        dset['disp_cs'] = split_data[2::7]
+        dset['color'] = split_data[3::7]
+        dset['x'] = split_data[4::7]
+        dset['y'] = split_data[5::7]
+        dset['z'] = split_data[6::7]
     except:
-        raise Exception("Error reading data-set #15")
+        raise Exception('Error reading data-set #15')
     return dset
 
 
 def prepare_15(
-    node_nums=None,
-    def_cs=None,
-    disp_cs=None,
-    color=None,
-    x=None,
-    y=None,
-    z=None,
-    return_full_dict=False,
-):
+        node_nums=None,
+        def_cs=None, 
+        disp_cs=None, 
+        color=None, 
+        x=None,
+        y=None,
+        z=None,
+        return_full_dict=False
+        ):
     """Name: Nodes
-
+    
     R-Record, F-Field
 
     :param node_nums: R1 F1, node label
@@ -120,7 +94,7 @@ def prepare_15(
     :param x: R1 F5, Dimensional coordinate of node in the definition system
     :param y: R1 F6, Dimensional coordinate of node in the definition system
     :param z: R1 F7, Dimensional coordinate of node in the definition system
-
+    
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
 
     **Test prepare_15**
@@ -143,32 +117,33 @@ def prepare_15(
     """
 
     if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:
-        raise TypeError("node_nums must be either list, tuple or numpy.ndarray")
+        raise TypeError('node_nums must be either list, tuple or numpy.ndarray')
     if np.array(node_nums).dtype != int and node_nums != None:
-        raise TypeError("node_nums must be integers.")
+        raise TypeError('node_nums must be integers.')
     if np.array(def_cs).dtype != int and def_cs != None:
-        raise TypeError("def_cs must be integers.")
+        raise TypeError('def_cs must be integers.')
     if np.array(disp_cs).dtype != int and disp_cs != None:
-        raise TypeError("disp_cs must be integers.")
+        raise TypeError('disp_cs must be integers.')
     if np.array(color).dtype != int and color != None:
-        raise TypeError("color must be integers.")
+        raise TypeError('color must be integers.')
     if np.array(x).dtype != float and x != None:
-        raise TypeError("x must be float.")
+        raise TypeError('x must be float.')
     if np.array(y).dtype != float and y != None:
-        raise TypeError("y must be float.")
+        raise TypeError('y must be float.')
     if np.array(z).dtype != float and z != None:
-        raise TypeError("z must be float.")
+        raise TypeError('z must be float.')
+    
 
-    dataset = {
-        "type": 15,
-        "node_nums": node_nums,
-        "def_cs": def_cs,
-        "disp_cs": disp_cs,
-        "color": color,
-        "x": x,
-        "y": y,
-        "z": z,
-    }
+    dataset={
+        'type': 15,
+        'node_nums': node_nums,
+        'def_cs': def_cs, 
+        'disp_cs': disp_cs,  
+        'color': color,  
+        'x': x,  
+        'y': y,  
+        'z': z 
+        }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)
