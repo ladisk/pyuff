@@ -1,3 +1,5 @@
+import pyuff
+import numpy as np
 
 def _opt_fields(dict, fields_dict):
     """Sets the optional fields of the dict dictionary. 
@@ -125,3 +127,35 @@ def check_dict_for_none(dataset):
     return dataset1
 
 
+def convert_dataset_2412_to_82(datasets):
+    """Converts the dataset 2412 to dataset 82"""
+
+    datasets_82 = []
+    nodes = list()
+    for i in range(0, len(datasets)):
+        if (datasets[i]["type"] == 2412) and ("quad" in datasets[i].keys()):
+            for j in range(len(datasets[i]["quad"]["nodes_nums"])):
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][0])
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][1])
+                nodes.append(0)
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][1])
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][2])
+                nodes.append(0)
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][2])
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][3])
+                nodes.append(0)
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][3])
+                nodes.append(datasets[i]["quad"]["nodes_nums"][j][0])
+                nodes.append(0)
+            nodes = np.array(nodes)
+            dataset_82 = pyuff.prepare_82(
+                trace_num=i,
+                n_nodes=len(nodes),
+                nodes=nodes,
+                color=0,
+                id="",
+                return_full_dict=True,
+            )
+            datasets_82.append(dataset_82)
+
+    return datasets_82
