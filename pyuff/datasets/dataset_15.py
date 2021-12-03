@@ -38,7 +38,7 @@ def _write15(fh, dset):
                                         'disp_cs': np.asarray([0 for ii in range(0, n)], 'i'),
                                         'color': np.asarray([0 for ii in range(0, n)], 'i')})
         # write strings to the file
-        _write_record(fh, [-1, 15, ' '], formats=['6.0f', '6.0f', '74s'], multiline=True)
+        _write_record(fh, [-1, 15], formats=['6.0f', '6.0f'], multiline=True)
         
         for ii in range(0, n):
             _write_record(fh, 
