@@ -271,7 +271,7 @@ class UFF:
         if not self.file_exists():
             raise Exception('Cannot read from a non-existing file: ' + self._filename)
         if not self._refreshed:
-            if not self._refresh():
+            if not self.refresh():
                 raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
