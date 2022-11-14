@@ -66,7 +66,7 @@ def _write2414(fh, dset):
                                             np.imag(dset['y'][node]),
                                             np.real(dset['z'][node]),
                                             np.imag(dset['z'][node])))
-            fh.write('%6i\n' % (-1))    
+            fh.write('%6i\n' % (-1))
     except:
         raise Exception('Error writing data-set #2414')
 
@@ -114,7 +114,24 @@ def _extract2414(block_data):
                 dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
                 dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
 
-        pass  
+        elif dset['analysis_type'] == 1:
+            # Read depending on dataset location
+            if dset['dataset_location'] == 1:
+                # Data at nodes
+                pass
+
+            elif dset['dataset_location'] == 2:
+                # Data on elements
+                pass
+
+            elif dset['dataset_location'] == 3:
+                # Data at nodes on elements
+                pass
+
+            else:
+                # Dataset location not supported
+                pass
+
     except:
         raise Exception('Error reading data-set #2412')
     return dset
