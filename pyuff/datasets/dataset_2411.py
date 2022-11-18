@@ -23,8 +23,8 @@ def _write2411(fh, dset):
 
 
 def _extract2411(block_data):
-    """Extract coordinate data - data-set 15."""
-    dset = {'type': 15}
+    """Extract coordinate data - data-set 2411."""
+    dset = {'type': 2411}
     try:
         # Body
         split_data = block_data.splitlines(True)  # Keep the line breaks!
@@ -39,7 +39,7 @@ def _extract2411(block_data):
         dset['y'] = values[5::7].copy()
         dset['z'] = values[6::7].copy()
     except:
-        raise Exception('Error reading data-set #15')
+        raise Exception('Error reading data-set #2411')
     return dset
 
 
@@ -67,7 +67,7 @@ def prepare_2411(
 
     Records 1 and 2 are repeated for each node in the model.
     """
-    # **Test prepare_2414**
+    # **Test prepare_2411**
     #>>> save_to_file = 'test_pyuff'
     #>>> dataset = pyuff.prepare_2411(
     #>>>     node_nums=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
