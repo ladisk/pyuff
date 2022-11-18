@@ -13,36 +13,35 @@ def _write2429(fh, dset):
                 'active_contact_set_no_for_group': 0 }
 
         dset = _opt_fields(dset, dict)
-        fh.write('%6i\n%6i%74s\n' % (-1, 2429, ' '))
+        fh.write('%6i\n%6i\n' % (-1, 2429))
 
-        for group in range(dset['groups']):
-            # Record 1
-            # Field 8 (last field) contains the number or entities in the group
-            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_number'], 
-                                                             dset['active_constraint_set_no_for_group'],
-                                                             dset['active_restraint_set_no_for_group'],
-                                                             dset['active_load_set_no_for_group'],
-                                                             dset['active_dof_set_no_for_group'],
-                                                             dset['active_temperature_set_no_for_group'],
-                                                             dset['active_contact_set_no_for_group'],
-                                                             len(dset['entity_type_code'])))
-            # Record 2
-            fh.write('%-40s\n' % (dset['group_name']))
+        # Record 1
+        # Field 8 (last field) contains the number or entities in the group
+        fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_number'], 
+                                                            dset['active_constraint_set_no_for_group'],
+                                                            dset['active_restraint_set_no_for_group'],
+                                                            dset['active_load_set_no_for_group'],
+                                                            dset['active_dof_set_no_for_group'],
+                                                            dset['active_temperature_set_no_for_group'],
+                                                            dset['active_contact_set_no_for_group'],
+                                                            len(dset['entity_type_code'])))
+        # Record 2
+        fh.write('%-40s\n' % (dset['group_name']))
 
-            # Record 3-N
-            # Write the full lines (which have 4 pairs)
-            for i in range(len(dset['entity_type_code']) // 4):
-                fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4],
-                                                                 dset['entity_type_code'][i * 4 + 1], dset['entity_tag'][i * 4 + 1],
-                                                                 dset['entity_type_code'][i * 4 + 2], dset['entity_tag'][i * 4 + 2],
-                                                                 dset['entity_type_code'][i * 4 + 3], dset['entity_tag'][i * 4 + 3]))
-            # Write the last line
-            for i in range(len(dset['entity_type_code']) % 4):
-                # don't write the line break just yet
-                fh.write('%10i%10i' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4]))
-            # Write the missing line break, but only if a non full last line has been written
-            if (len(dset['entity_type_code']) % 4 != 0):
-                fh.write('\n')
+        # Record 3-N
+        # Write the full lines (which have 4 pairs)
+        for i in range(len(dset['entity_type_code']) // 4):
+            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4],
+                                                                dset['entity_type_code'][i * 4 + 1], dset['entity_tag'][i * 4 + 1],
+                                                                dset['entity_type_code'][i * 4 + 2], dset['entity_tag'][i * 4 + 2],
+                                                                dset['entity_type_code'][i * 4 + 3], dset['entity_tag'][i * 4 + 3]))
+        # Write the last line
+        for i in range(len(dset['entity_type_code']) % 4):
+            # don't write the line break just yet
+            fh.write('%10i%10i' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4]))
+        # Write the missing line break, but only if a non full last line has been written
+        if (len(dset['entity_type_code']) % 4 != 0):
+            fh.write('\n')
 
         fh.write('%6i\n' % -1)
 
