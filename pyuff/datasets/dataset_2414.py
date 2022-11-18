@@ -1,4 +1,5 @@
 import numpy as np
+import math as math
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
@@ -12,25 +13,36 @@ def _write2414(fh, dset):
        """
     try:
         # Handle general optional fields
-        
-        if dset['analysis_type']==5:
-            fh.write('%6i\n%6i\n' % (-1, 2414))
-            fh.write('%10i\n' % (dset['analysis_dataset_label'])) #Loadcase number (DS2414_num)
-            fh.write('%-80s\n' % (dset['analysis_dataset_name'])) #usually with the frequency
-            fh.write('%10i\n' % (dset['dataset_location']))
-            fh.write('%-80s\n' % dset['id1'])
-            fh.write('%-80s\n' % dset['id2'])
-            fh.write('%-80s\n' % dset['id3']) #usually with the frequency
-            fh.write('%-80s\n' % dset['id4']) #usually with the loadcase
-            fh.write('%-80s\n' % dset['id5'])
+        dict = {'record10_field1': 0, 'record10_field2': 0, 'record10_field3': 0, 'record10_field4': 0,
+                'record10_field5': 0, 'record10_field6': 0, 'record10_field7': 0, 'record10_field8': 0,
+                'record11_field1': 0, 'record11_field2': 0, 'record11_field3': 0, 'record11_field4': 0,
+                'record11_field5': 0, 'record11_field6': 0, 'record11_field7': 0, 'record11_field8': 0,
+                'record12_field1': 0, 'record12_field2': 0, 'record12_field3': 0,
+                'record12_field4': 0, 'record12_field5': 0, 'record12_field6': 0,
+                'record13_field1': 0, 'record13_field2': 0, 'record13_field3': 0,
+                'record13_field4': 0, 'record13_field5': 0, 'record13_field6': 0}
+        dset = _opt_fields(dset, dict)
+        fh.write('%6i\n%6i\n' % (-1, 2414))
 
-            fh.write('%10i%10i%10i%10i%10i%10i\n' % (
-                                            dset['model_type'], 
-                                            dset['analysis_type'], 
-                                            dset['data_characteristic'], 
-                                            dset['result_type'],
-                                            dset['data_type'], 
-                                            dset['number_of_data_values_for_the_data_component']))
+        # Write general fields
+        fh.write('%10i\n' % (dset['analysis_dataset_label'])) #Loadcase number (DS2414_num)
+        fh.write('%-80s\n' % (dset['analysis_dataset_name'])) #usually with the frequency
+        fh.write('%10i\n' % (dset['dataset_location']))
+        fh.write('%-80s\n' % dset['id1'])
+        fh.write('%-80s\n' % dset['id2'])
+        fh.write('%-80s\n' % dset['id3']) #usually with the frequency
+        fh.write('%-80s\n' % dset['id4']) #usually with the loadcase
+        fh.write('%-80s\n' % dset['id5'])
+
+        fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+                                        dset['model_type'], 
+                                        dset['analysis_type'], 
+                                        dset['data_characteristic'], 
+                                        dset['result_type'],
+                                        dset['data_type'], 
+                                        dset['number_of_data_values_for_the_data_component']))
+
+        if dset['analysis_type'] == 5:
             fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
                                             dset['design_set_id'], 
                                             dset['iteration_number'],
@@ -57,16 +69,82 @@ def _write2414(fh, dset):
                                             dset['imaginary_part_of_modal_A_or_modal_mass'],
                                             dset['real_part_of_modal_B_or_modal_mass'], 
                                             dset['imaginary_part_of_modal_B_or_modal_mass']))                            
-            for node in range(dset['node_nums'].shape[0]):
-                fh.write('%10i\n' % (int(dset['node_nums'][node])))
+            for index in range(dset['node_nums'].shape[0]):
+                fh.write('%10i\n' % (int(dset['node_nums'][index])))
                 fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
-                                            np.real(dset['x'][node]),
-                                            np.imag(dset['x'][node]),
-                                            np.real(dset['y'][node]),
-                                            np.imag(dset['y'][node]),
-                                            np.real(dset['z'][node]),
-                                            np.imag(dset['z'][node])))
+                                            np.real(dset['x'][index]),
+                                            np.imag(dset['x'][index]),
+                                            np.real(dset['y'][index]),
+                                            np.imag(dset['y'][index]),
+                                            np.real(dset['z'][index]),
+                                            np.imag(dset['z'][index])))
             fh.write('%6i\n' % (-1))
+        else:
+            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
+                                            dset['record10_field1'], 
+                                            dset['record10_field2'],
+                                            dset['record10_field3'],
+                                            dset['record10_field4'], 
+                                            dset['record10_field5'],
+                                            dset['record10_field6'], 
+                                            dset['record10_field7'],
+                                            dset['record10_field8']))
+            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
+                                            dset['record11_field1'], 
+                                            dset['record11_field2'],
+                                            dset['record11_field3'],
+                                            dset['record11_field4'], 
+                                            dset['record11_field5'],
+                                            dset['record11_field6'], 
+                                            dset['record11_field7'],
+                                            dset['record11_field8']))
+            fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                                            dset['record12_field1'], 
+                                            dset['record12_field2'],
+                                            dset['record12_field3'],
+                                            dset['record12_field4'], 
+                                            dset['record12_field5'],
+                                            dset['record12_field6']))
+            fh.write('  %.5e  %.5e  %.5e  %.5e  %.5e  %.5e\n' % (
+                                            dset['record13_field1'], 
+                                            dset['record13_field2'],
+                                            dset['record13_field3'],
+                                            dset['record13_field4'], 
+                                            dset['record13_field5'],
+                                            dset['record13_field6']))                        
+            if dset['dataset_location'] == 1:
+                for index in range(dset['node_nums'].shape[0]):
+                    fh.write('%10i\n' % (dset['node_nums'][index]))
+                    for field in range(dset['data_at_node'][index]):
+                        # number of values unknown, so loop
+                        fh.write('%13.5e' % (field))
+                    fh.write('\n')
+                fh.write('%6i\n' % (-1))
+
+            elif dset['dataset_location'] == 2:
+                for index in range(dset['element_nums'].shape[0]):
+                    # get NDVAL from the datalength instead of the dictionary entry
+                    fh.write('%10i%10i\n' % (dset['element_nums'][index], len(dset['data_at_element'][index])))
+                    for field in dset['data_at_element'][index]:
+                        # number of values in record15 unknown, so loop
+                        fh.write('%13.5e' % (field))
+                    fh.write('\n')
+                fh.write('%6i\n' % (-1))
+
+            elif dset['dataset_location'] == 3:
+                for index in range(dset['element_nums'].shape[0]):
+                    fh.write('%10i%10i%10i%10i\n' % (dset['element_nums'][index], dset['IEXP'][index],
+                                                    dset['number_of_nodes'][index], dset['number_of_values_per_node'][index]))
+                    for line in dset['data_at_element']:
+                        # each line is an np.ndarray with unknown number of elements, so loop
+                        for item in line:
+                            fh.write('%13.5e' % (item))
+                        fh.write('\n')
+                fh.write('%6i\n' % (-1))
+
+            else:
+                print('Unknown dataset location ' + str(dset['dataset_location']) + '.')
+                fh.write('%6i\n' % (-1))
     except:
         raise Exception('Error writing data-set #2414')
 
@@ -76,6 +154,7 @@ def _extract2414(block_data):
     dset = {'type': 2414}
     # Read data
     try:
+        # Processing named records and fields
         binary = False
         split_header = block_data.splitlines(True)[:15]  # Keep the line breaks!
         dset.update(_parse_header_line(split_header[2], 1, [80], [2], ['analysis_dataset_label'])) #Loadcase number
@@ -91,20 +170,23 @@ def _extract2414(block_data):
                                             ['model_type', 'analysis_type', 'data_characteristic', 'result_type',
                                                 'data_type', 'number_of_data_values_for_the_data_component']))     
         
-        dset.update(_parse_header_line(split_header[11], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
-                                            ['design_set_id', 'iteration_number', 'solution_set_id', 'boundary_condition', 
-                                                'load_set', 'mode_number', 'time_step_number', 'frequency_number']))
-        dset.update(_parse_header_line(split_header[12], 2, [10, 10], [2, 2],
-                                            ['creation_option', 'number_retained']))
-
-        dset.update(_parse_header_line(split_header[13], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
-                                        ['time', 'frequency', 'eigenvalue', 'modal_mass', 'viscous_damping', 'hysteretic_damping']))
-        dset.update(_parse_header_line(split_header[14], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
-                                        ['real_part_eigenvalue', 'imaginary_part_eigenvalue', 
-                                            'real_part_of_modal_A_or_modal_mass', 'imaginary_part_of_modal_A_or_modal_mass', 
-                                            'real_part_of_modal_B_or_modal_mass', 'imaginary_part_of_modal_B_or_modal_mass']))
+        # Processing unnamed records and fields
+        # special case for analysis_type = 5
         if dset['analysis_type'] == 5:
-            # frequency response 
+            # frequency response specific reading functionality
+            dset.update(_parse_header_line(split_header[11], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
+                                                ['design_set_id', 'iteration_number', 'solution_set_id', 'boundary_condition', 
+                                                    'load_set', 'mode_number', 'time_step_number', 'frequency_number']))
+            dset.update(_parse_header_line(split_header[12], 2, [10, 10], [2, 2],
+                                                ['creation_option', 'number_retained']))
+
+            dset.update(_parse_header_line(split_header[13], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['time', 'frequency', 'eigenvalue', 'modal_mass', 'viscous_damping', 'hysteretic_damping']))
+            dset.update(_parse_header_line(split_header[14], 6, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['real_part_eigenvalue', 'imaginary_part_eigenvalue', 
+                                                'real_part_of_modal_A_or_modal_mass', 'imaginary_part_of_modal_A_or_modal_mass', 
+                                                'real_part_of_modal_B_or_modal_mass', 'imaginary_part_of_modal_B_or_modal_mass']))
+
             split_data = ''.join(block_data.splitlines(True)[15:])
             split_data = split_data.split()
             if dset['data_type'] == 5 and dset['number_of_data_values_for_the_data_component'] == 3:
@@ -114,22 +196,81 @@ def _extract2414(block_data):
                 dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
                 dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
 
-        elif dset['analysis_type'] == 1:
+        # Processing unnamed records and fields
+        # general reading functionality min_values is set to 1 in _parse_header_line to keep it as general as possible
+        else:
+            dset.update(_parse_header_line(split_header[11], 1, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
+                                                ['record10_field1', 'record10_field2', 'record10_field3', 'record10_field4', 
+                                                    'record10_field5', 'record10_field6', 'record10_field7', 'record10_field8']))
+            dset.update(_parse_header_line(split_header[12], 1, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
+                                                ['record11_field1', 'record11_field2', 'record11_field3', 'record11_field4', 
+                                                    'record11_field5', 'record11_field6', 'record11_field7', 'record11_field8']))
+
+            dset.update(_parse_header_line(split_header[13], 1, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['record12_field1', 'record12_field2', 'record12_field3', 'record12_field4',
+                                            'record12_field5', 'record12_field6']))
+            dset.update(_parse_header_line(split_header[14], 1, [13, 13, 13, 13, 13, 13], [0.5,0.5, 0.5, 0.5, 0.5, 0.5],
+                                            ['record13_field1', 'record13_field2', 'record13_field3', 'record13_field4',
+                                            'record13_field5', 'record13_field6']))
+            
             # Read depending on dataset location
+            split_data = ''.join(block_data.splitlines(True)[15:])
+            split_data = split_data.splitlines()
             if dset['dataset_location'] == 1:
                 # Data at nodes
-                pass
+                record14 = np.asarray([str.split() for str in split_data[0::2]], 'U')
+                # record 15 not always same number of fields, so a list of ndarray
+                record15 = [np.array([float(elem) for elem in item.split()], float) for item in split_data[1::2]]
+                dset['node_nums'] = np.array(record14[:,0].copy(), dtype=int)
+                dset['data_at_node'] = record15
 
             elif dset['dataset_location'] == 2:
                 # Data on elements
-                pass
+                record14 = np.asarray([str.split() for str in split_data[0::2]], 'U')
+                ## record 15 not always same number of fields, so a list of ndarray
+                record15 = [np.array([float(elem) for elem in item.split()], float) for item in split_data[1::2]]
+                dset['element_nums'] = np.array(record14[:,0].copy(), dtype=int)
+                dset['NDVAL'] = np.array(record14[:,1].copy(), dtype=int)
+                dset['data_at_element'] = record15
 
             elif dset['dataset_location'] == 3:
                 # Data at nodes on elements
-                pass
+                # This one is special, as record15 can be repeated multiple times
+                # if data is present for all nodes (IEXP=1)
+                # therefore we need to loop
+                dset['element_nums'] = []
+                dset['IEXP'] = []
+                dset['number_of_nodes'] = []
+                dset['number_of_values_per_node'] = []
+                dset['data_at_nodes_on_element'] = []
+                lineIndex = 0
+                while lineIndex < len(split_data):
+                    dset['element_nums'].append(int(split_data[lineIndex].split()[0]))
+                    iEXP = int(split_data[lineIndex].split()[1])
+                    dset['IEXP'].append(iEXP)
+                    numberOfNodes = int(split_data[lineIndex].split()[2])
+                    dset['number_of_nodes'].append(numberOfNodes)
+                    numberOfValuesPerNode = int(split_data[lineIndex].split()[3])
+                    dset['number_of_values_per_node'].append(numberOfValuesPerNode)
+                    # if IEXP = 2, only one line for all nodes. Thus floor division + 1
+                    numberOfLinesInRecord15 = 0
+                    if iEXP == 1:
+                        numberOfLinesInRecord15 = numberOfNodes * math.ceil(numberOfValuesPerNode / 6)
+                    else:
+                        numberOfLinesInRecord15 = math.ceil(numberOfValuesPerNode / 6)
+                    # a list of numpy array, since the number of lines is not fixed.
+                    dset['data_at_nodes_on_element'].append([np.array([float(elem) for elem in item.split()], float) for item in split_data[lineIndex + 1:lineIndex + 1 + numberOfLinesInRecord15]])
+
+                    lineIndex = lineIndex + 1 + numberOfLinesInRecord15
+
+                # make the lists into array, for easier handling the results.
+                dset['element_nums'] = np.array(dset['element_nums'], int)
+                dset['IEXP'] = np.array(dset['IEXP'], int)
+                dset['number_of_nodes'] = np.array(dset['number_of_nodes'], int)
+                dset['number_of_values_per_node'] = np.array(dset['number_of_values_per_node'], int)
 
             else:
-                # Dataset location not supported
+                print('Dataset location ' + str(dset['dataset_location']) + 'not supported')
                 pass
 
     except:
