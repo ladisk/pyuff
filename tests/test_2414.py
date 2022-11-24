@@ -27,6 +27,8 @@ def test_write_2414():
     # Read dataset 2414 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
     b = uff_ascii.read_sets(0)
+    if os.path.exists(uff_ascii):
+        os.remove(uff_ascii)
     # Test
     np.testing.assert_array_equal(a['frequency'], b['frequency'])
     np.testing.assert_array_equal(a['z'], b['z'])
