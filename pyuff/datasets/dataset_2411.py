@@ -30,7 +30,8 @@ def _extract2411(block_data):
         split_data = block_data.splitlines(True)  # Keep the line breaks!
         split_data = ''.join(split_data[2:])  # ..as they are again needed
         split_data = split_data.split()
-        values = np.asarray([float(str) for str in split_data], 'd')
+        # replace to support D or d notation as an exponential notation (typically form Unigraphics IDEAS)
+        values = np.asarray([float(str.replace("D", "E").replace("d", "E")) for str in split_data], 'd')
         dset['node_nums'] = values[::7].copy()
         dset['def_cs'] = values[1::7].copy()
         dset['disp_cs'] = values[2::7].copy()
