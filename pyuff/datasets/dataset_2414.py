@@ -42,6 +42,7 @@ def _write2414(fh, dset):
                                         dset['data_type'], 
                                         dset['number_of_data_values_for_the_data_component']))
 
+        # If analysis_type is 5, then give dictionairy keys a specific name
         if dset['analysis_type'] == 5:
             fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
                                             dset['design_set_id'], 
@@ -79,6 +80,8 @@ def _write2414(fh, dset):
                                             np.real(dset['z'][index]),
                                             np.imag(dset['z'][index])))
             fh.write('%6i\n' % (-1))
+        # Dictionairy keys have a general name.
+        # The meaning of these records and fields depends on the software which writes/reads these.
         else:
             fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (
                                             dset['record10_field1'], 
@@ -112,6 +115,8 @@ def _write2414(fh, dset):
                                             dset['record13_field4'], 
                                             dset['record13_field5'],
                                             dset['record13_field6']))                        
+            
+            # The data and structure of Record 14 and 15 depend on the 'dataset_location'
             if dset['dataset_location'] == 1:
                 for index in range(dset['node_nums'].shape[0]):
                     fh.write('%10i\n' % (dset['node_nums'][index]))
@@ -135,17 +140,20 @@ def _write2414(fh, dset):
                 for index in range(dset['element_nums'].shape[0]):
                     fh.write('%10i%10i%10i%10i\n' % (dset['element_nums'][index], dset['IEXP'][index],
                                                     dset['number_of_nodes'][index], dset['number_of_values_per_node'][index]))
-                    for line in dset['data_at_element']:
+                    for line in dset['data_at_nodes_on_element'][index]:
                         # each line is an np.ndarray with unknown number of elements, so loop
                         for item in line:
                             fh.write('%13.5e' % (item))
                         fh.write('\n')
                 fh.write('%6i\n' % (-1))
 
+            elif dset['dataset_location'] == 5:
+                print('Dataset location 5 has not been implemented yet for writing dataset 2414.')
+
             else:
                 print('Unknown dataset location ' + str(dset['dataset_location']) + '.')
                 fh.write('%6i\n' % (-1))
-    except:
+    except Exception as msg:
         raise Exception('Error writing data-set #2414')
 
 
@@ -171,7 +179,8 @@ def _extract2414(block_data):
                                                 'data_type', 'number_of_data_values_for_the_data_component']))     
         
         # Processing unnamed records and fields
-        # special case for analysis_type = 5
+        # If analysis_type is 5, then give dictionairy keys a specific name
+        # and process the data in record 14 and 15 following a specific pattern.
         if dset['analysis_type'] == 5:
             # frequency response specific reading functionality
             dset.update(_parse_header_line(split_header[11], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
@@ -197,6 +206,9 @@ def _extract2414(block_data):
                 dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
 
         # Processing unnamed records and fields
+        # Dictionairy keys have a general name.
+        # The meaning of these records and fields depends on the software which writes/reads these.
+        # This section processes the data in record 14 and 15 as general as possible.
         # general reading functionality min_values is set to 1 in _parse_header_line to keep it as general as possible
         else:
             dset.update(_parse_header_line(split_header[11], 1, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
@@ -213,7 +225,7 @@ def _extract2414(block_data):
                                             ['record13_field1', 'record13_field2', 'record13_field3', 'record13_field4',
                                             'record13_field5', 'record13_field6']))
             
-            # Read depending on dataset location
+            # The data and structure of Record 14 and 15 depend on the 'dataset_location'
             split_data = ''.join(block_data.splitlines(True)[15:])
             split_data = split_data.splitlines()
             if dset['dataset_location'] == 1:
@@ -269,12 +281,15 @@ def _extract2414(block_data):
                 dset['number_of_nodes'] = np.array(dset['number_of_nodes'], int)
                 dset['number_of_values_per_node'] = np.array(dset['number_of_values_per_node'], int)
 
+            elif dset['dataset_location'] == 5:
+                print('Dataset location 5 has not been implemented yet for reading dataset 2414.')
+
             else:
                 print('Dataset location ' + str(dset['dataset_location']) + 'not supported')
                 pass
 
     except:
-        raise Exception('Error reading data-set #2412')
+        raise Exception('Error reading data-set #2414')
     return dset
 
 
