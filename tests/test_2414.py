@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import sys, os
 my_path = os.path.dirname(os.path.abspath(__file__))
@@ -16,7 +15,7 @@ def test_read_2414():
 def test_read_2414_general():
     # Reading a universal file as exported by Siemens Simcenter3D (tested in release 2023)
     # set 3 is a nodal displacement result.
-    uff_ascii = pyuff.UFF('./data/simcenter_exported_result.unv')
+    uff_ascii = pyuff.UFF('./data/simcenter_exported_result.uff')
     a = uff_ascii.read_sets(3)
     # verify first 10 node numbers
     np.testing.assert_array_equal(a['node_nums'][0:10], np.array(range(1,11)))
@@ -27,7 +26,7 @@ def test_read_2414_general():
 
     # Reading a universal file generated to imported by Simcenter3D (tested in release 2023)
     # set 0 is an elemental result (element thickness).
-    uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.unv')
+    uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.uff')
     a = uff_ascii.read_sets(0)
     # verify first 10 element numbers
     np.testing.assert_array_equal(a['element_nums'][0:10], np.array(range(1,11)))
@@ -74,15 +73,15 @@ def test_write_2414():
 def test_write_2414_general():
     # Reading a universal file generated to imported by Simcenter3D (tested in release 2023)
     # set 1 is a data at nodes on elements result (element thickness at nodes on elements).
-    uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.unv')
+    uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.uff')
     a = uff_ascii.read_sets(1)
     
     # Write dataset 2414
-    uff_write = pyuff.UFF('./data/tmp.unv')
+    uff_write = pyuff.UFF('./data/tmp.uff')
     uff_write._write_set(a,'overwrite')
 
     # Read dataset 2414 in written file
-    uff_ascii = pyuff.UFF('./data/tmp.unv')
+    uff_ascii = pyuff.UFF('./data/tmp.uff')
     b = uff_ascii.read_sets(0) # only wrote the 1 dataset, so now index 0
     if os.path.exists(uff_ascii._filename):
        os.remove(uff_ascii._filename)
