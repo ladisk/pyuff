@@ -85,7 +85,7 @@ def prepare_2420(
     :param CS_matrices: R5-8 F1-3, Transformation Matrix
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
-    # **Test prepare_2414**
+    # **Test prepare_2420**
     #save_to_file = 'test_pyuff'
     #dataset = pyuff.prepare_2420(
     #    Part_UID = 1,

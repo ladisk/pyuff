@@ -22,14 +22,15 @@ def _write2411(fh, dset):
 
 
 def _extract2411(block_data):
-    """Extract coordinate data - data-set 15."""
+    """Extract coordinate data - data-set 2411."""
     dset = {'type': 2411}
     try:
         # Body
         split_data = block_data.splitlines(True)  # Keep the line breaks!
         split_data = ''.join(split_data[2:])  # ..as they are again needed
         split_data = split_data.split()
-        values = np.asarray([float(str.replace('D','e')) for str in split_data], 'd')
+        # replace to support D or d notation as an exponential notation (typically form Unigraphics IDEAS)
+        values = np.asarray([float(str.replace("D", "E").replace("d", "E")) for str in split_data], 'd')
         dset['node_nums'] = values[::7].copy()
         dset['def_cs'] = values[1::7].copy()
         dset['disp_cs'] = values[2::7].copy()
@@ -66,7 +67,7 @@ def prepare_2411(
 
     Records 1 and 2 are repeated for each node in the model.
     """
-    # **Test prepare_2414**
+    # **Test prepare_2411**
     #>>> save_to_file = 'test_pyuff'
     #>>> dataset = pyuff.prepare_2411(
     #>>>     node_nums=np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
