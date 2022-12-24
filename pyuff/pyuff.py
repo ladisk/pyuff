@@ -25,7 +25,7 @@ defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
-are supported: **151, 15, 55, 58, 58b, 82, 164, 2412, 2420.** Data-set **58b**
+are supported: **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429** Data-set **58b**
 is actually a hybrid format [1]_ where the signal is written in the
 binary form, while the header-part is slightly different from 58 but still in the
 ascii format.
@@ -78,8 +78,7 @@ from .datasets.dataset_2414 import _write2414, _extract2414
 from .datasets.dataset_2420 import _write2420, _extract2420
 from .datasets.dataset_2429 import _write2429, _extract2429
 
-__version__ = '1.26'
-_SUPPORTED_SETS = ['151', '15', '55', '58', '58b', '82', '164', '2411', '2412', '2414', '2420', '2429']
+_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429']
 
 
 class UFF:
