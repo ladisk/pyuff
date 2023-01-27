@@ -72,13 +72,26 @@ def _write2414(fh, dset):
                                             dset['imaginary_part_of_modal_B_or_modal_mass']))                            
             for index in range(dset['node_nums'].shape[0]):
                 fh.write('%10i\n' % (int(dset['node_nums'][index])))
-                fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
-                                            np.real(dset['x'][index]),
-                                            np.imag(dset['x'][index]),
-                                            np.real(dset['y'][index]),
-                                            np.imag(dset['y'][index]),
-                                            np.real(dset['z'][index]),
-                                            np.imag(dset['z'][index])))
+                # Really brute force method here... Find something more elegant?
+                if dset['number_of_data_values_for_the_data_component'] == 3 : 
+                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
+                                                np.real(dset['x'][index]),
+                                                np.imag(dset['x'][index]),
+                                                np.real(dset['y'][index]),
+                                                np.imag(dset['y'][index]),
+                                                np.real(dset['z'][index]),
+                                                np.imag(dset['z'][index])))
+                elif dset['number_of_data_values_for_the_data_component'] == 2 : 
+                    fh.write('%13.5e%13.5e%13.5e%13.5e\n' % (
+                                                np.real(dset['x'][index]),
+                                                np.imag(dset['x'][index]),
+                                                np.real(dset['y'][index]),
+                                                np.imag(dset['y'][index]),))
+                elif dset['number_of_data_values_for_the_data_component'] == 1 : 
+                    fh.write('%13.5e%13.5e\n' % (
+                                                np.real(dset['x'][index]),
+                                                np.imag(dset['x'][index]),))
+                
             fh.write('%6i\n' % (-1))
         # Dictionairy keys have a general name.
         # The meaning of these records and fields depends on the software which writes/reads these.
@@ -198,12 +211,20 @@ def _extract2414(block_data):
 
             split_data = ''.join(block_data.splitlines(True)[15:])
             split_data = split_data.split()
-            if dset['data_type'] == 5 and dset['number_of_data_values_for_the_data_component'] == 3:
+            # generic reading method
+            n_skip = dset['number_of_data_values_for_the_data_component'] * 2 + 1 # x2 real/imag
+            
+            if dset['data_type'] == 5 :
                 values = np.asarray([float(str) for str in split_data], 'd')
-                dset['node_nums'] = np.array(values[::7].copy(), dtype=int)
-                dset['x'] = values[1::7].copy()+values[2::7].copy()*1j
-                dset['y'] = values[3::7].copy()+values[4::7].copy()*1j
-                dset['z'] = values[5::7].copy()+values[6::7].copy()*1j   
+                dset['node_nums'] = np.array(values[::n_skip].copy(), dtype=int)
+                
+                dset['x'] = values[1::n_skip].copy()+values[2::n_skip].copy()*1j
+                
+                if dset['number_of_data_values_for_the_data_component'] >= 2 :
+                    dset['y'] = values[3::n_skip].copy()+values[4::n_skip].copy()*1j
+                
+                if dset['number_of_data_values_for_the_data_component'] >= 3 :
+                    dset['z'] = values[5::n_skip].copy()+values[6::n_skip].copy()*1j   
 
         # Processing unnamed records and fields
         # Dictionairy keys have a general name.
