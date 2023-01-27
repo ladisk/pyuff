@@ -151,5 +151,5 @@ Or we can use support function ``prepare_58`` to prepare the dictionary for crea
 
 .. |binder| image:: http://mybinder.org/badge.svg
    :target: http://mybinder.org:/repo/ladisk/pyuff
-.. |travis| image:: https://github.com/ladisk/pyuff/.github/workflows/python-package.yml/badge.svg
+.. |travis| image:: https://github.com/ladisk/pyuff/actions/workflows/python-package.yml/badge.svg
     :target: https://github.com/ladisk/pyuff/actions
