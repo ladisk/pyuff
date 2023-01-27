@@ -9,8 +9,6 @@ def _write2411(fh, dset):
         dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i%74s\n' % (-1, 2411, ' '))
         
-        # To me there is an implicit assumption that node starts at 0
-        # modify to accommodate for this
         for node,node_id in enumerate(dset['node_nums']):
             fh.write('%10i%10i%10i%10i\n' % (int(node_id), dset['def_cs'][node], dset['disp_cs'][node],
                                             dset['color'][node]))

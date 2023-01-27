@@ -72,7 +72,6 @@ def _write2414(fh, dset):
                                             dset['imaginary_part_of_modal_B_or_modal_mass']))                            
             for index in range(dset['node_nums'].shape[0]):
                 fh.write('%10i\n' % (int(dset['node_nums'][index])))
-                # Really brute force method here... Find something more elegant?
                 if dset['number_of_data_values_for_the_data_component'] == 3 : 
                     fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
                                                 np.real(dset['x'][index]),
