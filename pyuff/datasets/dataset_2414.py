@@ -132,7 +132,7 @@ def _write2414(fh, dset):
             if dset['dataset_location'] == 1:
                 for index in range(dset['node_nums'].shape[0]):
                     fh.write('%10i\n' % (dset['node_nums'][index]))
-                    for field in range(dset['data_at_node'][index]):
+                    for field in dset['data_at_node'][index]:
                         # number of values unknown, so loop
                         fh.write('%13.5e' % (field))
                     fh.write('\n')
