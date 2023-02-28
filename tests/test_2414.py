@@ -98,7 +98,7 @@ def test_write_2414_general():
 
 def test_write_2414_data_at_node():
     # Reading a universal file generated from unknown FEM-software
-    uff_ascii = pyuff.UFF('./data/heat_engine_housing.unv')
+    uff_ascii = pyuff.UFF('./data/heat_engine_housing.uff')
     original_data_sets = uff_ascii.read_sets()
     # model_info, unit_info, node_info, element_info, temperature_of_nodes
 
