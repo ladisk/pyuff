@@ -49,6 +49,7 @@ def test_read_2414_general():
     # note that here a list of array is returned, because of how record 15 is created
     np.testing.assert_array_equal(a['data_at_nodes_on_element'][2], np.array([[18]]))
 
+
 def test_write_2414():
     # Read dataset 2414 in test file
     uff_ascii = pyuff.UFF('./data/DS2414_disp_file.uff')
@@ -70,12 +71,13 @@ def test_write_2414():
     np.testing.assert_array_equal(a['frequency'], b['frequency'])
     np.testing.assert_array_equal(a['z'], b['z'])
 
+
 def test_write_2414_general():
     # Reading a universal file generated to imported by Simcenter3D (tested in release 2023)
     # set 1 is a data at nodes on elements result (element thickness at nodes on elements).
     uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.uff')
     a = uff_ascii.read_sets(1)
-    
+
     # Write dataset 2414
     uff_write = pyuff.UFF('./data/tmp.uff')
     uff_write._write_set(a,'overwrite')
@@ -92,6 +94,30 @@ def test_write_2414_general():
     np.testing.assert_array_equal(a['number_of_nodes'], b['number_of_nodes'])
     np.testing.assert_array_equal(a['number_of_values_per_node'], b['number_of_values_per_node'])
     np.testing.assert_array_equal(a['data_at_nodes_on_element'], b['data_at_nodes_on_element'])
+
+
+def test_write_2414_data_at_node():
+    # Reading a universal file generated from unknown FEM-software
+    uff_ascii = pyuff.UFF('./data/heat_engine_housing.unv')
+    original_data_sets = uff_ascii.read_sets()
+    # model_info, unit_info, node_info, element_info, temperature_of_nodes
+
+    # Write dataset 2414
+    uff_write = pyuff.UFF('./data/tmp.uff')
+    uff_write.write_sets(original_data_sets, 'overwrite')
+
+    # Read dataset 2414 in written file
+    uff_ascii = pyuff.UFF('./data/tmp.uff')
+    data_sets_after_write = uff_ascii.read_sets() # only wrote the 1 dataset, so now index 0
+    if os.path.exists(uff_ascii._filename):
+       os.remove(uff_ascii._filename)
+
+    temp_orig = original_data_sets[4]
+    temp_write = data_sets_after_write[4]
+    # Test
+    np.testing.assert_array_equal(temp_orig['node_nums'], temp_write['node_nums'])
+    np.testing.assert_array_equal(temp_orig['data_at_node'], temp_write['data_at_node'])
+
 
 def test_prepare_2414():
     dict_2414 = pyuff.prepare_2414(return_full_dict=True)
@@ -149,7 +175,9 @@ def test_prepare_2414():
     if x2['type'] != 2414:
         raise Exception('Not correct type')
 
+
 if __name__ == '__main__':
     test_write_2414()
     test_read_2414_general()
     test_write_2414_general()
+    test_write_2414_data_at_node()
