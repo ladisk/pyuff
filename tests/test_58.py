@@ -6,6 +6,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/sample_dataset58_psd.unv')
     test_read_write_read_given_data_base('./data/time-history-not-all-columns-filled.uff')
     test_read_write_read_given_data_base('./data/Artemis export - data and dof 05_14102016_105117.uff')
     test_read_write_read_given_data_base('./data/BK_4_channels.uff')
