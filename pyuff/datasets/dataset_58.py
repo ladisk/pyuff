@@ -268,7 +268,7 @@ def _extract58(block_data):
                             for i in range(len(line) // 33) for j in [0, 1]])
             elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
                 for line in split_data:  # 1E13.5,2E20.12
-                    values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
+                    values.extend([float(line[0:13]), float(line[13:26]), float(line[26:47])])
             else:
                 raise Exception('Error reading data-set #58b; not proper data case.')
 
