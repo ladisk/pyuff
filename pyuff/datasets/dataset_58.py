@@ -9,7 +9,7 @@ from .. import pyuff
 def _write58(fh, dset, mode='add', _filename=None):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
-        if not (dset['func_type'] in [1, 2, 3, 4, 6]):
+        if not (dset['func_type'] in [1, 2, 3, 4, 6, 9]):
             raise ValueError('Unsupported function type')
         # handle optional fields - only those that are not calculated
         # automatically
@@ -99,7 +99,7 @@ def _write58(fh, dset, mode='add', _filename=None):
                     (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
                     dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
                     dset['ref_node'], dset['ref_dir']))
-        fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ord_data_type, num_pts, is_even,
+        fh.write('%10i%10i%10i%13.6e%13.6e%13.6e\n' % (ord_data_type, num_pts, is_even,
                                                         is_even * dset['abscissa_min'], is_even * dx,
                                                         dset['z_axis_value']))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
@@ -179,7 +179,7 @@ def _write58(fh, dset, mode='add', _filename=None):
                     if float(n3_blocks - int(n3_blocks)) != 0.0:
                         print('Warning: Something went wrong when savning the uff file.')
                     n3_blocks = int(n3_blocks)
-                    fh.write(n3_blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3_blocks]))
+                    fh.write(n3_blocks * '%13.6e%13.6e%13.6e\n' % tuple(data[:3 * n3_blocks]))
                     if rem_vals > 0:
                         fmt = ['%13.5e', '%20.11e', '%20.11e']
                         fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[3 * n3_blocks:]))
