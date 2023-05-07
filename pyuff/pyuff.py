@@ -284,7 +284,7 @@ class UFF:
             dset = dset[0]
         return dset
 
-    def write_sets(self, dsets, mode='add'):
+    def write_sets(self, dsets, mode='add', force_double=True):
         """
         Writes several UFF data-sets to the file.  The mode can be
         either 'add' (default) or 'overwrite'. The dsets is a
@@ -299,6 +299,13 @@ class UFF:
         data-sets some fields are set automatically. Optional fields are
         calculated automatically and the dset is updated - as dset is actually
         an alias (aka pointer), this is reflected at the caller too.
+
+        The required fields are:
+            dset - dictionary representing the data-set
+            mode - 'add' or 'overwrite'
+            force_double - True or False (default True). Single precision should
+                be avoided, therefore by default data is saved with double 
+                precision.
         """
         if (not type(dsets).__name__ == 'list'):
             dsets = [dsets]
@@ -308,13 +315,13 @@ class UFF:
         if mode.lower() == 'overwrite':
             # overwrite mode; first set is written in the overwrite mode, others
             # in add mode
-            self._write_set(dsets[0], 'overwrite')
+            self._write_set(dsets[0], 'overwrite', force_double=force_double)
             for ii in range(1, n_sets):
-                self._write_set(dsets[ii], 'add')
+                self._write_set(dsets[ii], 'add', force_double=force_double)
         elif mode.lower() == 'add':
             # add mode; all the sets are written in the add mode
             for ii in range(0, n_sets):
-                self._write_set(dsets[ii], 'add')
+                self._write_set(dsets[ii], 'add', force_double=force_double)
         else:
             raise Exception('Unknown mode: ' + mode)
 
@@ -386,7 +393,7 @@ class UFF:
             pass
         return dset
 
-    def _write_set(self, dset, mode='add'):
+    def _write_set(self, dset, mode='add', force_double=True):
         """
         Writes UFF data (UFF data-sets) to the file.  The mode can be
         either 'add' (default) or 'overwrite'. The dset is a
@@ -432,7 +439,7 @@ class UFF:
             elif set_type == 55:
                 _write55(fh, dset)
             elif set_type == 58:
-                _write58(fh, dset, mode, _filename=self._filename)
+                _write58(fh, dset, mode, _filename=self._filename, force_double=force_double)
             elif set_type == 82:
                 _write82(fh, dset)
             elif set_type == 151:

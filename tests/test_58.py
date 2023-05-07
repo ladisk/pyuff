@@ -6,6 +6,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff', force_double=False)
     test_read_write_read_given_data_base('./data/time-history-not-all-columns-filled.uff')
     test_read_write_read_given_data_base('./data/Artemis export - data and dof 05_14102016_105117.uff')
     test_read_write_read_given_data_base('./data/BK_4_channels.uff')
@@ -15,7 +16,7 @@ def test_read_write_read_given_data():
     test_read_write_read_given_data_base('./data/no_spacing2_UFF58_ascii.uff',data_at_the_end)
     test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff')
 
-def test_read_write_read_given_data_base(file='', data_at_the_end=None):
+def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_double=True):
     if file=='':
         return
     #read from file
@@ -31,7 +32,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_sets(a, 'add', force_double=force_double)
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
