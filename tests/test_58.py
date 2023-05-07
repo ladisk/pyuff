@@ -13,6 +13,7 @@ def test_read_write_read_given_data():
     test_read_write_read_given_data_base('./data/binary8byte.uff')
     data_at_the_end = np.array([-5.48363E-004,-7.51019E-004,-6.07967E-004,-0.00103712])
     test_read_write_read_given_data_base('./data/no_spacing2_UFF58_ascii.uff',data_at_the_end)
+    test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff')
 
 def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     if file=='':
