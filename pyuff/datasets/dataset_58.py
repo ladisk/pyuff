@@ -6,7 +6,7 @@ import os
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 from .. import pyuff
 
-def _write58(fh, dset, mode='add', _filename=None):
+def _write58(fh, dset, mode='add', _filename=None, force_double=True):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         if not (dset['func_type'] in [1, 2, 3, 4, 6, 9]):
@@ -53,22 +53,32 @@ def _write58(fh, dset, mode='add', _filename=None):
                 'version_num': 0,
                 'abscissa_spacing': 0}
         dset = _opt_fields(dset, dict)
-        # Write strings to the file - always in double precision => ord_data_type = 2
-        # for real data and 6 for complex data
+
+        # Write strings to the file - always in double precision 
+        # => ord_data_type = 2 (single) and 4 (double) for real data 
+        # => ord_data_type = 5 (single) and 6 (double) for complex data
         num_pts = len(dset['data'])
         is_r = not np.iscomplexobj(dset['data'])
         if is_r:
             # real data
-            dset['ord_data_type'] = 4
-            n_bytes = num_pts * 8
-            if 'n_bytes' in dset.keys():
-                dset['n_bytes'] = n_bytes
-            ord_data_type = dset['ord_data_type']
+            if force_double:
+                dset['ord_data_type'] = 4
         else:
             # complex data
-            dset['ord_data_type'] = 6
+            if force_double:
+                dset['ord_data_type'] = 6
+
+        if dset['ord_data_type'] in [4, 6]: # double precision
+            is_double = True
             n_bytes = num_pts * 8
-            ord_data_type = 6
+        elif dset['ord_data_type'] in [2, 5]: # sigle precision
+            is_double = False
+            n_bytes = num_pts * 4
+
+        if 'n_bytes' in dset.keys():
+            dset['n_bytes'] = n_bytes
+
+        ord_data_type = dset['ord_data_type']
 
         is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
 
@@ -153,36 +163,38 @@ def _write58(fh, dset, mode='add', _filename=None):
             elif mode.lower() == 'add':
                 fh = open(_filename, 'at')
         else:
-            n4_blocks = len(data) // 4
-            rem_vals = len(data) % 4
-            if is_r:
-                if is_even:
-                    fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                    if rem_vals > 0:
-                        fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
+            if is_double: # write double precision
+                n4_blocks = len(data) // 4
+                rem_vals = len(data) % 4
+                if is_r:
+                    if is_even:
+                        fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                        if rem_vals > 0:
+                            fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
+                    else:
+                        fh.write(n4_blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                        if rem_vals > 0:
+                            fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
+                            fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
                 else:
-                    fh.write(n4_blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                    if rem_vals > 0:
-                        fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
-                        fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
-            else:
-                if is_even:
-                    fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                    if rem_vals > 0:
-                        fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
-                else:
-                    n3_blocks = len(data) / 3
-                    rem_vals = len(data) % 3
-                    # TODO: It breaks here for long measurements. Implement exceptions.
-                    # n3_blocks seems to be a natural number but of the wrong type. Convert for now,
-                    # but make assertion to prevent werid things from happening.
-                    if float(n3_blocks - int(n3_blocks)) != 0.0:
-                        print('Warning: Something went wrong when savning the uff file.')
-                    n3_blocks = int(n3_blocks)
-                    fh.write(n3_blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3_blocks]))
-                    if rem_vals > 0:
-                        fmt = ['%13.5e', '%20.11e', '%20.11e']
-                        fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[3 * n3_blocks:]))
+                    if is_even:
+                        fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
+                        if rem_vals > 0:
+                            fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
+                    else:
+                        n3_blocks = len(data) // 3
+                        rem_vals = len(data) % 3
+                        fh.write(n3_blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3_blocks]))
+                        if rem_vals != 0: # There should be no rem
+                            print('Warning: Something went wrong when savning the uff file.')
+
+            else: # single precision
+                n6_blocks = len(data) // 6
+                rem_vals = len(data) % 6
+                fh.write(n6_blocks * '%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % tuple(data[:6 * n6_blocks]))
+                if rem_vals > 0:
+                    fh.write((rem_vals * '%13.5e' + '\n') % tuple(data[6 * n6_blocks:]))
+
         fh.write('%6i\n' % -1)
         del data
     except KeyError as msg:
