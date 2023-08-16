@@ -44,26 +44,52 @@ def _extract2412(block_data):
         dataset = []
         i = 0
         while i < len(split_data):
+            print(f"Starting loop with i={i}")
             dict_tmp = dict()
             line = split_data[i]
-            dict_tmp['element_num'] = line[0]
-            dict_tmp['f_descriptor'] = line[1]
-            dict_tmp['phys_table'] = line[2]
-            dict_tmp['mat_table'] = line[3]
-            dict_tmp['color'] = line[4]
-            dict_tmp['num_nodes'] = line[5]
+            print(f"line={line}")
+            dict_tmp['element_num'] = int(line[0])
+            dict_tmp['f_descriptor'] = int(line[1])
+            dict_tmp['phys_table'] = int(line[2])
+            dict_tmp['mat_table'] = int(line[3])
+            dict_tmp['color'] = int(line[4])
+            dict_tmp['num_nodes'] = int(line[5])
             if dict_tmp['f_descriptor'] == 11:
                 # element is a rod and covers 3 lines
-                dict_tmp['beam_orientation'] = split_data[i+1][0]
-                dict_tmp['beam_foreend_cross'] = split_data[i + 1][1]
-                dict_tmp['beam_aftend_cross'] = split_data[i + 1][2]
-                dict_tmp['nodes_nums'] = split_data[i + 2]
+                dict_tmp['beam_orientation'] = int(split_data[i+1][0])
+                dict_tmp['beam_foreend_cross'] = int(split_data[i + 1][1])
+                dict_tmp['beam_aftend_cross'] = int(split_data[i + 1][2])
+                dict_tmp['nodes_nums'] = [int(e) for e in split_data[i+2]]
                 i += 3
             else:
                 # element is no rod and covers 2 lines
-                dict_tmp['nodes_nums'] = split_data[i + 1]
+                dict_tmp['nodes_nums'] = [int(e) for e in split_data[i+1]]
                 i += 2
+            desc = dict_tmp['f_descriptor']
+            if not desc in dset:
+                dset[desc] = []
+            dset[desc].append(dict_tmp)
             dataset.append(dict_tmp)
+        return dset
+        #test = [e['f_descriptor'] for e in dataset]
+        #test = set(test)
+        #test = list(test)
+        desc_list = [e['f_descriptor'] for e in dataset]
+        elts_types = list(set(desc_list))
+        for elt_type in elts_types:
+            ind = list(np.where(np.array(desc_list) == elt_type)[0])
+            dict_tmp = dict()
+            #test = [e for dataset if ]    #dataset[ind]
+            test = dataset[ind]
+            dict_tmp['element_nums'] = [e['element_num'] for e in dataset[ind]]#]dataset[ind]['element_num'].copy()
+            dict_tmp['fe_descriptor'] = dataset[ind, 'fe_descriptor'].copy()
+            dict_tmp['phys_table'] = dataset[ind, 'phys_table'].copy()
+            dict_tmp['mat_table'] = dataset[ind, 'mat_table'].copy()
+            dict_tmp['color'] = dataset[ind, 'color'].copy()
+            #dict_tmp['nodes_nums'] = np.array([rec2[i] for i in ind], dtype=int).copy().reshape((-1, elt_type))
+            dict_tmp['nodes_nums'] = dataset[ind, 'color'].copy()
+            #dset[elt_type_dict[str(elt_type)]] = dict_tmp
+            dset[elt_type] = dict_tmp
         return dataset
 
 
