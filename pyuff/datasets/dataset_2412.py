@@ -38,10 +38,38 @@ def _extract2412(block_data):
     try:
         split_data = block_data.splitlines()
         split_data = [a.split() for a in split_data][2:]
-        # Extract Record 1
-        rec1 = np.array(split_data[::2], dtype=int) 
+        # Extract Records
+        rec1 = np.array([])
+        rec2 = []
+        dataset = []
+        i = 0
+        while i < len(split_data):
+            dict_tmp = dict()
+            line = split_data[i]
+            dict_tmp['element_num'] = line[0]
+            dict_tmp['f_descriptor'] = line[1]
+            dict_tmp['phys_table'] = line[2]
+            dict_tmp['mat_table'] = line[3]
+            dict_tmp['color'] = line[4]
+            dict_tmp['num_nodes'] = line[5]
+            if dict_tmp['f_descriptor'] == 11:
+                # element is a rod and covers 3 lines
+                dict_tmp['beam_orientation'] = split_data[i+1][0]
+                dict_tmp['beam_foreend_cross'] = split_data[i + 1][1]
+                dict_tmp['beam_aftend_cross'] = split_data[i + 1][2]
+                dict_tmp['nodes_nums'] = split_data[i + 2]
+                i += 3
+            else:
+                # element is no rod and covers 2 lines
+                dict_tmp['nodes_nums'] = split_data[i + 1]
+                i += 2
+            dataset.append(dict_tmp)
+        return dataset
+
+
+        #rec1 = np.array(split_data[::2], dtype=int)
         # Extract Record 2
-        rec2 = split_data[1::2] 
+        #rec2 = split_data[1::2]
         # Look for the different types of elements stored in the dataset
         elts_types = list(set(rec1[:,5]))
         for elt_type in elts_types:
@@ -67,6 +95,9 @@ def prepare_2412(
         color=None,
         num_nodes=None,
         nodes_nums=None,
+        beam_orientation=None,
+        beam_foreend_cross=None,
+        beam_aftend_cross=None,
         return_full_dict=False):
     """Name: Elements
 
@@ -78,7 +109,10 @@ def prepare_2412(
     :param mat_table: R1 F4, Material property table number
     :param color: R1 F5, Color, optional
     :param num_nodes: R1 F6, Number of nodes on element
-    :param nodes_nums: R2 F1, Node labels defining element
+    :param nodes_nums: R2 F1 (R3 FOR RODS), Node labels defining element
+    :param beam_orientation: R2 F1 FOR RODS ONLY, beam orientation node number
+    :param beam_foreend_cross: R2 F2 FOR RODS ONLY, beam fore-end cross section number
+    :param beam_aftend_cross: R2 F3 FOR RODS ONLY, beam aft-end cross section number
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
 
     **Test prepare_2412**
@@ -113,6 +147,13 @@ def prepare_2412(
         raise TypeError('num_nodes must be integer')
     if np.array(nodes_nums).dtype != int and nodes_nums != None:
         raise TypeError('nodes_nums must be integer')
+    if np.array(beam_orientation).dtype != int and beam_orientation != None:
+        raise TypeError('beam_orientation must be integer')
+    if np.array(beam_foreend_cross).dtype != int and beam_foreend_cross != None:
+        raise TypeError('beam_foreend_cross must be integer')
+    if np.array(beam_aftend_cross).dtype != int and beam_aftend_cross != None:
+        raise TypeError('beam_aftend_cross must be integer')
+
 
     dataset={
         'type': 2412,
