@@ -77,8 +77,9 @@ from .datasets.dataset_2412 import _write2412, _extract2412
 from .datasets.dataset_2414 import _write2414, _extract2414
 from .datasets.dataset_2420 import _write2420, _extract2420
 from .datasets.dataset_2429 import _write2429, _extract2429
+from .datasets.dataset_2467 import _write2467, _extract2467
 
-_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429']
+_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
 class UFF:
@@ -387,6 +388,8 @@ class UFF:
             dset = _extract2420(block_data)
         elif self._set_types[int(n)] == 2429:
             dset = _extract2429(block_data)
+        elif self._set_types[int(n)] == 2467:
+            dset = _extract2467(block_data)
         else:
             dset['type'] = self._set_types[int(n)]
             # Unsupported data-set - do nothing
