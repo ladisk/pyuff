@@ -2,9 +2,6 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
-# TODO: Big deal - the output dictionary when reading this set
-#    is different than the dictionary that is expected (keys) when
-#    writing this same set. This is not OK!
 def _write2420(fh, dset):
     try:
         dict = {'part_UID': 1,
