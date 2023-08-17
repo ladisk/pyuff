@@ -29,7 +29,8 @@ def _write2412(fh, dset):
                 ))
             for ii in elem['nodes_nums']:
                 #fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
-                fh.write(' '.join(elem))
+                fh.write('%10i' % ii)
+                #fh.write(' '.join([str(e) for e in elem['nodes_nums']]))
             fh.write('\n')
         fh.write('%6i\n' % -1)
 
