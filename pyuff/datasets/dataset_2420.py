@@ -53,12 +53,9 @@ def _extract2420(block_data):
     row2 = list(map(float, ''.join(split_data[7::6]).split()))
     row3 = list(map(float, ''.join(split_data[8::6]).split()))
     row4 = list(map(float, ''.join(split_data[9::6]).split()))
-    # !! Row 4 left out for now - usually zeros ...
-    #            row4 = map(float, split_data[7::6].split())
     dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)], row4[i:(i + 3)])) \
                             for i in np.arange(0, len(row1), 3)]
-    #        except:
-    #            raise Exception('Error reading data-set #2420')
+
     return dset
 
 

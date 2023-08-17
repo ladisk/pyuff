@@ -6,11 +6,7 @@ def _write2412(fh, dset):
     try:
         elt_type_dict = {'triangle': 3, 'quad': 4}
         fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
-        #for elt_type in dset:
-        #    if elt_type == "type":
-        #        pass
-        #    else:
-                #for i in range(len(dset[elt_type]['element_nums'])):
+
         for elem in dset['all']:
             fh.write('%10i%10i%10i%10i%10i%10i\n' % (
                 elem['element_num'],
@@ -28,9 +24,7 @@ def _write2412(fh, dset):
                     elem['beam_aftend_cross']
                 ))
             for ii in elem['nodes_nums']:
-                #fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
                 fh.write('%10i' % ii)
-                #fh.write(' '.join([str(e) for e in elem['nodes_nums']]))
             fh.write('\n')
         fh.write('%6i\n' % -1)
 
@@ -42,7 +36,6 @@ def _extract2412(block_data):
     """Extract element data - data-set 2412."""
     dset = {'type': 2412, 'all': None}
     # Define dictionary of possible elements types
-    # Only 2D non-quadratic elements are supported
     elt_type_dict = {'3': 'triangle', '4': 'quad'}
     # Read data
     try:
@@ -80,43 +73,7 @@ def _extract2412(block_data):
             dataset.append(dict_tmp)
         dset['all'] = dataset
         return dset
-        #test = [e['f_descriptor'] for e in dataset]
-        #test = set(test)
-        #test = list(test)
-        desc_list = [e['f_descriptor'] for e in dataset]
-        elts_types = list(set(desc_list))
-        for elt_type in elts_types:
-            ind = list(np.where(np.array(desc_list) == elt_type)[0])
-            dict_tmp = dict()
-            #test = [e for dataset if ]    #dataset[ind]
-            test = dataset[ind]
-            dict_tmp['element_nums'] = [e['element_num'] for e in dataset[ind]]#]dataset[ind]['element_num'].copy()
-            dict_tmp['fe_descriptor'] = dataset[ind, 'fe_descriptor'].copy()
-            dict_tmp['phys_table'] = dataset[ind, 'phys_table'].copy()
-            dict_tmp['mat_table'] = dataset[ind, 'mat_table'].copy()
-            dict_tmp['color'] = dataset[ind, 'color'].copy()
-            #dict_tmp['nodes_nums'] = np.array([rec2[i] for i in ind], dtype=int).copy().reshape((-1, elt_type))
-            dict_tmp['nodes_nums'] = dataset[ind, 'color'].copy()
-            #dset[elt_type_dict[str(elt_type)]] = dict_tmp
-            dset[elt_type] = dict_tmp
-        return dataset
 
-
-        #rec1 = np.array(split_data[::2], dtype=int)
-        # Extract Record 2
-        #rec2 = split_data[1::2]
-        # Look for the different types of elements stored in the dataset
-        elts_types = list(set(rec1[:,5]))
-        for elt_type in elts_types:
-            ind = np.where(np.array(rec1[:,5]) == elt_type)[0]
-            dict_tmp = dict()
-            dict_tmp['element_nums'] = rec1[ind,0].copy()
-            dict_tmp['fe_descriptor'] = rec1[ind,1].copy()
-            dict_tmp['phys_table'] = rec1[ind,2].copy()
-            dict_tmp['mat_table'] = rec1[ind,3].copy()
-            dict_tmp['color'] = rec1[ind,4].copy()
-            dict_tmp['nodes_nums'] =  np.array([rec2[i] for i in ind], dtype=int).copy().reshape((-1,elt_type))
-            dset[elt_type_dict[str(elt_type)]] = dict_tmp
     except:
         raise Exception('Error reading data-set #2412')
     return dset
@@ -198,6 +155,9 @@ def prepare_2412(
         'mat_table': mat_table,
         'color': color,
         'num_nodes': num_nodes,
+        'beam_orientation': beam_orientation,
+        'beam_foreend_cross': beam_foreend_cross,
+        'beam_aftend_cross': beam_aftend_cross,
         'nodes_nums': nodes_nums
         }
     
