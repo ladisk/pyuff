@@ -7,24 +7,43 @@ from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 #    writing this same set. This is not OK!
 def _write2467(fh, dset):
     try:
-        dict = {'part_UID': 1,
-                'part_name': 'None',
-                'cs_type': 0,
-                'cs_color': 8}
-        dset = _opt_fields(dset, dict)
+        #dict = {'part_UID': 1,
+        #        'part_name': 'None',
+        #        'cs_type': 0,
+        #        'cs_color': 8}
+        #dset = _opt_fields(dset, dict)
 
-        fh.write('%6i\n%6i%74s\n' % (-1, 2420, ' '))
-        fh.write('%10i\n' % (dset['part_UID']))
-        fh.write('%-80s\n' % (dset['part_name']))
+        # = None,
+        # = None,
+        # = None,
+        # = None,
+        # = None,
+        #return_full_dict = False):
 
-        num_CS = min( (len(dset['CS_sys_labels']),  len(dset['CS_types']),  len(dset['CS_colors']),  len(dset['CS_names']), len(dset['CS_matrices'])) )
-        for node in range(num_CS):
-            fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
-            fh.write('%s\n' % dset['CS_names'][node])
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][3, :]))
+        fh.write('%6i\n%6i%74s\n' % (-1, 2467, ' '))
+
+
+
+
+        #num_CS = min( (len(dset['CS_sys_labels']),  len(dset['CS_types']),  len(dset['CS_colors']),  len(dset['CS_names']), len(dset['CS_matrices'])) )
+        for i in range(len(dset['group_ids'])):
+            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_ids'][i], dset['constraint_sets'][i], dset['restraint_sets'][i], dset['load_sets'][i], dset['dof_sets'][i], dset['temp_sets'][i], dset['contact_sets'][i], dset['num_entities'][i]))
+            fh.write('%-80s\n' % (dset['group_names'][i]))
+
+            ii = 0
+            while ii < dset['num_entities'][i]:
+                if dset['num_entities'][i] - ii > 1:
+                    fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['ent_types'][i][ii], dset['ent_tags'][i][ii], dset['ent_node_ids'][i][ii], dset['ent_comp_ids'][i][ii], dset['ent_types'][i][ii+1], dset['ent_tags'][i][ii+1], dset['ent_node_ids'][i][ii+1], dset['ent_comp_ids'][i][ii+1]))
+                    ii += 2
+                else:
+                    fh.write('%10i%10i%10i%10i\n' % (dset['ent_types'][i][ii], dset['ent_tags'][i][ii], dset['ent_node_ids'][i][ii], dset['ent_comp_ids'][i][ii]))
+                    ii += 1
+            #fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
+            #fh.write('%s\n' % dset['CS_names'][node])
+            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
+            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
+            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))
+            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][3, :]))
         fh.write('%6i\n' % -1)
     except:
         raise Exception('Error writing data-set #2467')
@@ -74,20 +93,20 @@ def _extract2467(block_data):
         while left_entities:
             line = split_data[i]
             if len(line) == 8:
-                ent_types[index].append(line[0])
-                ent_tags[index].append(line[1])
-                ent_node_ids[index].append(line[2])
-                ent_comp_ids[index].append(line[3])
-                ent_types[index].append(line[4])
-                ent_tags[index].append(line[5])
-                ent_node_ids[index].append(line[6])
-                ent_comp_ids[index].append(line[7])
+                ent_types[index].append(int(line[0]))
+                ent_tags[index].append(int(line[1]))
+                ent_node_ids[index].append(int(line[2]))
+                ent_comp_ids[index].append(int(line[3]))
+                ent_types[index].append(int(line[4]))
+                ent_tags[index].append(int(line[5]))
+                ent_node_ids[index].append(int(line[6]))
+                ent_comp_ids[index].append(int(line[7]))
                 left_entities -= 2
             elif len(line) == 4:
-                ent_types[index].append(line[0])
-                ent_tags[index].append(line[1])
-                ent_node_ids[index].append(line[2])
-                ent_comp_ids[index].append(line[3])
+                ent_types[index].append(int(line[0]))
+                ent_tags[index].append(int(line[1]))
+                ent_node_ids[index].append(int(line[2]))
+                ent_comp_ids[index].append(int(line[3]))
                 left_entities -= 1
             else:
                 raise Exception("R3 of dataset 2467 needs to contain 4 or 8 values")
