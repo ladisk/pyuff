@@ -10,17 +10,26 @@ def _write2412(fh, dset):
             if elt_type == "type":
                 pass
             else:
-                for i in range(len(dset[elt_type]['element_nums'])):
+                #for i in range(len(dset[elt_type]['element_nums'])):
+                for elem in dset['all']:
                     fh.write('%10i%10i%10i%10i%10i%10i\n' % (
-                        dset[elt_type]['element_nums'][i],
-                        dset[elt_type]['fe_descriptor'][i],
-                        dset[elt_type]['phys_table'][i],
-                        dset[elt_type]['mat_table'][i],
-                        dset[elt_type]['color'][i],
-                        elt_type_dict[elt_type],
+                        elem['element_nums'],
+                        elem['fe_descriptor'],
+                        elem['phys_table'],
+                        elem['mat_table'],
+                        elem['color'],
+                        elem[elt_type],
                     ))
-                    for ii in range(elt_type_dict[elt_type]):
-                        fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
+                    if elem['f_descriptor'] == 11:
+                    # rods have to be written in 3 lines
+                        fh.write('%10i%10i%10i\n' % (
+                            elem['beam_orientation'],
+                            elem['beam_foreend_cross'],
+                            elem['beam_aftend_cross']
+                        ))
+                    for ii in elem['nodes_nums']:
+                        #fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
+                        fh.write(' '.join(elem))
                     fh.write('\n')
         fh.write('%6i\n' % -1)
 
@@ -30,7 +39,7 @@ def _write2412(fh, dset):
 
 def _extract2412(block_data):
     """Extract element data - data-set 2412."""
-    dset = {'type': 2412}
+    dset = {'type': 2412, 'all': None}
     # Define dictionary of possible elements types
     # Only 2D non-quadratic elements are supported
     elt_type_dict = {'3': 'triangle', '4': 'quad'}
@@ -44,10 +53,8 @@ def _extract2412(block_data):
         dataset = []
         i = 0
         while i < len(split_data):
-            print(f"Starting loop with i={i}")
             dict_tmp = dict()
             line = split_data[i]
-            print(f"line={line}")
             dict_tmp['element_num'] = int(line[0])
             dict_tmp['f_descriptor'] = int(line[1])
             dict_tmp['phys_table'] = int(line[2])
@@ -70,6 +77,7 @@ def _extract2412(block_data):
                 dset[desc] = []
             dset[desc].append(dict_tmp)
             dataset.append(dict_tmp)
+        dset['all'] = dataset
         return dset
         #test = [e['f_descriptor'] for e in dataset]
         #test = set(test)
