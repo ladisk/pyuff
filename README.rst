@@ -1,3 +1,6 @@
+!!This is a fork from pyuff with support for dataset 2467. See link for the original library; note that this version can't be installed via pip.
+
+
 pyuff
 =====
 
@@ -5,7 +8,7 @@ Universal File Format read and write
 ------------------------------------
 This module defines an UFF class to manipulate with the UFF (Universal File Format) files.
 
-Read from and write of data-set types **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429** are supported.
+Read from and write of data-set types **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429, 2467** are supported.
 
 Check out the `documentation <https://pyuff.readthedocs.io/en/latest/index.html>`_.
 
