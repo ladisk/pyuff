@@ -6,31 +6,31 @@ def _write2412(fh, dset):
     try:
         elt_type_dict = {'triangle': 3, 'quad': 4}
         fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
-        for elt_type in dset:
-            if elt_type == "type":
-                pass
-            else:
+        #for elt_type in dset:
+        #    if elt_type == "type":
+        #        pass
+        #    else:
                 #for i in range(len(dset[elt_type]['element_nums'])):
-                for elem in dset['all']:
-                    fh.write('%10i%10i%10i%10i%10i%10i\n' % (
-                        elem['element_nums'],
-                        elem['fe_descriptor'],
-                        elem['phys_table'],
-                        elem['mat_table'],
-                        elem['color'],
-                        elem[elt_type],
-                    ))
-                    if elem['f_descriptor'] == 11:
-                    # rods have to be written in 3 lines
-                        fh.write('%10i%10i%10i\n' % (
-                            elem['beam_orientation'],
-                            elem['beam_foreend_cross'],
-                            elem['beam_aftend_cross']
-                        ))
-                    for ii in elem['nodes_nums']:
-                        #fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
-                        fh.write(' '.join(elem))
-                    fh.write('\n')
+        for elem in dset['all']:
+            fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+                elem['element_num'],
+                elem['f_descriptor'],
+                elem['phys_table'],
+                elem['mat_table'],
+                elem['color'],
+                elem['num_nodes'],
+            ))
+            if elem['f_descriptor'] == 11:
+            # rods have to be written in 3 lines
+                fh.write('%10i%10i%10i\n' % (
+                    elem['beam_orientation'],
+                    elem['beam_foreend_cross'],
+                    elem['beam_aftend_cross']
+                ))
+            for ii in elem['nodes_nums']:
+                #fh.write('%10i' % dset[elt_type]['nodes_nums'][i][ii])
+                fh.write(' '.join(elem))
+            fh.write('\n')
         fh.write('%6i\n' % -1)
 
     except:
