@@ -32,36 +32,69 @@ def _write2467(fh, dset):
 def _extract2467(block_data):
     '''Extract local CS/transforms -- data-set 2467.'''
     dset = {'type': 2467}
-    #        try:
     split_data = block_data.splitlines(True)
+    split_data = [a.split() for a in split_data][2:]
 
-    # -- Get Record 1
-    dset['Part_UID'] = float(split_data[2])
+    group_ids = []
+    constraint_sets = []
+    restraint_sets = []
+    load_sets = []
+    dof_sets = []
+    temp_sets = []
+    contact_sets = []
+    num_entities = []
+    group_names = []
 
-    # -- Get Record 2
-    dset['Part_Name'] = split_data[3].rstrip()
+    ent_types = []
+    ent_tags = []
+    ent_node_ids = []
+    ent_comp_ids = []
 
-    # -- Get Record 3
-    rec_3 = list(map(int, ''.join(split_data[4::6]).split()))
-    dset['CS_sys_labels'] = rec_3[::3]
-    dset['CS_types'] = rec_3[1::3]
-    dset['CS_colors'] = rec_3[2::3]
+    i = 0
+    index = 0
+    while i < len(split_data):
+        group_ids.append(int(split_data[i][0]))
+        constraint_sets.append(int(split_data[i][1]))
+        restraint_sets.append(int(split_data[i][2]))
+        load_sets.append(int(split_data[i][3]))
+        dof_sets.append(int(split_data[i][4]))
+        temp_sets.append(int(split_data[i][5]))
+        contact_sets.append(int(split_data[i][6]))
+        left_entities = int(split_data[i][7])
+        num_entities.append(left_entities)
 
-    # -- Get Record 4
-    dset['CS_names'] = list(map(str.rstrip, split_data[5::6]))
+        group_names.append(str(split_data[i+1][0]))
 
-    # !! The following part should be made smoother
-    # -- Get Record 5
-    row1 = list(map(float, ''.join(split_data[6::6]).split()))
-    row2 = list(map(float, ''.join(split_data[7::6]).split()))
-    row3 = list(map(float, ''.join(split_data[8::6]).split()))
-    row4 = list(map(float, ''.join(split_data[9::6]).split()))
-    # !! Row 4 left out for now - usually zeros ...
-    #            row4 = map(float, split_data[7::6].split())
-    dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)], row4[i:(i + 3)])) \
-                            for i in np.arange(0, len(row1), 3)]
-    #        except:
-    #            raise Exception('Error reading data-set #2467')
+        ent_types.append([])
+        ent_tags.append([])
+        ent_node_ids.append([])
+        ent_comp_ids.append([])
+
+        i += 2
+        while left_entities:
+            line = split_data[i]
+            if len(line) == 8:
+                ent_types[index].append(line[0])
+                ent_tags[index].append(line[1])
+                ent_node_ids[index].append(line[2])
+                ent_comp_ids[index].append(line[3])
+                ent_types[index].append(line[4])
+                ent_tags[index].append(line[5])
+                ent_node_ids[index].append(line[6])
+                ent_comp_ids[index].append(line[7])
+                left_entities -= 2
+            elif len(line) == 4:
+                ent_types[index].append(line[0])
+                ent_tags[index].append(line[1])
+                ent_node_ids[index].append(line[2])
+                ent_comp_ids[index].append(line[3])
+                left_entities -= 1
+            else:
+                raise Exception("R3 of dataset 2467 needs to contain 4 or 8 values")
+            i += 1
+        index += 1
+
+    dset.update({'group_ids': group_ids, 'constraint_sets': constraint_sets, 'restraint_sets': restraint_sets, 'load_sets': load_sets, 'dof_sets': dof_sets, 'temp_sets': temp_sets, 'contact_sets': contact_sets, 'num_entities': num_entities, 'group_names': group_names, 'ent_types': ent_types, 'ent_tags': ent_tags, 'ent_node_ids': ent_node_ids, 'ent_comp_ids': ent_comp_ids})
     return dset
 
 
