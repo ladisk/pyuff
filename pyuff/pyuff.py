@@ -1,27 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Copyright (C) 2014-2017 Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
-# 
-# This file is part of pyuff.
-# 
-# pyFRF is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, version 3 of the License.
-# 
-# pyuff is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with pyuff.  If not, see <http://www.gnu.org/licenses/>.
 """
 ==========
 pyuff module
 ==========
 
-This module is part of the www.openmodal.com project and
-defines an UFF class to manipulate with the
+This module defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
@@ -44,14 +26,13 @@ Acknowledgement:
     * This source (py2.7) was first written in 2007, 2008 by Primoz Cermelj (primoz.cermelj@gmail.com)
     * As part of the www.openmodal.com project the first source was adopted for Python 3 by
       Matjaz Mrsnik  <matjaz.mrsnik@gmail.com>
+    * 2014-2017 the package was part of the OpenModal project maintained by: Martin Česnik, 
+      Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc (in alphabetic order)
     * The package is maintained by Janko Slavič <janko.slavic@fs.uni-lj.si>
 
 Notes:
-    * 58 data-set is always written in double precision, even if it is
-      read in single precision.
-    
-    * ``numpy`` module is required as all the vector/matrix-type data are read
-      or written using ``numpy.array`` objects.
+    * by default 58 data-set is written in double precision (see option `force_double=True`),
+      even if it is read in single precision ().
       
     Example:
     >>> import pyuff
