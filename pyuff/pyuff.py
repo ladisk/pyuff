@@ -303,9 +303,8 @@ class UFF:
         The required fields are:
             dset - dictionary representing the data-set
             mode - 'add' or 'overwrite'
-            force_double - True or False (default True). Single precision should
-                be avoided, therefore by default data is saved with double 
-                precision.
+            force_double - True or False (default True). Single precision should be avoided, 
+                           therefore by default data is saved with double precision.
         """
         if (not type(dsets).__name__ == 'list'):
             dsets = [dsets]

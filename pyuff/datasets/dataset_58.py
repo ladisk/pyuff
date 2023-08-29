@@ -297,7 +297,7 @@ def _extract58(block_data):
                 n_val = len(values)
                 min_val = dset['abscissa_min']
                 d = dset['abscissa_inc']
-                dset['x'] = np.arange(min_val, min_val + n_val * d, d)
+                dset['x'] = min_val + np.arange(n_val) * d
                 dset['data'] = values.copy()
         elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
             # Complex ordinate data
@@ -310,7 +310,7 @@ def _extract58(block_data):
                 n_val = len(values) / 2
                 min_val = dset['abscissa_min']
                 d = dset['abscissa_inc']
-                dset['x'] = np.arange(min_val, min_val + n_val * d, d)
+                dset['x'] = min_val + np.arange(n_val) * d
                 dset['data'] = values[0:-1:2] + 1.j * values[1::2]
         del values
     except:
