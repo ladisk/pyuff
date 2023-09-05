@@ -17,13 +17,14 @@ def _write2420(fh, dset):
         fh.write('%10i\n' % (dset['part_UID']))
         fh.write('%-80s\n' % (dset['part_name']))
 
-        for node in range(len(dset['nodes'])):
-            fh.write('%10i%10i%10i\n' % (dset['nodes'][node], dset['cs_type'], dset['cs_color']))
-            fh.write('CS%i\n' % dset['nodes'][node])
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 1, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 2, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 3, :]))
+        num_CS = min( (len(dset['CS_sys_labels']),  len(dset['CS_types']),  len(dset['CS_colors']),  len(dset['CS_names']), len(dset['CS_matrices'])) )
+        for node in range(num_CS):
+            fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
+            fh.write('%s\n' % dset['CS_names'][node])
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][3, :]))
         fh.write('%6i\n' % -1)
     except:
         raise Exception('Error writing data-set #2420')
@@ -54,9 +55,10 @@ def _extract2420(block_data):
     row1 = list(map(float, ''.join(split_data[6::6]).split()))
     row2 = list(map(float, ''.join(split_data[7::6]).split()))
     row3 = list(map(float, ''.join(split_data[8::6]).split()))
+    row4 = list(map(float, ''.join(split_data[9::6]).split()))
     # !! Row 4 left out for now - usually zeros ...
     #            row4 = map(float, split_data[7::6].split())
-    dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)])) \
+    dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)], row4[i:(i + 3)])) \
                             for i in np.arange(0, len(row1), 3)]
     #        except:
     #            raise Exception('Error reading data-set #2420')
