@@ -2,9 +2,6 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
-# TODO: Big deal - the output dictionary when reading this set
-#    is different than the dictionary that is expected (keys) when
-#    writing this same set. This is not OK!
 def _write2467(fh, dset):
     try:
         #dict = {'part_UID': 1,
@@ -38,18 +35,12 @@ def _write2467(fh, dset):
                 else:
                     fh.write('%10i%10i%10i%10i\n' % (dset['ent_types'][i][ii], dset['ent_tags'][i][ii], dset['ent_node_ids'][i][ii], dset['ent_comp_ids'][i][ii]))
                     ii += 1
-            #fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
-            #fh.write('%s\n' % dset['CS_names'][node])
-            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
-            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
-            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))
-            #fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][3, :]))
         fh.write('%6i\n' % -1)
     except:
         raise Exception('Error writing data-set #2467')
 
 def _extract2467(block_data):
-    '''Extract local CS/transforms -- data-set 2467.'''
+    '''Extract physical groups -- data-set 2467.'''
     dset = {'type': 2467}
     split_data = block_data.splitlines(True)
     split_data = [a.split() for a in split_data][2:]
@@ -209,13 +200,6 @@ def prepare_2467(
         raise ValueError('ent_node_ids must be integer')
     if np.array(ent_comp_ids).dtype != int and ent_comp_ids != None:
         raise ValueError('ent_comp_ids must be integer')
-
-    #if type(CS_types) in (np.ndarray, list, tuple):
-    #    for i in CS_types:
-    #        if i not in (0, 1, 2):
-    #            raise ValueError('CS_types can be 0, 1, 2')
-
-
 
     dataset={
         'type': 2467,
