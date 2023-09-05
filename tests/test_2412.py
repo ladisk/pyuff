@@ -6,18 +6,19 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_2412():
-    uff_ascii = pyuff.UFF('./data/mesh_Oros-modal_uff15_uff2412.uff')
-    a = uff_ascii.read_sets(2)
-    np.testing.assert_array_equal(a['quad']['nodes_nums'][0], np.array([1, 25, 48, 24]))
-    np.testing.assert_array_equal(a['quad']['nodes_nums'][-1], np.array([50, 74, 73, 49]))
+    uff_ascii = pyuff.UFF('./data/heat_engine_housing.uff')
+    a = uff_ascii.read_sets(3)
+    np.testing.assert_array_equal(a[111][-1]['nodes_nums'], np.array([1, 3, 9, 10]))
+    np.testing.assert_array_equal(a[91][-1]['nodes_nums'], np.array([2, 3, 8]))
 
 def test_read_write_2412_mixed():
     # Read dataset 2412 in test file
-    uff_ascii = pyuff.UFF('./data/mesh_test_uff2412_mixed.uff')
-    a = uff_ascii.read_sets(2)
+    #uff_ascii = pyuff.UFF('./data/mesh_test_uff2412_mixed.uff')
+    uff_ascii = pyuff.UFF('./data/heat_engine_housing.uff')
+    a = uff_ascii.read_sets(3)
     # Test
-    np.testing.assert_array_equal(a['triangle']['nodes_nums'][-1], np.array([3, 6, 11]))
-    np.testing.assert_array_equal(a['quad']['nodes_nums'][-1], np.array([3, 4, 5, 6]))
+    np.testing.assert_array_equal(a[111][-1]['nodes_nums'], np.array([1, 3, 9, 10]))
+    np.testing.assert_array_equal(a[91][-1]['nodes_nums'], np.array([2, 3, 8]))
     
     # Write dataset 2412
     uff_write = pyuff.UFF('./data/tmp.uff')
@@ -27,21 +28,24 @@ def test_read_write_2412_mixed():
     uff_ascii = pyuff.UFF('./data/tmp.uff')
     b = uff_ascii.read_sets(0)
     # Test
-    np.testing.assert_array_equal(a['triangle']['nodes_nums'], b['triangle']['nodes_nums'])
-    np.testing.assert_array_equal(a['quad']['nodes_nums'], b['quad']['nodes_nums'])
+    np.testing.assert_array_equal(a[111], b[111])
+    np.testing.assert_array_equal(a[91], b[91])
 
 def test_prepare_2412():
     dict_2412 = pyuff.prepare_2412(return_full_dict=True)
 
     x = sorted(list(dict_2412.keys()))
-    y = sorted(['type',
+    y = sorted(['beam_aftend_cross',
+                'beam_foreend_cross',
+                'beam_orientation',
+                'color',
                 'element_nums',
                 'fe_descriptor',
-                'phys_table',
                 'mat_table',
-                'color',
+                'nodes_nums',
                 'num_nodes',
-                'nodes_nums'])
+                'phys_table',
+                'type'])
     np.testing.assert_array_equal(x,y)
 
     #empty dictionary test
@@ -53,4 +57,5 @@ def test_prepare_2412():
 
 if __name__ == '__main__':
     # test_read_2412()
+    test_prepare_2412()
     test_read_write_2412_mixed()
