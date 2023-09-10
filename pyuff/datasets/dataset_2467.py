@@ -1,28 +1,55 @@
+"""
+Dataset 2467 (source: https://github.com/victorsndvg/FEconv/blob/master/source/unv/module_dataset_2467.f90)
+
+Name:   Permanent Groups
+Record 1:        FORMAT(8I10)
+                Field 1       -- group number
+                Field 2       -- active constraint set no. for group
+                Field 3       -- active restraint set no. for group
+                Field 4       -- active load set no. for group
+                Field 5       -- active dof set no. for group
+                Field 6       -- active temperature set no. for group
+                Field 7       -- active contact set no. for group
+                Field 8       -- number of entities in group
+
+Record 2:        FORMAT(20A2)
+                Field 1       -- group name
+
+Record 3-N:      FORMAT(8I10)
+                Field 1       -- entity type code
+                Field 2       -- entity tag
+                Field 3       -- entity node leaf id.
+                Field 4       -- entity component/ ham id.
+                Field 5       -- entity type code
+                Field 6       -- entity tag
+                Field 7       -- entity node leaf id.
+                Field 8       -- entity component/ ham id.
+
+Repeat record 3 for all entities as defined by record 1, field 8.
+Records 1 thru n are repeated for each group in the model.
+Entity node leaf id. and the component/ ham id. are zero for all
+entities except "reference point", "reference point series"
+and "coordinate system".
+
+Example:
+
+    -1
+2467
+        11         0         0         0         0         0         0         3
+Group_1
+        8         1         0         0         8         2         0         0
+        8         3         0         0
+    -1
+ """
 import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2467(fh, dset):
     try:
-        #dict = {'part_UID': 1,
-        #        'part_name': 'None',
-        #        'cs_type': 0,
-        #        'cs_color': 8}
-        #dset = _opt_fields(dset, dict)
-
-        # = None,
-        # = None,
-        # = None,
-        # = None,
-        # = None,
-        #return_full_dict = False):
 
         fh.write('%6i\n%6i%74s\n' % (-1, 2467, ' '))
 
-
-
-
-        #num_CS = min( (len(dset['CS_sys_labels']),  len(dset['CS_types']),  len(dset['CS_colors']),  len(dset['CS_names']), len(dset['CS_matrices'])) )
         for i in range(len(dset['group_ids'])):
             fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_ids'][i], dset['constraint_sets'][i], dset['restraint_sets'][i], dset['load_sets'][i], dset['dof_sets'][i], dset['temp_sets'][i], dset['contact_sets'][i], dset['num_entities'][i]))
             fh.write('%-80s\n' % (dset['group_names'][i]))
@@ -145,30 +172,30 @@ def prepare_2467(
     Records 1-2 are repeated for each node in the model, followed by a specified number (R1F8) of Record 3's.
     """
     # **Test prepare_2467**
-    #save_to_file = 'test_pyuff'
-    #dataset = pyuff.prepare_2467(
-    #    Part_UID = 1,
-    #    Part_Name = 'None',
-    #    CS_sys_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    #    CS_types = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #    CS_colors = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
-    #    CS_names = ['CS1', 'CS2', 'CS3', 'CS4', 'CS5', 'CS6', 'CS7', 'CS8', 'CS9', 'CS10'],
-    #    CS_matrices = [np.array([[-0.44807362, 0., 0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]])])
-    #if save_to_file:
-    #    if os.path.exists(save_to_file):
-    #        os.remove(save_to_file)
-    #    uffwrite = pyuff.UFF(save_to_file)
-    #    uffwrite.write_sets(dataset, mode='add')
-    #dataset
+    #>>> save_to_file = 'test_pyuff'
+    #>>> dataset = pyuff.prepare_2467(
+    #>>>    Part_UID = 1,
+    #>>>    Part_Name = 'None',
+    #>>>    CS_sys_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    #>>>    CS_types = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #>>>    CS_colors = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+    #>>>    CS_names = ['CS1', 'CS2', 'CS3', 'CS4', 'CS5', 'CS6', 'CS7', 'CS8', 'CS9', 'CS10'],
+    #>>>    CS_matrices = [np.array([[-0.44807362, 0., 0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
+    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]])])
+    #>>>if save_to_file:
+    #>>>    if os.path.exists(save_to_file):
+    #>>>        os.remove(save_to_file)
+    #>>>    uffwrite = pyuff.UFF(save_to_file)
+    #>>>    uffwrite.write_sets(dataset, mode='add')
+    #>>>dataset
 
     if np.array(group_ids).dtype != int and group_ids != None:
         raise TypeError('group_ids must be integer')
