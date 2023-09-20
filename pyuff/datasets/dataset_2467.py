@@ -42,35 +42,64 @@ Group_1
     -1
  """
 import numpy as np
+import math
 
+import pyuff.datasets.dataset_2467
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2467(fh, dset):
     try:
+        dict = {'active_constraint_set_no_for_group': 0,
+                'active_restraint_set_no_for_group': 0,
+                'active_load_set_no_for_group': 0,
+                'active_dof_set_no_for_group': 0,
+                'active_temperature_set_no_for_group': 0,
+                'active_contact_set_no_for_group': 0}
 
-        fh.write('%6i\n%6i%74s\n' % (-1, 2467, ' '))
+        dset = _opt_fields(dset, dict)
+        fh.write('%6i\n%6i\n' % (-1, 2467))
 
-        for i in range(len(dset['group_ids'])):
-            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_ids'][i], dset['constraint_sets'][i], dset['restraint_sets'][i], dset['load_sets'][i], dset['dof_sets'][i], dset['temp_sets'][i], dset['contact_sets'][i], dset['num_entities'][i]))
-            fh.write('%-80s\n' % (dset['group_names'][i]))
+        for group in dset['groups']:
+            # Record 1
+            # Field 8 (last field) contains the number or entities in the group
+            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (group['group_number'],
+                                                             group['active_constraint_set_no_for_group'],
+                                                             group['active_restraint_set_no_for_group'],
+                                                             group['active_load_set_no_for_group'],
+                                                             group['active_dof_set_no_for_group'],
+                                                             group['active_temperature_set_no_for_group'],
+                                                             group['active_contact_set_no_for_group'],
+                                                             len(group['entity_type_code'])))
+            # Record 2
+            fh.write('%-40s\n' % (group['group_name']))
 
-            ii = 0
-            while ii < dset['num_entities'][i]:
-                if dset['num_entities'][i] - ii > 1:
-                    fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['ent_types'][i][ii], dset['ent_tags'][i][ii], dset['ent_node_ids'][i][ii], dset['ent_comp_ids'][i][ii], dset['ent_types'][i][ii+1], dset['ent_tags'][i][ii+1], dset['ent_node_ids'][i][ii+1], dset['ent_comp_ids'][i][ii+1]))
-                    ii += 2
+            # Record 3-N
+            # Write the full lines (which have 4 pairs)
+            end = len(group['entity_type_code'])
+            for i in range(0, end, 2):
+                if end-i > 1:
+                    fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (group['entity_type_code'][i],
+                                                                     group['entity_tag'][i],
+                                                                     group['entity_node_leaf_id'][i],
+                                                                     group['entity_component_id'][i],
+                                                                     group['entity_type_code'][i+1],
+                                                                     group['entity_tag'][i+1],
+                                                                     group['entity_node_leaf_id'][i+1],
+                                                                     group['entity_component_id'][i+1]))
                 else:
-                    fh.write('%10i%10i%10i%10i\n' % (dset['ent_types'][i][ii], dset['ent_tags'][i][ii], dset['ent_node_ids'][i][ii], dset['ent_comp_ids'][i][ii]))
-                    ii += 1
+                    fh.write('%10i%10i%10i%10i\n' % (group['entity_type_code'][i],
+                                                     group['entity_tag'][i],
+                                                     group['entity_node_leaf_id'][i],
+                                                     group['entity_component_id'][i]))
         fh.write('%6i\n' % -1)
+
     except:
         raise Exception('Error writing data-set #2467')
 
 def _extract2467(block_data):
     '''Extract physical groups -- data-set 2467.'''
-    dset = {'type': 2467}
-    split_data = block_data.splitlines(True)
-    split_data = [a.split() for a in split_data][2:]
+    dset = {'type': 2467, 'groups': []}
+    split_data = block_data.splitlines(True)[2:]
 
     group_ids = []
     constraint_sets = []
@@ -87,166 +116,180 @@ def _extract2467(block_data):
     ent_node_ids = []
     ent_comp_ids = []
 
-    i = 0
-    index = 0
-    while i < len(split_data):
-        group_ids.append(int(split_data[i][0]))
-        constraint_sets.append(int(split_data[i][1]))
-        restraint_sets.append(int(split_data[i][2]))
-        load_sets.append(int(split_data[i][3]))
-        dof_sets.append(int(split_data[i][4]))
-        temp_sets.append(int(split_data[i][5]))
-        contact_sets.append(int(split_data[i][6]))
-        left_entities = int(split_data[i][7])
-        num_entities.append(left_entities)
+    lineIndex = 0
+    while lineIndex < len(split_data):
+        group = {}
+        print(f"<{split_data[lineIndex]}>")
+        group.update(
+            _parse_header_line(split_data[lineIndex], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
+                               ['group_number', 'active_constraint_set_no_for_group',
+                                'active_restraint_set_no_for_group', 'active_load_set_no_for_group',
+                                'active_dof_set_no_for_group', 'active_temperature_set_no_for_group',
+                                'active_contact_set_no_for_group', 'number_of_entities_in_group']))
+        group.update(_parse_header_line(split_data[lineIndex + 1], 1, [40], [1], ['group_name']))
+        indexLastLineForGroup = math.ceil(group['number_of_entities_in_group'] / 2) + lineIndex + 2
+        # split all lines and then each line in separate integers. Put this in a ndarray
+        values = [[int(elem) for elem in line.split()] for line in split_data[lineIndex + 2: indexLastLineForGroup]]
+        # flatten the list and put in ndarray
+        values = np.array([item for sublist in values for item in sublist], dtype=int)
+        group['entity_type_code'] = np.array(values[::4].copy(), dtype=int)
+        group['entity_tag'] = np.array(values[1::4].copy(), dtype=int)
+        group['entity_node_leaf_id'] = np.array(values[2::4].copy(), dtype=int)
+        group['entity_component_id'] = np.array(values[3::4].copy(), dtype=int)
+        print(group)
+        print("\n\n")
+        dset['groups'].append(group)  # dset is a dictionary, but 'groups' is a list
 
-        group_names.append(str(split_data[i+1][0]))
+        lineIndex = indexLastLineForGroup
 
-        ent_types.append([])
-        ent_tags.append([])
-        ent_node_ids.append([])
-        ent_comp_ids.append([])
-
-        i += 2
-        while left_entities:
-            line = split_data[i]
-            if len(line) == 8:
-                ent_types[index].append(int(line[0]))
-                ent_tags[index].append(int(line[1]))
-                ent_node_ids[index].append(int(line[2]))
-                ent_comp_ids[index].append(int(line[3]))
-                ent_types[index].append(int(line[4]))
-                ent_tags[index].append(int(line[5]))
-                ent_node_ids[index].append(int(line[6]))
-                ent_comp_ids[index].append(int(line[7]))
-                left_entities -= 2
-            elif len(line) == 4:
-                ent_types[index].append(int(line[0]))
-                ent_tags[index].append(int(line[1]))
-                ent_node_ids[index].append(int(line[2]))
-                ent_comp_ids[index].append(int(line[3]))
-                left_entities -= 1
-            else:
-                raise Exception("R3 of dataset 2467 needs to contain 4 or 8 values")
-            i += 1
-        index += 1
-
-    dset.update({'group_ids': group_ids, 'constraint_sets': constraint_sets, 'restraint_sets': restraint_sets, 'load_sets': load_sets, 'dof_sets': dof_sets, 'temp_sets': temp_sets, 'contact_sets': contact_sets, 'num_entities': num_entities, 'group_names': group_names, 'ent_types': ent_types, 'ent_tags': ent_tags, 'ent_node_ids': ent_node_ids, 'ent_comp_ids': ent_comp_ids})
+    dset.update({'group_ids': group_ids, 'active_constraint_set_no_for_group': constraint_sets, 'active_restraint_set_no_for_group': restraint_sets, 'active_load_set_no_for_group': load_sets, 'active_dof_set_no_for_group': dof_sets, 'active_temperature_set_no_for_group': temp_sets, 'active_contact_set_no_for_group': contact_sets, 'num_of_entities_in_group': num_entities, 'group_name': group_names, 'entity_type_code': ent_types, 'entity_tag': ent_tags, 'entity_node_leaf_id': ent_node_ids, 'entity_component_id': ent_comp_ids})
     return dset
 
 
-def prepare_2467(
-        group_ids=None,
-        constraint_sets=None,
-        restraint_sets=None,
-        load_sets=None,
-        dof_sets=None,
-        temp_sets=None,
-        contact_sets=None,
-        num_entities=None,
-        group_names=None,
-        ent_types=None,
-        ent_tags=None,
-        ent_node_ids=None,
-        ent_comp_ids=None,
+def prepare_group(
+        group_number,
+        group_name,
+        entity_type_code,
+        entity_tag,
+        entity_node_leaf_id,
+        entity_component_id,
+        active_constraint_set_no_for_group=0,
+        active_restraint_set_no_for_group=0,
+        active_load_set_no_for_group=0,
+        active_dof_set_no_for_group=0,
+        active_temperature_set_no_for_group=0,
+        active_contact_set_no_for_group=0,
         return_full_dict=False):
-    """Name: Coordinate Systems
+    """Name: Permanent Groups
 
     R-Record, F-Field
 
-    :param group_id: R1 F1, group ID
-    :param constraint_sets: R1 F2, active group constraint set no.
-    :param restraint_sets: R1 F3, active group restraint set no.
-    :param load_sets: R1 F4, active group load set no.
-    :param dof_sets: R1 F5, active group dof set no.
-    :param temp_sets: R1 F6, active group temperature set no.
-    :param contact_sets: R1 F7, active group contact set no.
-    :param num_entities: R1 F8, number of entities in group
-    :param group_names: R2 F1, group Name
-    :param ent_types: R3 F1(F5), entity type code
-    :param ent_tags: R3 F2(F6), entity tag
-    :param ent_node_ids: R3 F3(F7), entity type code
-    :param ent_comp_ids: R3 F4(F8), entity component / ham id
+    :param group_number: R1 F1, group number
+    :param group_name: R2 F1, group name
+    :param entity_type_code: R3-N, entity type code
+    :param entity_tag: R3-N, entity tag
+    :param entity_node_leaf_id: R3-N, entity node leaf id.
+    :param entity_component_id: R3-N, entity component/ ham id.
+    :param active_constraint_set_no_for_group: R1 F2, active constraint set no. for group
+    :param active_restraint_set_no_for_group: R1 F3, active restraint set no. for group
+    :param active_load_set_no_for_group: R1 F3, active restraint set no. for group
+    :param active_dof_set_no_for_group: R1 F3, active restraint set no. for group
+    :param active_temperature_set_no_for_group: R1 F3, active restraint set no. for group
+    :param active_contact_set_no_for_group: R1 F3, active restraint set no. for group
     :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
 
-    Records 1-2 are repeated for each node in the model, followed by a specified number (R1F8) of Record 3's.
+    Records 1 and 2 are repeated for each permanent group in the model.
+    Record 3 is repeated multiple times for each group
+    """
+
+    if type(group_number) != int:
+        raise TypeError('group_number must be integer')
+    if type(group_name) != str:
+        raise TypeError('group_name must be string')
+    if np.array(entity_type_code).dtype != int:
+        raise TypeError('entity_type_code must all be positive integers')
+    if np.array(entity_tag).dtype != int:
+        raise TypeError('entity_tag must all be positive integers')
+    if np.array(entity_node_leaf_id).dtype != int:
+        raise TypeError('entity_node_leaf_id must all be positive integers')
+    if np.array(entity_component_id).dtype != int:
+        raise TypeError('entity_component_id must all be positive integers')
+    if type(active_constraint_set_no_for_group) != int:
+        raise TypeError('active_constraint_set_no_for_group must be integer')
+    if type(active_restraint_set_no_for_group) != int:
+        raise TypeError('active_restraint_set_no_for_group must be integer')
+    if type(active_load_set_no_for_group) != int:
+        raise TypeError('active_load_set_no_for_group must be integer')
+    if type(active_dof_set_no_for_group) != int:
+        raise TypeError('active_dof_set_no_for_group must be integer')
+    if type(active_temperature_set_no_for_group) != int:
+        raise TypeError('active_temperature_set_no_for_group must be integer')
+    if type(active_contact_set_no_for_group) != int:
+        raise TypeError('active_contact_set_no_for_group must be integer')
+
+    if group_number < 0:
+        raise ValueError('group_number needs to be a positive integer')
+    if group_name == '':
+        raise ValueError('group_name needs to be a non emtpy string')
+    if active_constraint_set_no_for_group < 0:
+        raise ValueError('active_constraint_set_no_for_group needs to be a positive integer')
+    if active_restraint_set_no_for_group < 0:
+        raise ValueError('active_restraint_set_no_for_group needs to be a positive integer')
+    if active_load_set_no_for_group < 0:
+        raise ValueError('active_load_set_no_for_group needs to be a positive integer')
+    if active_dof_set_no_for_group < 0:
+        raise ValueError('active_dof_set_no_for_group needs to be a positive integer')
+    if active_temperature_set_no_for_group < 0:
+        raise ValueError('active_temperature_set_no_for_group needs to be a positive integer')
+    if active_contact_set_no_for_group < 0:
+        raise ValueError('active_contact_set_no_for_group needs to be a positive integer')
+
+    group = {
+        'group_number': group_number,
+        'group_name': group_name,
+        'entity_type_code': entity_type_code,
+        'entity_tag': entity_tag,
+        'entity_node_leaf_id': entity_node_leaf_id,
+        'entity_component_id': entity_component_id,
+        'active_constraint_set_no_for_group': active_constraint_set_no_for_group,
+        'active_restraint_set_no_for_group': active_restraint_set_no_for_group,
+        'active_load_set_no_for_group': active_load_set_no_for_group,
+        'active_dof_set_no_for_group': active_dof_set_no_for_group,
+        'active_temperature_set_no_for_group': active_dof_set_no_for_group,
+        'active_contact_set_no_for_group': active_dof_set_no_for_group,
+    }
+
+    if return_full_dict is False:
+        group = check_dict_for_none(group)
+
+    return group
+
+def prepare_2467(
+        groups,
+        return_full_dict = False):
+    """Name: Permanent Groups
+
+    :param groups: a list of permanent groups
+    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
     """
     # **Test prepare_2467**
     #>>> save_to_file = 'test_pyuff'
+    #>>> myGroup1 = pyuff.prepare_group(
+    #>>>     group_number = 1,
+    #>>>     group_name = 'myGroup',
+    #>>>     entity_type_code = np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     entity_tag = np.array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10]),
+    #>>>     active_constraint_set_no_for_group = 0)
     #>>> dataset = pyuff.prepare_2467(
-    #>>>    Part_UID = 1,
-    #>>>    Part_Name = 'None',
-    #>>>    CS_sys_labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    #>>>    CS_types = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #>>>    CS_colors = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
-    #>>>    CS_names = ['CS1', 'CS2', 'CS3', 'CS4', 'CS5', 'CS6', 'CS7', 'CS8', 'CS9', 'CS10'],
-    #>>>    CS_matrices = [np.array([[-0.44807362, 0., 0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1.,  0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0.,  1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]]),
-    #>>>                    np.array([[-0.44807362,  0.,  0.89399666], [-0., 1., 0.], [-0.89399666, -0., -0.44807362]])])
-    #>>>if save_to_file:
-    #>>>    if os.path.exists(save_to_file):
-    #>>>        os.remove(save_to_file)
-    #>>>    uffwrite = pyuff.UFF(save_to_file)
-    #>>>    uffwrite.write_sets(dataset, mode='add')
-    #>>>dataset
+    #>>>     groups = [myGroup1])
+    #>>> if save_to_file:
+    #>>>     if os.path.exists(save_to_file):
+    #>>>         os.remove(save_to_file)
+    #>>>     uffwrite = pyuff.UFF(save_to_file)
+    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>> dataset
 
-    if np.array(group_ids).dtype != int and group_ids != None:
-        raise TypeError('group_ids must be integer')
-    if np.array(constraint_sets).dtype != int and constraint_sets != None:
-        raise ValueError('constraint_sets must be integer')
-    if np.array(restraint_sets).dtype != int and restraint_sets != None:
-        raise TypeError('restraint_sets must be integer')
-    if np.array(load_sets).dtype != int and load_sets != None:
-        raise ValueError('load_sets must be integer')
-    if np.array(dof_sets).dtype != int and dof_sets != None:
-        raise TypeError('dof_sets must be integer')
-    if np.array(temp_sets).dtype != int and temp_sets != None:
-        raise ValueError('temp_sets must be integer')
-    if np.array(contact_sets).dtype != int and contact_sets != None:
-        raise TypeError('contact_sets must be integer')
-    if np.array(num_entities).dtype != int and num_entities != None:
-        raise ValueError('num_entities must be integer')
-    if np.array(group_names).dtype != str and group_names != None:
-        raise TypeError('group_names must be str')
-    if type(group_names) == np.ndarray or type(group_names) == list:
-        for i in group_names:
-            if type(i) != np.str_:
-                raise TypeError('group_names datatype must be str')
-    if np.array(ent_types).dtype != int and ent_types != None:
-        raise ValueError('ent_types must be integer')
-    if np.array(ent_tags).dtype != int and ent_tags != None:
-        raise ValueError('ent_tags must be integer')
-    if np.array(ent_node_ids).dtype != int and ent_node_ids != None:
-        raise ValueError('ent_node_ids must be integer')
-    if np.array(ent_comp_ids).dtype != int and ent_comp_ids != None:
-        raise ValueError('ent_comp_ids must be integer')
+    if type(groups) != list:
+         raise TypeError('groups must be in a list, also a single group')
+    for item in groups:
+        pyuff.datasets.dataset_2467.prepare_group(
+            item['group_number'],
+            item['group_name'],
+            item['entity_type_code'],
+            item['entity_tag'],
+            item['active_constraint_set_no_for_group'],
+            item['active_restraint_set_no_for_group'],
+            item['active_load_set_no_for_group'],
+            item['active_dof_set_no_for_group'],
+            item['active_temperature_set_no_for_group'],
+            item['active_contact_set_no_for_group'])
 
     dataset={
         'type': 2467,
-        'group_ids': group_ids,
-        'constraint_sets': constraint_sets,
-        'restraint_sets': restraint_sets,
-        'load_sets': load_sets,
-        'dof_sets': dof_sets,
-        'temp_sets': temp_sets,
-        'contact_sets': contact_sets,
-        'num_entities': num_entities,
-        'group_names': group_names,
-        'ent_types': ent_types,
-        'ent_tags': ent_tags,
-        'ent_node_ids': ent_node_ids,
-        'ent_comp_ids': ent_comp_ids,
+        'groups': groups,
         }
 
     if return_full_dict is False:
         dataset = check_dict_for_none(dataset)
 
     return dataset
-
