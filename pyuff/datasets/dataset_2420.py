@@ -4,17 +4,19 @@ from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2420(fh, dset):
     try:
-        dict = {'part_UID': 1,
-                'part_name': 'None',
-                'cs_type': 0,
-                'cs_color': 8}
+        dict = {'Part_UID': 1,
+                'Part_Name': 'None',
+                'CS_types': [0],
+                'CS_colors': [8]}
         dset = _opt_fields(dset, dict)
-
         fh.write('%6i\n%6i%74s\n' % (-1, 2420, ' '))
-        fh.write('%10i\n' % (dset['part_UID']))
-        fh.write('%-80s\n' % (dset['part_name']))
+        fh.write('%10i\n' % (dset['Part_UID']))
+        fh.write('%-80s\n' % (dset['Part_Name']))
 
-        num_CS = min( (len(dset['CS_sys_labels']),  len(dset['CS_types']),  len(dset['CS_colors']),  len(dset['CS_names']), len(dset['CS_matrices'])) )
+        # -- Check Dimensions of input arrays
+        num_CS = len(dset['CS_sys_labels'])
+        if not all([len(e) == num_CS for e in [dset['CS_types'], dset['CS_colors'], dset['CS_names'], dset['CS_matrices']]]):
+            raise IndexError("Values missing for one or more CS")
         for node in range(num_CS):
             fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
             fh.write('%s\n' % dset['CS_names'][node])
@@ -33,7 +35,7 @@ def _extract2420(block_data):
     split_data = block_data.splitlines(True)
 
     # -- Get Record 1
-    dset['Part_UID'] = float(split_data[2])
+    dset['Part_UID'] = int(split_data[2])
 
     # -- Get Record 2
     dset['Part_Name'] = split_data[3].rstrip()
