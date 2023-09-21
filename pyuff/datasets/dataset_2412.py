@@ -1,61 +1,64 @@
 import numpy as np
+import itertools
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
 def _write2412(fh, dset):
     try:
-        elt_type_dict = {'triangle': 3, 'quad': 4}
         fh.write('%6i\n%6i%74s\n' % (-1, 2412, ' '))
-
-        for elem in dset['all']:
-            fh.write('%10i%10i%10i%10i%10i%10i\n' % (
-                elem['element_num'],
-                elem['f_descriptor'],
-                elem['phys_table'],
-                elem['mat_table'],
-                elem['color'],
-                elem['num_nodes'],
-            ))
-            if elem['f_descriptor'] == 11:
-            # rods have to be written in 3 lines
-                fh.write('%10i%10i%10i\n' % (
-                    elem['beam_orientation'],
-                    elem['beam_foreend_cross'],
-                    elem['beam_aftend_cross']
+        for el_type in dset:
+            if type(el_type) is not int:
+                # Skip 'type', 'triangle' and 'quad' indices
+                continue
+            for elem in dset[el_type]:
+                fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+                    elem['element_nums'],
+                    elem['fe_descriptor'],
+                    elem['phys_table'],
+                    elem['mat_table'],
+                    elem['color'],
+                    elem['num_nodes'],
                 ))
-            for ii in elem['nodes_nums']:
-                fh.write('%10i' % ii)
-            fh.write('\n')
+                if elem['fe_descriptor'] == 11:
+                # Rods have to be written in 3 lines - ad additional line here
+                    fh.write('%10i%10i%10i\n' % (
+                        elem['beam_orientation'],
+                        elem['beam_foreend_cross'],
+                        elem['beam_aftend_cross']
+                    ))
+                for ii in elem['nodes_nums']:
+                    fh.write('%10i' % ii)
+                fh.write('\n')
         fh.write('%6i\n' % -1)
-
     except:
         raise Exception('Error writing data-set #2412')
 
 
 def _extract2412(block_data):
     """Extract element data - data-set 2412."""
-    dset = {'type': 2412, 'all': None}
-    # Define dictionary of possible elements types
-    elt_type_dict = {'3': 'triangle', '4': 'quad'}
+    dset = {'type': 2412}
+    # Define dictionary of possible elements types for legacy interface
+    elt_type_dict = {41: 'triangle', 44: 'quad'}
+    # Elements that are seen as rods and read as 3 lines
+    rods_dict = {11, 21, 22, 23, 24}
+
     # Read data
     try:
         split_data = block_data.splitlines()
         split_data = [a.split() for a in split_data][2:]
+
         # Extract Records
-        rec1 = np.array([])
-        rec2 = []
-        dataset = []
         i = 0
         while i < len(split_data):
             dict_tmp = dict()
             line = split_data[i]
-            dict_tmp['element_num'] = int(line[0])
-            dict_tmp['f_descriptor'] = int(line[1])
+            dict_tmp['element_nums'] = int(line[0])
+            dict_tmp['fe_descriptor'] = int(line[1])
             dict_tmp['phys_table'] = int(line[2])
             dict_tmp['mat_table'] = int(line[3])
             dict_tmp['color'] = int(line[4])
             dict_tmp['num_nodes'] = int(line[5])
-            if dict_tmp['f_descriptor'] == 11:
+            if dict_tmp['fe_descriptor'] in rods_dict:
                 # element is a rod and covers 3 lines
                 dict_tmp['beam_orientation'] = int(split_data[i+1][0])
                 dict_tmp['beam_foreend_cross'] = int(split_data[i + 1][1])
@@ -66,17 +69,27 @@ def _extract2412(block_data):
                 # element is no rod and covers 2 lines
                 dict_tmp['nodes_nums'] = [int(e) for e in split_data[i+1]]
                 i += 2
-            desc = dict_tmp['f_descriptor']
+            desc = dict_tmp['fe_descriptor']
             if not desc in dset:
                 dset[desc] = []
             dset[desc].append(dict_tmp)
-            dataset.append(dict_tmp)
-        dset['all'] = dataset
+        for num, name in elt_type_dict.items():
+            # if we have one of the keys that are enabled for the legacy interface, add everything for that here
+            if num in dset.keys():
+                dset[name] = {
+                    'element_nums': [e['element_nums'] for e in dset[num]],
+                    'fe_descriptor': [e['fe_descriptor'] for e in dset[num]],
+                    'phys_table': [e['phys_table'] for e in dset[num]],
+                    'mat_table': [e['mat_table'] for e in dset[num]],
+                    'color': [e['color'] for e in dset[num]],
+                    'num_nodes': [e['num_nodes'] for e in dset[num]],
+                    'nodes_nums': [e['nodes_nums'] for e in dset[num]],
+                }
+
         return dset
 
     except:
         raise Exception('Error reading data-set #2412')
-    return dset
 
 
 def prepare_2412(
