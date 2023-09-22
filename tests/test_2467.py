@@ -1,7 +1,5 @@
 import numpy as np
-from numpy.testing import assert_array_equal
 import sys, os
-import pytest
 my_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, my_path + '/../')
 
@@ -10,7 +8,7 @@ import pyuff
 def test_prepare_2467():
     mygroup = pyuff.datasets.dataset_2467.prepare_group(
         1,
-        "testGroup",
+        'testGroup',
         [8, 8],
         [1, 2],
         [8, 8],
@@ -44,12 +42,13 @@ def test_prepare_2467():
         raise Exception('Not correct keys')
     if x2['type'] != 2467:
         raise Exception('Not correct type')
+    
 def test_write_2467():
     a = pyuff.prepare_2467(
             [
                 {
                     'group_number': 1,
-                    'group_name': "One",
+                    'group_name': 'One',
                     'entity_type_code': [8, 8, 8, 8, 8],
                     'entity_tag': [1, 2, 3, 4, 5],
                     'entity_node_leaf_id': [2, 2, 2, 2, 2],
@@ -63,7 +62,7 @@ def test_write_2467():
                 },
                 {
                     'group_number': 2,
-                    'group_name': "Two",
+                    'group_name': 'Two',
                     'entity_type_code': [4, 4, 4, 4, 4],
                     'entity_tag': [6, 7, 8, 9, 10],
                     'entity_node_leaf_id': [2, 2, 2, 2, 2],
@@ -78,15 +77,15 @@ def test_write_2467():
             ],
             return_full_dict=True)
 
-    save_to_file = './data/Group_Output.uff'
+    save_to_file = './data/group_output.uff'
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
     _.write_sets(a, 'add')
 
-    with open('./data/Group_Output.uff', "r") as f:
+    with open(save_to_file, 'r') as f:
         written_data = f.read()
-    comp_str = """    -1
+    comp_str = '''    -1
   2467
          1         5         5         5         5         5         5         5
 One                                     
@@ -99,11 +98,14 @@ Two
          4         8         2         3         4         9         2         3
          4        10         2         3
     -1
-"""
+'''
     assert written_data == comp_str
 
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
 def test_read_2467():
-    uff_ascii = pyuff.UFF('./data/Groups_Test.uff')
+    uff_ascii = pyuff.UFF('./data/groups_test.uff')
     sets = uff_ascii.get_set_types()
     a = uff_ascii.read_sets(4)
 
@@ -122,21 +124,57 @@ def test_read_2467():
     assert a['groups'][1]['group_name'] == 'Right_Side'
     assert a['groups'][2]['group_name'] == 'Surface'
 
-    assert_array_equal(a['groups'][0]['entity_tag'], np.array([110, 117, 122, 135]))
-    assert_array_equal(a['groups'][1]['entity_tag'], np.array([168, 190, 191, 192]))
+    np.testing.assert_array_equal(a['groups'][0]['entity_tag'], np.array([110, 117, 122, 135]))
+    np.testing.assert_array_equal(a['groups'][1]['entity_tag'], np.array([168, 190, 191, 192]))
 
-def test_read_write_2467():
-    with open('./data/Group_Output.uff', "r") as f:
-        comp_str = f.read()
-    uff_ascii = pyuff.UFF('./data/Group_Output.uff')
-    a = uff_ascii.read_sets(0)
+def test_write_read_2467():
+    groups = [
+                    {
+                        'group_number': 1,
+                        'group_name': 'One',
+                        'entity_type_code': [8, 8, 8, 8, 8],
+                        'entity_tag': [1, 2, 3, 4, 5],
+                        'entity_node_leaf_id': [2, 2, 2, 2, 2],
+                        'entity_component_id': [3, 3, 3, 3, 3],
+                        'active_constraint_set_no_for_group': 5,
+                        'active_restraint_set_no_for_group': 5,
+                        'active_load_set_no_for_group': 5,
+                        'active_dof_set_no_for_group': 5,
+                        'active_temperature_set_no_for_group': 5,
+                        'active_contact_set_no_for_group': 5,
+                    },
+                    {
+                        'group_number': 2,
+                        'group_name': 'Two',
+                        'entity_type_code': [4, 4, 4, 4, 4],
+                        'entity_tag': [6, 7, 8, 9, 10],
+                        'entity_node_leaf_id': [2, 2, 2, 2, 2],
+                        'entity_component_id': [3, 3, 3, 3, 3],
+                        'active_constraint_set_no_for_group': 6,
+                        'active_restraint_set_no_for_group': 6,
+                        'active_load_set_no_for_group': 6,
+                        'active_dof_set_no_for_group': 6,
+                        'active_temperature_set_no_for_group': 6,
+                        'active_contact_set_no_for_group': 6,
+                    }
+            ]
 
-    save_to_file = './data/Group_Output.uff'
+    a = pyuff.prepare_2467(groups=groups, return_full_dict=True)
+    save_to_file = './data/group_output.uff'
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
     _.write_sets(a, 'add')
 
-    with open('./data/Group_Output.uff', "r") as f:
-        written_data = f.read()
-    assert written_data == comp_str
+    uff_ascii = pyuff.UFF(save_to_file)
+    groups_read = uff_ascii.read_sets(0)['groups']
+
+    for group, group_read in zip(groups, groups_read):
+        for key in group.keys():
+            np.testing.assert_array_equal(group[key], group_read[key])
+
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+if __name__ == '__main__':
+    test_write_read_2467()
