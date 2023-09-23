@@ -2,28 +2,28 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
-# TODO: Big deal - the output dictionary when reading this set
-#    is different than the dictionary that is expected (keys) when
-#    writing this same set. This is not OK!
 def _write2420(fh, dset):
     try:
-        dict = {'part_UID': 1,
-                'part_name': 'None',
-                'cs_type': 0,
-                'cs_color': 8}
+        dict = {'Part_UID': 1,
+                'Part_Name': 'None',
+                'CS_types': [0],
+                'CS_colors': [8]}
         dset = _opt_fields(dset, dict)
-
         fh.write('%6i\n%6i%74s\n' % (-1, 2420, ' '))
-        fh.write('%10i\n' % (dset['part_UID']))
-        fh.write('%-80s\n' % (dset['part_name']))
+        fh.write('%10i\n' % (dset['Part_UID']))
+        fh.write('%-80s\n' % (dset['Part_Name']))
 
-        for node in range(len(dset['nodes'])):
-            fh.write('%10i%10i%10i\n' % (dset['nodes'][node], dset['cs_type'], dset['cs_color']))
-            fh.write('CS%i\n' % dset['nodes'][node])
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 1, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 2, :]))
-            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['local_cs'][node * 4 + 3, :]))
+        # -- Check Dimensions of input arrays
+        num_CS = len(dset['CS_sys_labels'])
+        if not all([len(e) == num_CS for e in [dset['CS_types'], dset['CS_colors'], dset['CS_names'], dset['CS_matrices']]]):
+            raise IndexError("Values missing for one or more CS")
+        for node in range(num_CS):
+            fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
+            fh.write('%s\n' % dset['CS_names'][node])
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))
+            fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][3, :]))
         fh.write('%6i\n' % -1)
     except:
         raise Exception('Error writing data-set #2420')
@@ -35,7 +35,7 @@ def _extract2420(block_data):
     split_data = block_data.splitlines(True)
 
     # -- Get Record 1
-    dset['Part_UID'] = float(split_data[2])
+    dset['Part_UID'] = int(split_data[2])
 
     # -- Get Record 2
     dset['Part_Name'] = split_data[3].rstrip()
@@ -54,12 +54,10 @@ def _extract2420(block_data):
     row1 = list(map(float, ''.join(split_data[6::6]).split()))
     row2 = list(map(float, ''.join(split_data[7::6]).split()))
     row3 = list(map(float, ''.join(split_data[8::6]).split()))
-    # !! Row 4 left out for now - usually zeros ...
-    #            row4 = map(float, split_data[7::6].split())
-    dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)])) \
+    row4 = list(map(float, ''.join(split_data[9::6]).split()))
+    dset['CS_matrices'] = [np.vstack((row1[i:(i + 3)], row2[i:(i + 3)], row3[i:(i + 3)], row4[i:(i + 3)])) \
                             for i in np.arange(0, len(row1), 3)]
-    #        except:
-    #            raise Exception('Error reading data-set #2420')
+
     return dset
 
 
