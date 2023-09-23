@@ -73,3 +73,8 @@ def test_prepare_2412():
         raise Exception('Not correct keys')
     if x2['type'] != 2412:
         raise Exception('Not correct type')
+
+
+if __name__ == '__main__':
+    # test_read_2412()
+    test_read_write_2412_mixed()
