@@ -44,11 +44,11 @@ def test_write_2420():
     # -- Prepare test dataset
     a = pyuff.prepare_2420(
             Part_UID=5,
-            Part_Name="Testname",
+            Part_Name='Testname',
             CS_sys_labels=[1, 2, 3, 4, 5],
             CS_types=[0]*5,
             CS_colors=[8]*5,
-            CS_names=["One", "Two", "Three", "Four", "Five"],
+            CS_names=['One', 'Two', 'Three', 'Four', 'Five'],
             CS_matrices=[np.random.rand(4, 3), np.random.rand(4, 3), np.random.rand(4, 3), np.random.rand(4, 3), np.random.rand(4, 3)],
             return_full_dict=True)
     # -- Write dataset 2420
