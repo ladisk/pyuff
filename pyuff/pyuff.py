@@ -7,7 +7,7 @@ This module defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
-are supported: **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429** Data-set **58b**
+are supported: **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429, 2467** Data-set **58b**
 is actually a hybrid format [1]_ where the signal is written in the
 binary form, while the header-part is slightly different from 58 but still in the
 ascii format.
@@ -58,8 +58,9 @@ from .datasets.dataset_2412 import _write2412, _extract2412
 from .datasets.dataset_2414 import _write2414, _extract2414
 from .datasets.dataset_2420 import _write2420, _extract2420
 from .datasets.dataset_2429 import _write2429, _extract2429
+from .datasets.dataset_2467 import _write2467, _extract2467
 
-_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429']
+_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
 class UFF:
@@ -367,6 +368,8 @@ class UFF:
             dset = _extract2420(block_data)
         elif self._set_types[int(n)] == 2429:
             dset = _extract2429(block_data)
+        elif self._set_types[int(n)] == 2467:
+            dset = _extract2467(block_data)
         else:
             dset['type'] = self._set_types[int(n)]
             # Unsupported data-set - do nothing
@@ -436,6 +439,8 @@ class UFF:
                 _write2420(fh, dset)
             elif set_type == 2429:
                 _write2429(fh, dset)
+            elif set_type == 2467:
+                _write2467(fh, dset)
             else:
                 # Unsupported data-set - do nothing
                 pass
