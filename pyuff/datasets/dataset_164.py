@@ -2,7 +2,47 @@ import numpy as np
 import os
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
-from .. import pyuff
+
+def get_structure_164(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 164
+
+Name:   Units
+-----------------------------------------------------------------------
+
+Record 1:       FORMAT(I10,20A1,I10)
+                Field 1      -- units code
+                                = 1 - SI: Meter (newton)
+                                = 2 - BG: Foot (pound f)
+                                = 3 - MG: Meter (kilogram f)
+                                = 4 - BA: Foot (poundal)
+                                = 5 - MM: mm (milli newton)
+                                = 6 - CM: cm (centi newton)
+                                = 7 - IN: Inch (pound f)
+                                = 8 - GM: mm (kilogram f)
+                                = 9 - US: USER_DEFINED
+                Field 2      -- units description (used for
+                                documentation only)
+                Field 3      -- temperature mode
+                                = 1 - absolute
+                                = 2 - relative
+Record 2:       FORMAT(3D25.17)
+                Unit factors for converting universal file units to SI.
+                To convert from universal file units to SI divide by
+                the appropriate factor listed below.
+                Field 1      -- length
+                Field 2      -- force
+                Field 3      -- temperature
+                Field 4      -- temperature offset
+
+-----------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
 
 def _write164(fh, dset):
     """Writes units data - data-set 164 - to an open file fh."""

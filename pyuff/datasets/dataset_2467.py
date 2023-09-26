@@ -1,5 +1,12 @@
-"""
-Dataset 2467 (source: https://github.com/victorsndvg/FEconv/blob/master/source/unv/module_dataset_2467.f90)
+import numpy as np
+import math
+
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+
+def get_structure_2467(raw=False):
+    """(source: https://github.com/victorsndvg/FEconv/blob/master/source/unv/module_dataset_2467.f90)"""
+    out = """
+Universal Dataset Number: 2467
 
 Name:   Permanent Groups
 Record 1:        FORMAT(8I10)
@@ -41,12 +48,10 @@ Group_1
         8         3         0         0
     -1
  """
-import numpy as np
-import math
-
-import pyuff.datasets.dataset_2467
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
-
+    if raw:
+        return out
+    else:
+        print(out)   
 def _write2467(fh, dset):
     try:
         dict = {'active_constraint_set_no_for_group': 0,
@@ -272,7 +277,7 @@ def prepare_2467(
     if type(groups) != list:
          raise TypeError('groups must be in a list, also a single group')
     for item in groups:
-        pyuff.datasets.dataset_2467.prepare_group(
+        prepare_group(
             item['group_number'],
             item['group_name'],
             item['entity_type_code'],

@@ -2,6 +2,44 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line
 
+def get_structure_18(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 18
+
+Name:   Coordinate Systems
+-----------------------------------------------------------------------
+ 
+Record 1:        FORMAT(5I10)
+                 Field 1       -- coordinate system number
+                 Field 2       -- coordinate system type
+                 Field 3       -- reference coordinate system number
+                 Field 4       -- color
+                 Field 5       -- method of definition
+                               = 1 - origin, +x axis, +xz plane
+ 
+Record 2:        FORMAT(20A2)
+                 Field 1       -- coordinate system name
+ 
+Record 3:        FORMAT(1P6E13.5)
+                 Total of 9 coordinate system definition parameters.
+                 Fields 1-3    -- origin of new system specified in
+                                  reference system
+                 Fields 4-6    -- point on +x axis of the new system
+                                  specified in reference system
+                 Fields 7-9    -- point on +xz plane of the new system
+                                  specified in reference system
+ 
+Records 1 thru 3 are repeated for each coordinate system in the model.
+ 
+-----------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
+
 def _extract18(block_data):
     '''Extract local CS definitions -- data-set 18.'''
     dset = {'type': 18}

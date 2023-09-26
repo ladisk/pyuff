@@ -2,8 +2,46 @@ import numpy as np
 import os
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
-from .. import pyuff
 
+def get_structure_82(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 82
+
+Name:   Tracelines
+-----------------------------------------------------------------------
+ 
+             Record 1: FORMAT(3I10)
+                       Field 1 -    trace line number
+                       Field 2 -    number of nodes defining trace line
+                                    (maximum of 250)
+                       Field 3 -    color
+ 
+             Record 2: FORMAT(80A1)
+                       Field 1 -    Identification line
+ 
+             Record 3: FORMAT(8I10)
+                       Field 1 -    nodes defining trace line
+                               =    > 0 draw line to node
+                               =    0 move to node (a move to the first
+                                    node is implied)
+             Notes: 1) MODAL-PLUS node numbers must not exceed 8000.
+                    2) Identification line may not be blank.
+                    3) Systan only uses the first 60 characters of the
+                       identification text.
+                    4) MODAL-PLUS does not support trace lines longer than
+                       125 nodes.
+                    5) Supertab only uses the first 40 characters of the
+                       identification line for a name.
+                    6) Repeat Datasets for each Trace_Line
+ 
+------------------------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
 
 def _write82(fh, dset):
     """Writes line data - data-set 82 - to an open file fh"""

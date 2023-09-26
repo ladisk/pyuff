@@ -1,29 +1,33 @@
 from os import write
-import os
 import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, _write_record, check_dict_for_none
-from .. import pyuff
 
-# def _write15(fh, dset):
-#     """Writes coordinate data - data-set 15 - to an open file fh"""
-#     try:
-#         n = len(dset['node_nums'])
-#         # handle optional fields
-#         dset = _opt_fields(dset, {'def_cs': np.asarray([0 for ii in range(0, n)], 'i'),
-#                                         'disp_cs': np.asarray([0 for ii in range(0, n)], 'i'),
-#                                         'color': np.asarray([0 for ii in range(0, n)], 'i')})
-#         # write strings to the file
-#         fh.write('%6i\n%6i%74s\n' % (-1, 15, ' '))
-#         for ii in range(0, n):
-#             fh.write('%10i%10i%10i%10i%13.5e%13.5e%13.5e\n' % (
-#                 dset['node_nums'][ii], dset['def_cs'][ii], dset['disp_cs'][ii], dset['color'][ii],
-#                 dset['x'][ii], dset['y'][ii], dset['z'][ii]))
-#         fh.write('%6i\n' % -1)
-#     except KeyError as msg:
-#         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #15')
-#     except:
-#         raise Exception('Error writing data-set #15')
+def get_structure_15(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 15
+
+Name:   Nodes
+-----------------------------------------------------------------------
+ 
+             Record 1: FORMAT(4I10,1P3E13.5)
+                       Field 1 -    node label
+                       Field 2 -    definition coordinate system number
+                       Field 3 -    displacement coordinate system number
+                       Field 4 -    color
+                       Field 5-7 -  3 - Dimensional coordinates of node
+                                    in the definition system
+ 
+             NOTE:  Repeat record for each node
+ 
+------------------------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
 
 FORMATS = [
     ['10.0f', '10.0f', '10.0f', '10.0f', '13.5f', '13.5f', '13.5f'],

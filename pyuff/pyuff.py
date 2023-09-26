@@ -7,8 +7,8 @@ This module defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
-are supported: **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429, 2467** Data-set **58b**
-is actually a hybrid format [1]_ where the signal is written in the
+are supported: **15, 55, 58, 58b, 82, 151, 164, 2411, 2412, 2414, 2420, 2429, 2467** 
+Data-set **58b** is actually a hybrid format [1]_ where the signal is written in the
 binary form, while the header-part is slightly different from 58 but still in the
 ascii format.
 
@@ -46,19 +46,19 @@ import warnings
 warnings.simplefilter("default")
 
 
-from .datasets.dataset_15 import _write15, _extract15
-from .datasets.dataset_18 import _extract18
-from .datasets.dataset_55 import _write55, _extract55
-from .datasets.dataset_58 import _write58, _extract58
-from .datasets.dataset_82 import _write82, _extract82
-from .datasets.dataset_151 import _write151, _extract151
-from .datasets.dataset_164 import _write164, _extract164
-from .datasets.dataset_2411 import _write2411, _extract2411
-from .datasets.dataset_2412 import _write2412, _extract2412
-from .datasets.dataset_2414 import _write2414, _extract2414
-from .datasets.dataset_2420 import _write2420, _extract2420
-from .datasets.dataset_2429 import _write2429, _extract2429
-from .datasets.dataset_2467 import _write2467, _extract2467
+from .datasets.dataset_15 import _write15, _extract15, get_structure_15
+from .datasets.dataset_18 import _extract18, get_structure_18
+from .datasets.dataset_55 import _write55, _extract55, get_structure_55
+from .datasets.dataset_58 import _write58, _extract58, get_structure_58
+from .datasets.dataset_82 import _write82, _extract82, get_structure_82
+from .datasets.dataset_151 import _write151, _extract151, get_structure_151
+from .datasets.dataset_164 import _write164, _extract164, get_structure_164
+from .datasets.dataset_2411 import _write2411, _extract2411, get_structure_2411
+from .datasets.dataset_2412 import _write2412, _extract2412, get_structure_2412
+from .datasets.dataset_2414 import _write2414, _extract2414, get_structure_2414
+from .datasets.dataset_2420 import _write2420, _extract2420, get_structure_2420
+from .datasets.dataset_2429 import _write2429, _extract2429, get_structure_2429
+from .datasets.dataset_2467 import _write2467, _extract2467, get_structure_2467
 
 _SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429', '2467']
 
@@ -453,16 +453,4 @@ class UFF:
 
 
 if __name__ == '__main__':
-    #uff_ascii = UFF('./data/beam.uff')
-    #a = uff_ascii.read_sets(0)
-    #print(a)
-    #prepare_test_55('./data/test_uff55.uff')
-    # uff_ascii = UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
-    #uff_ascii = UFF('./data/no_spacing2_UFF58_ascii.uff')
-    #uff_ascii = UFF('./data/mesh_Oros-modal_uff15_uff2412.unv')
-    uff_ascii = UFF('./data/DS2414_disp_file.uff')
-    a = uff_ascii.read_sets(3)
-    for _ in a.keys():
-        if _ != 'data':
-            print(_, ':', a[_])
-    #print(sum(a['data']))
+    pass
