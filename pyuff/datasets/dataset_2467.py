@@ -277,7 +277,7 @@ def prepare_2467(
     if type(groups) != list:
          raise TypeError('groups must be in a list, also a single group')
     for item in groups:
-        pyuff.datasets.dataset_2467.prepare_group(
+        prepare_group(
             item['group_number'],
             item['group_name'],
             item['entity_type_code'],
