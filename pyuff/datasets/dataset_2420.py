@@ -2,6 +2,53 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
+def get_structure_2420(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 2420
+
+Name:   Coordinate Systems
+-----------------------------------------------------------------------
+
+Record 1:        FORMAT (2I10)
+                 Field 1       -- Part UID
+
+Record 2:        FORMAT (40A2)
+                 Field 1       -- Part Name
+
+Record 3:        FORMAT (4I10)
+                 Field 1       -- Coordinate System Label
+                 Field 2       -- Coordinate System Type
+                                  = 0, Cartesian
+                                  = 1, Cylindrical
+                                  = 2, Spherical
+                 Field 3       -- Coordinate System Color
+
+Record 4:        FORMAT (40A2)
+                 Field 1       -- Coordinate System Name
+
+Record 5:        FORMAT (1P3D25.16)
+                 Field 1-3     -- Transformation Matrix Row 1
+
+Record 6:        FORMAT (1P3D25.16)
+                 Field 1-3     -- Transformation Matrix Row 2
+
+Record 7:        FORMAT (1P3D25.16)
+                 Field 1-3     -- Transformation Matrix Row 3
+
+Record 8:        FORMAT (1P3D25.16)
+                 Field 1-3     -- Transformation Matrix Row 4
+
+Records 3 thru 8 are repeated for each Coordinate System in the Part.
+
+-----------------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
+
 def _write2420(fh, dset):
     try:
         dict = {'Part_UID': 1,

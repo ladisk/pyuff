@@ -3,7 +3,46 @@ import time
 import os
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
-from .. import pyuff
+
+def get_structure_151(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 151
+
+Name:   Header
+-----------------------------------------------------------------------
+
+Record 1:       FORMAT(80A1)
+                Field 1      -- model file name
+Record 2:       FORMAT(80A1)
+                Field 1      -- model file description
+Record 3:       FORMAT(80A1)
+                Field 1      -- program which created DB
+Record 4:       FORMAT(10A1,10A1,3I10)
+                Field 1      -- date database created (DD-MMM-YY)
+                Field 2      -- time database created (HH:MM:SS)
+                Field 3      -- Version from database
+                Field 4      -- Version from database
+                Field 5      -- File type
+                                =0  Universal
+                                =1  Archive
+                                =2  Other
+Record 5:       FORMAT(10A1,10A1)
+                Field 1      -- date database last saved (DD-MMM-YY)
+                Field 2      -- time database last saved (HH:MM:SS)
+Record 6:       FORMAT(80A1)
+                Field 1      -- program which created universal file
+Record 7:       FORMAT(10A1,10A1)
+                Field 1      -- date universal file written (DD-MMM-YY)
+                Field 2      -- time universal file written (HH:MM:SS)
+
+-----------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
 
 def _write151(fh, dset):
     """Writes dset data - data-set 151 - to an open file fh."""

@@ -2,6 +2,33 @@ import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
+def get_structure_2411(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 2411
+
+Name:   Nodes - Double Precision
+----------------------------------------------------------------------------
+
+Record 1:        FORMAT(4I10)
+                 Field 1       -- node label
+                 Field 2       -- export coordinate system number
+                 Field 3       -- displacement coordinate system number
+                 Field 4       -- color
+Record 2:        FORMAT(1P3D25.16)
+                 Fields 1-3    -- node coordinates in the part coordinate
+                                  system
+ 
+Records 1 and 2 are repeated for each node in the model.
+  
+----------------------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
+
 def _write2411(fh, dset):
     try:
         dict = {}

@@ -3,6 +3,544 @@ import math as math
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
+def get_structure_2414(raw=False):
+    """(source: https://www.ceas3.uc.edu/sdrluff/"""
+    out = """
+Universal Dataset Number: 2414
+
+Name:   Analysis Data
+-----------------------------------------------------------------------
+ 
+Record 1:        FORMAT(1I10)
+                 Field 1       -- Analysis dataset label
+ 
+Record 2:        FORMAT(40A2)
+                 Field 1       -- Analysis dataset name
+
+Record 3:        FORMAT (1I10)
+                 Field 1:      -- Dataset location
+                                   1:    Data at nodes
+                                   2:    Data on elements
+                                   3:    Data at nodes on elements
+                                   5:    Data at points
+
+Record 4:        FORMAT (40A2)
+                 Field 1:      -- ID line 1
+
+Record 5:        FORMAT (40A2)
+                 Field 1:      -- ID line 2
+
+Record 6:        FORMAT (40A2)
+                 Field 1:      -- ID line 3
+
+Record 7:        FORMAT (40A2)
+                 Field 1:      -- ID line 4
+
+Record 8:        FORMAT (40A2)
+                 Field 1:      -- ID line 5
+
+Record 9:        FORMAT (6I10)
+                 Field 1:      -- Model type 
+                                   0:   Unknown
+                                   1:   Structural
+                                   2:   Heat transfer
+                                   3:   Fluid flow
+                 Field 2:      -- Analysis type 
+                                   0:   Unknown
+                                   1:   Static
+                                   2:   Normal mode
+                                   3:   Complex eigenvalue first order
+                                   4:   Transient
+                                   5:   Frequency response
+                                   6:   Buckling
+                                   7:   Complex eigenvalue second order
+                                   9:   Static non-linear
+                 Field 3:      -- Data characteristic     
+                                   0:   Unknown
+                                   1:   Scalar
+                                   2:   3 DOF global translation vector
+                                   3:   6 DOF global translation & rotation 
+                                         vector
+                                   4:   Symmetric global tensor
+                                   6:   Stress resultants
+                 Field 4:      -- Result type
+                                   2:   Stress
+                                   3:   Strain
+                                   4:   Element force
+                                   5:   Temperature
+                                   6:   Heat flux
+                                   7:   Strain energy
+                                   8:   Displacement
+                                   9:   Reaction force
+                                   10:  Kinetic energy
+                                   11:  Velocity
+                                   12:  Acceleration
+                                   13:  Strain energy density
+                                   14:  Kinetic energy density
+                                   15:  Hydro-static pressure
+                                   16:  Heat gradient
+                                   17:  Code checking value
+                                   18:  Coefficient of pressure
+                                   19:  Ply stress
+                                   20:  Ply strain
+                                   21:  Failure index for ply
+                                   22:  Failure index for bonding
+                                   23:  Reaction heat flow
+                                   24:  Stress error density
+                                   25:  Stress variation
+                                   27:  Shell and plate elem stress resultant
+                                   28:  Length
+                                   29:  Area
+                                   30:  Volume
+                                   31:  Mass
+                                   32:  Constraint forces
+                                   34:  Plastic strain
+                                   35:  Creep strain
+                                   36:  Strain energy error
+                                   37:  Dynamic stress at nodes
+                                   38:  Heat Transfer coefficient
+                                   39:  Temperature gradient
+                                   40:  Kinetic energy dissipation rate
+                                   41:  Strain energy error
+                                   42:  Mass flow
+                                   43:  Mass flux
+                                   44:  Heat flow
+                                   45:  View factor
+                                   46:  Heat load
+                                   47:  Stress Component
+                                   93:  Unknown
+                                   94:  Unknown scalar
+                                   95:  Unknown 3DOF vector
+                                   96:  Unknown 6DOF vector
+                                   97:  Unknown symmetric tensor
+                                   98:  Unknown global tensor
+                                   99:  Unknown shell and plate resultant
+                                  301:  Sound Pressure
+                                  302:  Sound Power
+                                  303:  Sound Intensity
+                                  304:  Sound Energy
+                                  305:  Sound Energy Density
+                                >1000:  User defined result type
+                 Field 5:      -- Data type               
+                                   1:   Integer
+                                   2:   Single precision floating point
+                                   4:   Double precision floating point
+                                   5:   Single precision complex
+                                   6:   Double precision complex
+                 Field 6:      -- Number of data values for the data 
+                                  component (NVALDC)
+
+Record 10:       FORMAT (8I10)
+                 Field 1:      -- Integer analysis type specific data (1-8)
+
+Record 11:       FORMAT (8I10)
+                 Field 1:      -- Integer analysis type specific data (9,10)
+
+Record 12:       FORMAT (6E13.5)
+                 Field 1:      -- Real analysis type specific data (1-6)
+
+Record 13:       FORMAT (6E13.5)
+                 Field 1:      -- Real analysis type specific data (7-12)
+
+Note: See chart below for specific analysis type information.
+
+Dataset class: Data at nodes
+
+Record 14:       FORMAT (I10)
+                 Field 1:      -- Node number
+
+Record 15:       FORMAT (6E13.5)
+                 Fields 1-N:   -- Data at this node (NDVAL real or complex
+
+                                                     values)
+          
+                 Note: Records 14 and 15 are repeated for each node.
+
+Dataset class: Data at elements
+
+Record 14:       FORMAT (2I10)
+                 Field 1:      -- Element number
+                 Field 2:      -- Number Of data values For this element(NDVAL)
+ 
+Record 15:       FORMAT (6E13.5)
+                 Fields 1-N:   -- Data on element(NDVAL Real Or Complex Values)
+ 
+ 
+                 Note: Records 14 and 15 are repeated for all elements.
+
+Dataset class: Data at nodes on elements
+
+RECORD 14:       FORMAT (4I10)
+                 Field 1:      -- Element number
+                 Field 2:      -- Data expansion code (IEXP) 
+                                  1: Data present for all nodes
+                                  2: Data present for only 1st node -All other
+                                     nodes the same.
+                 Field 3:      -- Number of nodes on elements (NLOCS)
+                 Field 4:      -- Number of data values per node (NVLOC)
+ 
+RECORD 15:       FORMAT (6E13.5)
+ 
+                 Fields 1-N:   -- Data Values At Node 1 (NVLOC Real Or
+                                  Complex Values)
+
+                 Note:  Records 14 And 15 Are repeated For each Element.  
+   
+                
+                        For Iexp = 1 Record 15 Is repeated NLOCS Times
+ 
+                        For Iexp = 2 Record 15 appears once
+
+Dataset class: Data at points
+
+RECORD 14:       FORMAT (5I10)
+                 Field 1:      -- Element number
+                 Field 2:      -- Data expansion code (IEXP) 
+                                  1: Data present for all points
+                                  2: Data present for only 1st point -All other
+                                     points the same.
+                 Field 3:      -- Number of points on elements (NLOCS)
+                 Field 4:      -- Number of data values per point (NVLOC)
+                 Field 5:      -- Element order
+ 
+RECORD 15:       FORMAT (6E13.5)
+ 
+                 Fields 1-N:   -- Data Values At point 1 (NVLOC Real Or
+                                  Complex Values)
+
+                 Note:  Records 14 And 15 Are repeated For each Element.  
+   
+                
+                        For Iexp = 1 Record 15 Is repeated NLOC Times
+ 
+                        For Iexp = 2 Record 15 appears once          
+
+          Notes:   1.  ID lines may not be blank.  If no information
+                       is required, the word "NONE" must appear in
+                       columns 1-4.
+
+                   2.  The data is store in 
+                       "node-layer-data charateristic" format.
+
+                        Loc1 layer1 component1, Loc1 layer1 component2, ...
+                        Loc1 layer1 componentN, Loc1 layer2 component1, ...
+                        Loc1 Layer2 componentN, ...Loc1 layerN componentN
+                        Loc2 layer1 component1, ...Loc2 layerN componentN
+                        LocN layer1 component1, ...LocN layerN componentN
+
+                   3.  For complex data there Will Be 2*NDVAL data items. The
+                       order is real part for value 1, imaginary part for
+                       value 1, real part for value 2, imaginary part for
+                       value 2, etc.              
+
+                   4.  The order of values for various data
+                       characteristics is:
+
+                       3 DOF Global Vector: X, Y, Z
+                       6 DOF Global Vector: X, Y, Z, Rx, Ry, Rz
+                       Symmetric Global Tensor: Sxx, Sxy, Syy,
+                                                Sxz, Syz, Szz
+
+                       Shell and Plate Element Resultant: Fx, Fy, Fxy,
+                                                          Mx, My, Mxy,
+                                                          Vx, Vy
+
+                   5.  ID line 1 always appears on plots in output
+                       display.
+
+                   6.  If result type is an "UNKNOWN" type,  id line 2
+                       is displayed as data type in output display.
+
+                   7.  Data Characteristic values (Record 9, Field 3)
+                       imply the following values Of NDVALDC (Record 9,
+                       Field 6)
+                             Scalar:                   1
+                             3 DOF Global Vector:      3
+                             6 DOF Global Vector:      6
+                             Symmetric Global Tensor:  6
+                             General Global Tensor:    9   
+                             Shell and Plate Resultant:8    
+                       Since this value can also be derived from the Results
+                       Type (Record 9, Field 4), this is redundant data, and
+                       should be kept consistent. Some data was kept for
+                       compatibility with older files.
+
+                   8.  No entry is NOT the same as a 0. entry: all 0s must
+                       be specified.
+
+                   9.  A direct result of 8 is that if no records 14 and
+                       15 appear for a node or element, this entity has
+                       no data and will not be contoured, etc.
+
+                   10. Dataloaders use the following id line convention:
+
+                        1.   (80A1) MODEL IDENTIFICATION
+                        2.   (80A1) RUN IDENTIFICATION
+                        3.   (80A1) RUN DATE/TIME
+                        4.   (80A1) LOAD CASE NAME
+                        For static:
+
+                        5.   (17H LOAD CASE NUMBER;, I10)
+
+                        For normal mode:
+
+                        5.   (10H MODE SAME, I10, 10H FREQUENCY, E13.5)
+
+                   11. For situations with reduced # DOF'S, use 6 DOF 
+                       translation and rotation with unused values = 0.
+
+                   12. The integer associated data "number retained" will 
+                       =0 unless the result set is created by sorting for 
+                       extremes.  The maximum number of values to retain is 6.
+
+        Specifed values:
+          NDVAL  - Number of data values for the element. 
+          NLOCS  - Number of location on the element data is stored for.
+           NVALDC - Number of values for the data component.
+
+        Derived values: 
+          NLAY   - Number of location through the thickness data is stored for
+                 =  NDVAL / ( NLOCS * NDVALC)
+          NVLOC  - Number of values per location.
+                 =  NLAY * NVALDC
+
+        The following is always true:
+        NDVAL =  NLOCS * NLAY * NVALDC
+
+Dataset class: Data at nodes
+
+                   1.  NLOCS = 1
+                       NLAY  = 1
+                    
+                       NDVAL = NVALDC
+
+                   2.  Typical fortran I/O statements for the data
+                       sections are:
+
+                             READ(LUN,1000)NUM
+                             WRITE
+                        1000 FORMAT (I10)
+                             READ(LUN,1010) (VAL(I),I=1,NDVAL)
+                             WRITE
+                        1010 FORMAT (6E13.5)
+
+                             Where: VAL is real or complex data array
+                                    NUM is element number
+
+Dataset class: Data at elements
+
+                   1.  Data on 2D type elements may have multiple values
+                       through the element thickness.  In these cases:
+                           NLOCS =1
+                               NLAY  =Number of layers of data through the
+                                      thickness.
+                       
+                         NDVAL = NLAY * NVALDC
+
+                       For solid elements: 
+                         NLOCS = 1
+                               NLAY  = 1
+ 
+                         NDVAL = NVALDC
+
+                       The order of the nodes defines an outward normal which 
+                       specifies the order from position 1 to NPOS.
+
+                   2.  Maximum Value For NVALDC Is 9.
+                       No Maximum Value For NDVAL.
+                       No Maximum Value For NLAY.
+
+                   3.  Typical fortran I/O statements for the data
+                       sections are:
+                             READ (LUN, 1000) NUM, NDVAL
+                             WRITE
+                        1000 FORMAT (2I10)
+                             READ (LUN, 1010) (VAL(I),I=1,NDVAL)
+                             WRITE
+                        1010 FORMAT (6E13.5)
+ 
+                             Where:  VAL is real or complex data array
+                                     NUM is element number
+                                                                          
+Dataset class: Data at nodes on elements
+
+                   1.  Data on 2D type elements may have multiple values
+                       through the element thickness.  In these cases:
+                           NLOCS =Number of nodes for the element.
+                               NLAY  =Number of layers of data through the
+                                      thickness.
+                       
+                         NDVAL = NLOCS * NLAY * NVALDC
+
+                       For solid elements: 
+                         NLOCS = Number of nodes for the element.
+                               NLAY  = 1
+ 
+                         NDVAL = NLOCS * NVALDC
+
+                       The order of the nodes defines an outward normal which 
+                       specifies the order from position 1 to NPOS.    
+
+                   2.  Maximum Value For NVALDC Is 9.
+                       No Maximum Value For NDVAL.
+                       No Maximum Value For NLAY.
+
+                   3.  Typical Fortran I/O statements for the data sections
+                       are:
+ 
+                             READ (LUN,1000) NUM, IEXP, NLOCS, NVLOC
+                             WRITE
+                        1000 FORMAT (4I10)
+                       C
+                       C       Process Expansion Code 1
+                       C
+                             IF (IEXP.NE.1) GO TO 20
+                             NSTRT = 1
+                             DO 10 I=1, NLOCS
+                               NSTOP = NSTRT + NVLOC - 1
+                               READ (LUN,1010) (VAL(J),J=NSTRT,STOP)
+                               WRITE
+                        1010   FORMAT (6E13.5)
+                               NSTRT = NSTRT + NVLOC
+                        10   CONTINUE
+                             GO TO 50
+                       C
+                       C       PROCESS EXPANSION CODE 2
+                       C
+                        20   READ (LUN,1010) (VAL(I),I=1,NVLOC)
+                             NOFF = 0
+                             DO 40 I=1,NLOCS
+                               NOFF = NOFF +NVLOC
+                               DO 30 J=1, NVLOC
+                                 VAL (NOFF+J) = VAL(J)
+                        30     CONTINUE
+                        40   CONTINUE
+                       C
+                        50   NDVAL = NVLOC*NLOCS
+ 
+                             Where:    NUM is element number. 
+                                       IEXP is the element expansion code 
+                                       VAL is real or complex data array. 
+                                                     
+
+Dataset class: Data at points
+
+                   1.  Only Tetrahedral elements will be supported.
+
+                   2.  For solid elements: 
+                         NLOCS = Number of points on the element data is stored
+                                 for.  Determined from the element type and 
+                                 order.
+                               NLAY  = 1
+ 
+                         NDVAL = NLOCS * NVALDC
+
+                   3.  Maximum Value For NVALDC Is 9.
+                       No Maximum Value For NDVAL.
+
+                   4.  The element order is equal to the P-order of the element
+
+                   5.  The number of points per element is calculated from
+                       the element order as follows:
+
+                         Number_of_Points = sum(i= 1 to P-Order+1)   
+                                           [sum(j = 1 to i)[1 + i - j) )]]
+
+                   6.  Typical Fortran I/O statements for the data sections
+                       are:
+ 
+                             READ (LUN,1000) NUM, IEXP, NLOCS, NVLOC, IORDER
+                             WRITE
+                        1000 FORMAT (4I10)
+                                          .                               
+                                          .                               
+                                          .                           
+                           (See 3. for Data at Nodes on Elements)
+
+                                        Analysis Type
+
+                                                                          
+  
+                                                                           S
+                                                                           t
+                                                                           a
+                                              C                       C    t
+                                              o           F           o    i
+                                        N     m           r           m    c
+                                        o     p           e           p     
+                                        r     l           q           l    N
+                                        m     e     T                 e    o
+                                        a     x     r     R     B     x    n
+                            U           l           a     e     u     
+                            n     S           E     n     s     c     E    L
+                            k     t     M     i     s     p     k     i    i
+                            n     a     o     g     i     o     l     g    n
+                            o     t     d     e     e     n     i     e    e
+                            w     i     e     n     n     s     n     n    a
+                            n     c     s     1     t     e     g     2    r
+                                                                      
+       Design set ID        X     X     X     X     X     X     X     X    X
+                                                                      
+       Iteration number           X     X                             
+                                                                      
+       Solution set ID      X     X     X     X     X     X     X     X    X
+ I                                                                    
+ N     Boundary condition   X     X     X     X     X     X     X     X    X
+ T                                                                    
+ E     Load set                   X           X     X     X     X     X
+ G                                                                    
+ E     Mode number                      X     X                 X     X
+ R                                                                    
+       Time step number                             X                      X
+                                                                      
+       Frequency number                                   X           
+                                                                      
+       Creation option      X     X     X     X     X     X     X     X    X
+
+       Number retained      X     X     X     X     X     X     X     X    X
+         
+
+                                                                          
+    
+-----------------------------------------------------------------------
+
+       Time                                         X                      X
+                                                                      
+       Frequency                        X                 X           
+                                                                      
+       Eigenvalue                                               X     
+                                                                      
+       Modal Mass                       X                             
+                                                                      
+       Viscous damping                  X                             
+                                                                      
+       Hysteretic damping               X                             
+                                                                      
+ R     Real part eigenvalue                   X                       X
+ E                                                                    
+ A     Imaginary part eingenvalue             X                       X
+ L                                                                    
+       Real part of modal A                   X                        
+       Real part of mass                                              X
+                                                                      
+       Imaginary part of modal A              X                      
+       Imaginary part of mas                                          X
+                                                                      
+       Real part of modal B                   X                        
+       Real part of stiffnes                                          X
+
+       Imaginary part of modal B              X                      
+       Imaginary part of stiffness                                    X
+                                                                          
+    
+-----------------------------------------------------------------------
+"""
+
+    if raw:
+        return out
+    else:
+        print(out)   
+
 def _write2414(fh, dset):
     """
     DS2414_num is iterative number for each DS2414
