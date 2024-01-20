@@ -503,36 +503,38 @@ def _extract55(block_data):
                                                 ['freq', '', '', '', '', '']))
             # Body
         split_data = ''.join(split_data[10:])
-        values = np.asarray([float(str) for str in split_data.split()], 'd')
+        node_nums = np.asarray([int(str) for str in split_data.splitlines(True)[::2]])
+        node_vals = np.array([[str[i*13:(i+1)*13] for i in range(len(str)//13) ] for str in split_data.splitlines(True)[1::2]], 'd').flatten()
         if dset['data_type'] == 2:
             # real data
             if dset['n_data_per_node'] == 3:
-                dset['node_nums'] = values[:-3:4].copy()
-                dset['r1'] = values[1:-2:4].copy()
-                dset['r2'] = values[2:-1:4].copy()
-                dset['r3'] = values[3::4].copy()
+                dset['node_nums'] = node_nums.copy()
+                dset['r1'] = node_vals[0::3].copy()
+                dset['r2'] = node_vals[1::3].copy()
+                dset['r3'] = node_vals[2::3].copy()
             else:
-                dset['node_nums'] = values[:-6:7].copy()
-                dset['r1'] = values[1:-5:7].copy()
-                dset['r2'] = values[2:-4:7].copy()
-                dset['r3'] = values[3:-3:7].copy()
-                dset['r4'] = values[4:-2:7].copy()
-                dset['r5'] = values[5:-1:7].copy()
-                dset['r6'] = values[6::7].copy()
+                dset['node_nums'] = node_nums.copy()
+                dset['r1'] = node_vals[0::6].copy()
+                dset['r2'] = node_vals[1::6].copy()
+                dset['r3'] = node_vals[2::6].copy()
+                dset['r4'] = node_vals[3::6].copy()
+                dset['r5'] = node_vals[4::6].copy()
+                dset['r6'] = node_vals[5::6].copy()
         elif dset['data_type'] == 5:
             # complex data
             if dset['n_data_per_node'] == 3:
-                dset['node_nums'] = values[:-6:7].copy()
-                dset['r1'] = values[1:-5:7] + 1.j * values[2:-4:7]
-                dset['r2'] = values[3:-3:7] + 1.j * values[4:-2:7]
-                dset['r3'] = values[5:-1:7] + 1.j * values[6::7]
+                dset['node_nums'] = node_nums.copy()
+                dset['r1'] = node_vals[0::6].copy() + 1.j * node_vals[1::6].copy()
+                dset['r2'] = node_vals[2::6].copy() + 1.j * node_vals[3::6].copy()
+                dset['r3'] = node_vals[4::6].copy() + 1.j * node_vals[5::6].copy()
             else:
                 raise Exception('Cannot handle 6 points per node and complex data when reading data-set #55')
         else:
             raise Exception('Error reading data-set #55')
     except:
         raise Exception('Error reading data-set #55')
-    del values
+    del node_nums
+    del node_vals
     return dset
 
 

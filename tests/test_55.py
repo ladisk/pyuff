@@ -6,6 +6,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/uff55 sample_test record10.uff')
     test_read_write_read_given_data_base('./data/uff55_translation.uff')
     test_read_write_read_given_data_base('./data/uff55_translation_rotation.uff')
 
