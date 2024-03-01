@@ -107,3 +107,6 @@ data/measurement_58b.uff
 .idea/
 .pypirc
 .vscode
+
+# other
+server_user_id.txt

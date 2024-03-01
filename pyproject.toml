@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pyuff"
+version = "2.4.1"
+authors = [{name = "Primož Čermelj, Janko Slavič", email = "janko.slavic@fs.uni-lj.si"}]
+maintainers = [{name = "Janko Slavič et al.", email = "janko.slavic@fs.uni-lj.si"}]
+license = "MIT"
+description = "UFF (Universal File Format) read/write."
+readme = "README.rst"
+keywords = ['UFF', 'UNV', 'Universal File Format', 'read/write']
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Topic :: Scientific/Engineering',
+    'Programming Language :: Python :: 3.10',
+    "License :: OSI Approved :: MIT License",
+]
+
+[tool.hatch.build.targets.wheel]
+include = ["sdypy"]
+
+[project.optional-dependencies]
+dev = [
+    "sphinx",
+    "twine",
+    "wheel",
+    "build",
+    "pytest",
+    "sphinx-rtd-theme",
+    "sphinx-copybutton",
+]
+
+[project.urls]
+homepage = "https://github.com/ladisk/pyuff"
+documentation = "https://pyuff.readthedocs.io/en/latest/"
+source = "https://github.com/ladisk/pyuff"

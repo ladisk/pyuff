@@ -1,0 +1,9 @@
+# Package requirements for developers
+-r requirements.txt
+sphinx
+twine
+wheel
+build
+pytest
+sphinx-rtd-theme
+sphinx-copybutton
