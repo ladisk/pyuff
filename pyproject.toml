@@ -23,9 +23,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 
-[tool.hatch.build.targets.wheel]
-include = ["sdypy"]
-
 [project.optional-dependencies]
 dev = [
     "sphinx",
