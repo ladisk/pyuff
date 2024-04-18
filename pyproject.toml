@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyuff"
-version = "2.4.2"
+version = "2.4.3"
 authors = [{name = "Primož Čermelj, Janko Slavič", email = "janko.slavic@fs.uni-lj.si"}]
 maintainers = [{name = "Janko Slavič et al.", email = "janko.slavic@fs.uni-lj.si"}]
 license = "MIT"
@@ -38,3 +38,6 @@ dev = [
 homepage = "https://github.com/ladisk/pyuff"
 documentation = "https://pyuff.readthedocs.io/en/latest/"
 source = "https://github.com/ladisk/pyuff"
+
+[tool.hatch.build.targets.sdist]
+include = ["pyuff/*"]
