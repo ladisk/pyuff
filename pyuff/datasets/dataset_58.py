@@ -1068,17 +1068,20 @@ def _extract58(block_data):
         # Body
         # split_data = ''.join(split_data[13:])
         if binary:
-            split_data = b''.join(block_data.splitlines(True)[13:])
-            if dset['byte_ordering'] == 1:
-                bo = '<'
-            else:
-                bo = '>'
-            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                # single precision - 4 bytes
-                values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
-            else:
-                # double precision - 8 bytes
-                values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+            try:     
+                split_data = b''.join(block_data.splitlines(True)[13:])
+                if dset['byte_ordering'] == 1:
+                    bo = '<'
+                else:
+                    bo = '>'
+                if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
+                    # single precision - 4 bytes
+                    values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
+                else:
+                    # double precision - 8 bytes
+                    values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+            except:
+                raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
         else:
             values = []
             split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
@@ -1484,3 +1487,68 @@ def prepare_58(
 
 
     return dataset
+
+
+def fix_58b(filename,fixed_filename=None):
+    """
+    Opens the UFF file, fixes specific formatting issues and saves the fixed file. 
+    Specifically, it fixes the instance, when closing '    -1' of the dataset is on its own line, and not right after the data.
+
+    :param filename: filename of the UFF file to be fixed
+    :param filename: filename to write the fixed UFF file, if None, the fixed file will be saved as 'filename_fixed.uff'
+    """
+    
+    if not os.path.exists(filename):
+        return False  # cannot read the file if it does not exist
+    try:
+        # Open the file in binary read mode
+        with open(filename, 'rb') as fh:
+            data = fh.read()
+    except Exception as e:
+        raise Exception(f'Cannot access the file {filename}: {e}')
+    else:
+        try:
+            # Split the data into lines while keeping the line endings
+            lines = data.splitlines(keepends=True)
+
+           
+            # Fix 1: Adjust ending '    -1' line
+            if len(lines) >= 1 and lines[-1].strip() == b'-1':
+                if len(lines) >= 2:
+                    # Move '    -1' up to the end of the previous line
+                    prev_line = lines[-2].rstrip(b'\r\n')
+                    prev_line += b'    -1' + lines[-1][-1:]  # Keep the newline character
+                    lines[-2] = prev_line
+                    lines.pop()  # Remove the last line
+                else:
+                    pass
+
+            # Fix 2: Adjust 'data\n    -1\n    -1\n data' patterns
+            i = 0
+            while i < len(lines) - 3:
+                if (lines[i+1].strip() == b'-1' and lines[i+2].strip() == b'-1'):
+                    # Move '    -1' from lines[i+1] to the end of lines[i]
+                    data_line = lines[i].rstrip(b'\r\n')  # Remove newline characters
+                    data_line += b'    -1' + lines[i+1][-1:]  # Add '    -1' and newline
+                    lines[i] = data_line
+                    del lines[i+1]  # Remove the now-empty line
+                    # Do not increment i to recheck the new line at position i
+                else:
+                    i += 1  # Move to the next line
+
+            # Reassemble the data
+            data = b''.join(lines)
+
+
+            # Write the fixed data back to the file
+            if fixed_filename is None:
+                base, ext = os.path.splitext(filename)
+                new_filename = f"{base}_fixed{ext}" #default filename
+            else:
+                new_filename = fixed_filename #custom filename
+            with open(new_filename, 'wb') as fh:
+                fh.write(data)
+            print('fixed file saved as:', new_filename)
+        except Exception as e:
+            raise Exception(f'Error fixing UFF file: {filename}: {e}')
+

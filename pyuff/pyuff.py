@@ -49,7 +49,7 @@ warnings.simplefilter("default")
 from .datasets.dataset_15 import _write15, _extract15, get_structure_15
 from .datasets.dataset_18 import _extract18, get_structure_18
 from .datasets.dataset_55 import _write55, _extract55, get_structure_55
-from .datasets.dataset_58 import _write58, _extract58, get_structure_58
+from .datasets.dataset_58 import _write58, _extract58, get_structure_58, fix_58b
 from .datasets.dataset_82 import _write82, _extract82, get_structure_82
 from .datasets.dataset_151 import _write151, _extract151, get_structure_151
 from .datasets.dataset_164 import _write164, _extract164, get_structure_164
@@ -259,9 +259,10 @@ class UFF:
             for ii in read_range:
                 dset.append(self._read_set(ii))
         except Exception as msg:
-            raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
-        except:
-            raise Exception('Error when reading data-set(s)')
+            if hasattr(msg, 'value'):
+                raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
+            else:
+                raise Exception('Error when reading data-set(s).')
         if len(dset) == 1:
             dset = dset[0]
         return dset
