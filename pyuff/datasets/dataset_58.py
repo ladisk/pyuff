@@ -1491,7 +1491,7 @@ def prepare_58(
 
 def fix_58b(filename,fixed_filename=None):
     """
-    Opens the UFF file, fixes specific formatting issues and saves the fixed file. 
+    Opens the UFF file, fixes a common formatting issue and saves the fixed file. 
     Specifically, it fixes the instance, when closing '    -1' of the dataset is on its own line, and not right after the data.
 
     :param filename: filename of the UFF file to be fixed
@@ -1499,7 +1499,7 @@ def fix_58b(filename,fixed_filename=None):
     """
     
     if not os.path.exists(filename):
-        return False  # cannot read the file if it does not exist
+        raise Exception('Filename does not exist')
     try:
         # Open the file in binary read mode
         with open(filename, 'rb') as fh:
@@ -1508,10 +1508,8 @@ def fix_58b(filename,fixed_filename=None):
         raise Exception(f'Cannot access the file {filename}: {e}')
     else:
         try:
-            # Split the data into lines while keeping the line endings
             lines = data.splitlines(keepends=True)
 
-           
             # Fix 1: Adjust ending '    -1' line
             if len(lines) >= 1 and lines[-1].strip() == b'-1':
                 if len(lines) >= 2:

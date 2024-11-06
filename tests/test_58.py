@@ -206,6 +206,20 @@ def test_prepare_58():
     if x2['type'] != 58:
         raise Exception('Not correct type')
 
+def test_fix_58b():
+    pyuff.fix_58b('./data/MPSTD#Set001_2024_10_08_10_27_07.uff')
+    corrected_file = pyuff.UFF('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff')
+    data_1 = corrected_file.read_sets(0)
+
+    test_file = pyuff.UFF('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed_test.uff')
+    data_2 = test_file.read_sets(0)
+
+    np.testing.assert_array_almost_equal(data_1['data'], data_2['data'])
+
+    # remove the fixed file
+    if os.path.exists('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff'):
+        os.remove('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff')
+
 if __name__ == '__main__':
     test_read_write_read_given_data()
 
