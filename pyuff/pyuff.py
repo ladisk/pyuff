@@ -230,13 +230,14 @@ class UFF:
                 fh.close()
                 return self._refreshed
 
-    def read_sets(self, setn=None):
+    def read_sets(self, setn=None, include_all=True):
         """
         Reads sets from the list or array ``setn``. If ``setn=None``, all
         sets are read (default). Sets are numbered starting at 0, ending at
-        n-1. The method returns a list of dset dictionaries - as
-        many dictionaries as there are sets. Unknown data-sets are returned
-        empty.
+        n-1. If ``include_all=True``, then all data will be read (default),
+        otherwise only minimal data is read when applicable. The method returns
+        a list of dset dictionaries - as many dictionaries as there are sets. 
+        Unknown data-sets are returned empty.
         
         User must be sure that, since the last reading/writing/refreshing,
         the data has not changed by some other means than through the
@@ -257,7 +258,7 @@ class UFF:
                 raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
-                dset.append(self._read_set(ii))
+                dset.append(self._read_set(ii, include_all))
         except Exception as msg:
             if hasattr(msg, 'value'):
                 raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
@@ -307,7 +308,7 @@ class UFF:
         else:
             raise Exception('Unknown mode: ' + mode)
 
-    def _read_set(self, n):
+    def _read_set(self, n, include_all=True):
         """
         Reads n-th set from UFF file. 
         n can be an integer between 0 and n_sets-1. 
@@ -352,7 +353,7 @@ class UFF:
         elif self._set_types[int(n)] == 55:
             dset = _extract55(block_data)
         elif self._set_types[int(n)] == 58:
-            dset = _extract58(block_data)
+            dset = _extract58(block_data, include_all) # only added lazy load option for 58 so far...
         elif self._set_types[int(n)] == 82:
             dset = _extract82(block_data)
         elif self._set_types[int(n)] == 151:

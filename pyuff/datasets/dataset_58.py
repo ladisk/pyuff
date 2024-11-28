@@ -1021,8 +1021,16 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         raise Exception('Error writing data-set #58')
 
 
-def _extract58(block_data):
-    """Extract function at nodal DOF - data-set 58."""
+def _extract58(block_data, include_all = True):
+    """
+    Extract function at nodal DOF - data-set 58. 
+    If include_all is True, everything will be extracted. Otherwise only the metadata.
+    """
+
+
+
+
+
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
@@ -1067,73 +1075,78 @@ def _extract58(block_data):
                                                 'z_axis_axis_units_lab']))
         # Body
         # split_data = ''.join(split_data[13:])
-        if binary:
-            try:     
-                split_data = b''.join(block_data.splitlines(True)[13:])
-                if dset['byte_ordering'] == 1:
-                    bo = '<'
-                else:
-                    bo = '>'
+        if include_all:
+            if binary:
+                try:     
+                    split_data = b''.join(block_data.splitlines(True)[13:])
+                    if dset['byte_ordering'] == 1:
+                        bo = '<'
+                    else:
+                        bo = '>'
+                    if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
+                        # single precision - 4 bytes
+                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
+                    else:
+                        # double precision - 8 bytes
+                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+                except:
+                    raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
+            else:
+                values = []
+                split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
                 if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                    # single precision - 4 bytes
-                    values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
+                    for line in split_data[:-1]:  # '6E13.5'
+                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
+                    else:
+                        line = split_data[-1]
+                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
+                elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
+                    for line in split_data:  # '4E20.12'
+                        values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
+                elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 2(E13.5,E20.12)
+                        values.extend(
+                            [float(line[13 * (i + j) + 20 * (i):13 * (i + 1) + 20 * (i + j)]) \
+                                for i in range(len(line) // 33) for j in [0, 1]])
+                elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 1E13.5,2E20.12
+                        values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
                 else:
-                    # double precision - 8 bytes
-                    values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
-            except:
-                raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
-        else:
-            values = []
-            split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
-            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                for line in split_data[:-1]:  # '6E13.5'
-                    values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
-                else:
-                    line = split_data[-1]
-                    values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
-            elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
-                for line in split_data:  # '4E20.12'
-                    values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
-            elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
-                for line in split_data:  # 2(E13.5,E20.12)
-                    values.extend(
-                        [float(line[13 * (i + j) + 20 * (i):13 * (i + 1) + 20 * (i + j)]) \
-                            for i in range(len(line) // 33) for j in [0, 1]])
-            elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
-                for line in split_data:  # 1E13.5,2E20.12
-                    values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
-            else:
-                raise Exception('Error reading data-set #58b; not proper data case.')
+                    raise Exception('Error reading data-set #58b; not proper data case.')
 
-            values = np.asarray(values)
-            # values = np.asarray([float(str) for str in split_data],'d')
-        if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
-            # Non-complex ordinate data
-            if (dset['abscissa_spacing'] == 0):
-                # Uneven abscissa
-                dset['x'] = values[:-1:2].copy()
-                dset['data'] = values[1::2].copy()
-            else:
-                # Even abscissa
-                n_val = len(values)
-                min_val = dset['abscissa_min']
-                d = dset['abscissa_inc']
-                dset['x'] = min_val + np.arange(n_val) * d
-                dset['data'] = values.copy()
-        elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
-            # Complex ordinate data
-            if (dset['abscissa_spacing'] == 0):
-                # Uneven abscissa
-                dset['x'] = values[:-2:3].copy()
-                dset['data'] = values[1:-1:3] + 1.j * values[2::3]
-            else:
-                # Even abscissa
-                n_val = len(values) / 2
-                min_val = dset['abscissa_min']
-                d = dset['abscissa_inc']
-                dset['x'] = min_val + np.arange(n_val) * d
-                dset['data'] = values[0:-1:2] + 1.j * values[1::2]
-        del values
+                values = np.asarray(values)
+                # values = np.asarray([float(str) for str in split_data],'d')
+            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
+                # Non-complex ordinate data
+                if (dset['abscissa_spacing'] == 0):
+                    # Uneven abscissa
+                    dset['x'] = values[:-1:2].copy()
+                    dset['data'] = values[1::2].copy()
+                else:
+                    # Even abscissa
+                    n_val = len(values)
+                    min_val = dset['abscissa_min']
+                    d = dset['abscissa_inc']
+                    dset['x'] = min_val + np.arange(n_val) * d
+                    dset['data'] = values.copy()
+            elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
+                # Complex ordinate data
+                if (dset['abscissa_spacing'] == 0):
+                    # Uneven abscissa
+                    dset['x'] = values[:-2:3].copy()
+                    dset['data'] = values[1:-1:3] + 1.j * values[2::3]
+                else:
+                    # Even abscissa
+                    n_val = len(values) / 2
+                    min_val = dset['abscissa_min']
+                    d = dset['abscissa_inc']
+                    dset['x'] = min_val + np.arange(n_val) * d
+                    dset['data'] = values[0:-1:2] + 1.j * values[1::2]
+            del values
+        else:
+            # If not reading data, just set placeholders
+            dset['x'] = None
+            dset['data'] = None
     except:
         raise Exception('Error reading data-set #58b')
     return dset
