@@ -1021,10 +1021,10 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         raise Exception('Error writing data-set #58')
 
 
-def _extract58(block_data, include_all = True):
+def _extract58(block_data, header_only=False):
     """
     Extract function at nodal DOF - data-set 58. 
-    If include_all is True, everything will be extracted. Otherwise only the metadata.
+    If header_only is False, everything will be extracted (Default). Otherwise only the header data will be extracted.
     """
 
 
@@ -1075,7 +1075,7 @@ def _extract58(block_data, include_all = True):
                                                 'z_axis_axis_units_lab']))
         # Body
         # split_data = ''.join(split_data[13:])
-        if include_all:
+        if not header_only:
             if binary:
                 try:     
                     split_data = b''.join(block_data.splitlines(True)[13:])

@@ -230,12 +230,12 @@ class UFF:
                 fh.close()
                 return self._refreshed
 
-    def read_sets(self, setn=None, include_all=True):
+    def read_sets(self, setn=None, header_only=False):
         """
         Reads sets from the list or array ``setn``. If ``setn=None``, all
         sets are read (default). Sets are numbered starting at 0, ending at
-        n-1. If ``include_all=True``, then all data will be read (default),
-        otherwise only minimal data is read when applicable. The method returns
+        n-1. If ``header_only=False``, then all data will be read (default),
+        otherwise only header data is read when applicable. The method returns
         a list of dset dictionaries - as many dictionaries as there are sets. 
         Unknown data-sets are returned empty.
         
@@ -258,7 +258,7 @@ class UFF:
                 raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
-                dset.append(self._read_set(ii, include_all))
+                dset.append(self._read_set(ii, header_only))
         except Exception as msg:
             if hasattr(msg, 'value'):
                 raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
@@ -308,7 +308,7 @@ class UFF:
         else:
             raise Exception('Unknown mode: ' + mode)
 
-    def _read_set(self, n, include_all=True):
+    def _read_set(self, n, header_only=False):
         """
         Reads n-th set from UFF file. 
         n can be an integer between 0 and n_sets-1. 
@@ -353,7 +353,7 @@ class UFF:
         elif self._set_types[int(n)] == 55:
             dset = _extract55(block_data)
         elif self._set_types[int(n)] == 58:
-            dset = _extract58(block_data, include_all) # only added lazy load option for 58 so far...
+            dset = _extract58(block_data, header_only) # only added lazy load option for 58 so far...
         elif self._set_types[int(n)] == 82:
             dset = _extract82(block_data)
         elif self._set_types[int(n)] == 151:
