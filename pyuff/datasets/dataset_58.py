@@ -1024,7 +1024,9 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
 def _extract58(block_data, header_only=False):
     """
     Extract function at nodal DOF - data-set 58. 
-    If header_only is False, everything will be extracted (Default). Otherwise only the header data will be extracted.
+
+    :param header_only: False (default). If True the header data will be 
+                        extracted, only (useful with large files).
     """
 
 
@@ -1075,7 +1077,11 @@ def _extract58(block_data, header_only=False):
                                                 'z_axis_axis_units_lab']))
         # Body
         # split_data = ''.join(split_data[13:])
-        if not header_only:
+        if header_only:
+            # If not reading data, just set placeholders
+            dset['x'] = None
+            dset['data'] = None
+        else:
             if binary:
                 try:     
                     split_data = b''.join(block_data.splitlines(True)[13:])
@@ -1143,10 +1149,6 @@ def _extract58(block_data, header_only=False):
                     dset['x'] = min_val + np.arange(n_val) * d
                     dset['data'] = values[0:-1:2] + 1.j * values[1::2]
             del values
-        else:
-            # If not reading data, just set placeholders
-            dset['x'] = None
-            dset['data'] = None
     except:
         raise Exception('Error reading data-set #58b')
     return dset
