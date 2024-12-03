@@ -1,4 +1,4 @@
-|pytest| |documentation| |binder|
+|pytest| |documentation| 
 
 pyuff
 =====
