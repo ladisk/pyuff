@@ -1,4 +1,4 @@
-|pytest| |documentation| |binder|
+|pytest| |documentation| 
 
 pyuff
 =====
@@ -138,11 +138,6 @@ Or we can use support function ``prepare_58`` to prepare the dictionary for crea
                 ordinate_spec_data_type=12,
                 orddenom_spec_data_type=13)
 
-
-|binder| to test the *pyuff Showcase.ipynb* online.
-
-.. |binder| image:: http://mybinder.org/badge.svg
-   :target: http://mybinder.org:/repo/ladisk/pyuff
 .. |pytest| image:: https://github.com/ladisk/pyuff/actions/workflows/python-package.yml/badge.svg
     :target: https://github.com/ladisk/pyuff/actions
 .. |documentation| image:: https://readthedocs.org/projects/pyuff/badge/?version=latest

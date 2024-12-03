@@ -49,7 +49,7 @@ warnings.simplefilter("default")
 from .datasets.dataset_15 import _write15, _extract15, get_structure_15
 from .datasets.dataset_18 import _extract18, get_structure_18
 from .datasets.dataset_55 import _write55, _extract55, get_structure_55
-from .datasets.dataset_58 import _write58, _extract58, get_structure_58
+from .datasets.dataset_58 import _write58, _extract58, get_structure_58, fix_58b
 from .datasets.dataset_82 import _write82, _extract82, get_structure_82
 from .datasets.dataset_151 import _write151, _extract151, get_structure_151
 from .datasets.dataset_164 import _write164, _extract164, get_structure_164
@@ -230,17 +230,20 @@ class UFF:
                 fh.close()
                 return self._refreshed
 
-    def read_sets(self, setn=None):
+    def read_sets(self, setn=None, header_only=False):
         """
-        Reads sets from the list or array ``setn``. If ``setn=None``, all
-        sets are read (default). Sets are numbered starting at 0, ending at
-        n-1. The method returns a list of dset dictionaries - as
-        many dictionaries as there are sets. Unknown data-sets are returned
-        empty.
+        Reads sets.
         
+        The method returns a list of dset dictionaries - as many dictionaries as there are sets. 
+        Unknown data-sets are returned empty.
         User must be sure that, since the last reading/writing/refreshing,
         the data has not changed by some other means than through the
         UFF object.
+        
+        :param setn: None(default), all sets are read in None (default). 
+                     If a number is given, then only a particular set is read. 
+        :param header_only: False (default), if True header is read, only
+                     This usefull for large files.         
         """
         dset = []
         if setn is None:
@@ -257,11 +260,12 @@ class UFF:
                 raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
-                dset.append(self._read_set(ii))
+                dset.append(self._read_set(ii, header_only=header_only))
         except Exception as msg:
-            raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
-        except:
-            raise Exception('Error when reading data-set(s)')
+            if hasattr(msg, 'value'):
+                raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
+            else:
+                raise Exception('Error when reading data-set(s).')
         if len(dset) == 1:
             dset = dset[0]
         return dset
@@ -306,13 +310,18 @@ class UFF:
         else:
             raise Exception('Unknown mode: ' + mode)
 
-    def _read_set(self, n):
+    def _read_set(self, n, header_only=False):
         """
         Reads n-th set from UFF file. 
+
         n can be an integer between 0 and n_sets-1. 
+        
         User must be sure that, since the last reading/writing/refreshing, 
         the data has not changed by some other means than through the
         UFF object. The method returns dset dictionary.
+
+        :param header_only: False (default), if True header is read, only
+                This usefull for large files.    
         """
         
         dset = {}
@@ -351,7 +360,7 @@ class UFF:
         elif self._set_types[int(n)] == 55:
             dset = _extract55(block_data)
         elif self._set_types[int(n)] == 58:
-            dset = _extract58(block_data)
+            dset = _extract58(block_data, header_only=header_only)
         elif self._set_types[int(n)] == 82:
             dset = _extract82(block_data)
         elif self._set_types[int(n)] == 151:

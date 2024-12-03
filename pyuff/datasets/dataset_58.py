@@ -1021,8 +1021,18 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         raise Exception('Error writing data-set #58')
 
 
-def _extract58(block_data):
-    """Extract function at nodal DOF - data-set 58."""
+def _extract58(block_data, header_only=False):
+    """
+    Extract function at nodal DOF - data-set 58. 
+
+    :param header_only: False (default). If True the header data will be 
+                        extracted, only (useful with large files).
+    """
+
+
+
+
+
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
@@ -1067,70 +1077,78 @@ def _extract58(block_data):
                                                 'z_axis_axis_units_lab']))
         # Body
         # split_data = ''.join(split_data[13:])
-        if binary:
-            split_data = b''.join(block_data.splitlines(True)[13:])
-            if dset['byte_ordering'] == 1:
-                bo = '<'
-            else:
-                bo = '>'
-            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                # single precision - 4 bytes
-                values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
-            else:
-                # double precision - 8 bytes
-                values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+        if header_only:
+            # If not reading data, just set placeholders
+            dset['x'] = None
+            dset['data'] = None
         else:
-            values = []
-            split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
-            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                for line in split_data[:-1]:  # '6E13.5'
-                    values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
+            if binary:
+                try:     
+                    split_data = b''.join(block_data.splitlines(True)[13:])
+                    if dset['byte_ordering'] == 1:
+                        bo = '<'
+                    else:
+                        bo = '>'
+                    if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
+                        # single precision - 4 bytes
+                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
+                    else:
+                        # double precision - 8 bytes
+                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+                except:
+                    raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
+            else:
+                values = []
+                split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
+                if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
+                    for line in split_data[:-1]:  # '6E13.5'
+                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
+                    else:
+                        line = split_data[-1]
+                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
+                elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
+                    for line in split_data:  # '4E20.12'
+                        values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
+                elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 2(E13.5,E20.12)
+                        values.extend(
+                            [float(line[13 * (i + j) + 20 * (i):13 * (i + 1) + 20 * (i + j)]) \
+                                for i in range(len(line) // 33) for j in [0, 1]])
+                elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
+                    for line in split_data:  # 1E13.5,2E20.12
+                        values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
                 else:
-                    line = split_data[-1]
-                    values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
-            elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
-                for line in split_data:  # '4E20.12'
-                    values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
-            elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
-                for line in split_data:  # 2(E13.5,E20.12)
-                    values.extend(
-                        [float(line[13 * (i + j) + 20 * (i):13 * (i + 1) + 20 * (i + j)]) \
-                            for i in range(len(line) // 33) for j in [0, 1]])
-            elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
-                for line in split_data:  # 1E13.5,2E20.12
-                    values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
-            else:
-                raise Exception('Error reading data-set #58b; not proper data case.')
+                    raise Exception('Error reading data-set #58b; not proper data case.')
 
-            values = np.asarray(values)
-            # values = np.asarray([float(str) for str in split_data],'d')
-        if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
-            # Non-complex ordinate data
-            if (dset['abscissa_spacing'] == 0):
-                # Uneven abscissa
-                dset['x'] = values[:-1:2].copy()
-                dset['data'] = values[1::2].copy()
-            else:
-                # Even abscissa
-                n_val = len(values)
-                min_val = dset['abscissa_min']
-                d = dset['abscissa_inc']
-                dset['x'] = min_val + np.arange(n_val) * d
-                dset['data'] = values.copy()
-        elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
-            # Complex ordinate data
-            if (dset['abscissa_spacing'] == 0):
-                # Uneven abscissa
-                dset['x'] = values[:-2:3].copy()
-                dset['data'] = values[1:-1:3] + 1.j * values[2::3]
-            else:
-                # Even abscissa
-                n_val = len(values) / 2
-                min_val = dset['abscissa_min']
-                d = dset['abscissa_inc']
-                dset['x'] = min_val + np.arange(n_val) * d
-                dset['data'] = values[0:-1:2] + 1.j * values[1::2]
-        del values
+                values = np.asarray(values)
+                # values = np.asarray([float(str) for str in split_data],'d')
+            if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
+                # Non-complex ordinate data
+                if (dset['abscissa_spacing'] == 0):
+                    # Uneven abscissa
+                    dset['x'] = values[:-1:2].copy()
+                    dset['data'] = values[1::2].copy()
+                else:
+                    # Even abscissa
+                    n_val = len(values)
+                    min_val = dset['abscissa_min']
+                    d = dset['abscissa_inc']
+                    dset['x'] = min_val + np.arange(n_val) * d
+                    dset['data'] = values.copy()
+            elif (dset['ord_data_type'] == 5) or (dset['ord_data_type'] == 6):
+                # Complex ordinate data
+                if (dset['abscissa_spacing'] == 0):
+                    # Uneven abscissa
+                    dset['x'] = values[:-2:3].copy()
+                    dset['data'] = values[1:-1:3] + 1.j * values[2::3]
+                else:
+                    # Even abscissa
+                    n_val = len(values) / 2
+                    min_val = dset['abscissa_min']
+                    d = dset['abscissa_inc']
+                    dset['x'] = min_val + np.arange(n_val) * d
+                    dset['data'] = values[0:-1:2] + 1.j * values[1::2]
+            del values
     except:
         raise Exception('Error reading data-set #58b')
     return dset
@@ -1484,3 +1502,66 @@ def prepare_58(
 
 
     return dataset
+
+
+def fix_58b(filename,fixed_filename=None):
+    """
+    Opens the UFF file, fixes a common formatting issue and saves the fixed file. 
+    Specifically, it fixes the instance, when closing '    -1' of the dataset is on its own line, and not right after the data.
+
+    :param filename: filename of the UFF file to be fixed
+    :param filename: filename to write the fixed UFF file, if None, the fixed file will be saved as 'filename_fixed.uff'
+    """
+    
+    if not os.path.exists(filename):
+        raise Exception('Filename does not exist')
+    try:
+        # Open the file in binary read mode
+        with open(filename, 'rb') as fh:
+            data = fh.read()
+    except Exception as e:
+        raise Exception(f'Cannot access the file {filename}: {e}')
+    else:
+        try:
+            lines = data.splitlines(keepends=True)
+
+            # Fix 1: Adjust ending '    -1' line
+            if len(lines) >= 1 and lines[-1].strip() == b'-1':
+                if len(lines) >= 2:
+                    # Move '    -1' up to the end of the previous line
+                    prev_line = lines[-2].rstrip(b'\r\n')
+                    prev_line += b'    -1' + lines[-1][-1:]  # Keep the newline character
+                    lines[-2] = prev_line
+                    lines.pop()  # Remove the last line
+                else:
+                    pass
+
+            # Fix 2: Adjust 'data\n    -1\n    -1\n data' patterns
+            i = 0
+            while i < len(lines) - 3:
+                if (lines[i+1].strip() == b'-1' and lines[i+2].strip() == b'-1'):
+                    # Move '    -1' from lines[i+1] to the end of lines[i]
+                    data_line = lines[i].rstrip(b'\r\n')  # Remove newline characters
+                    data_line += b'    -1' + lines[i+1][-1:]  # Add '    -1' and newline
+                    lines[i] = data_line
+                    del lines[i+1]  # Remove the now-empty line
+                    # Do not increment i to recheck the new line at position i
+                else:
+                    i += 1  # Move to the next line
+
+            # Reassemble the data
+            data = b''.join(lines)
+
+
+            # Write the fixed data back to the file
+            if fixed_filename is None:
+                base, ext = os.path.splitext(filename)
+                new_filename = f"{base}_fixed{ext}" #default filename
+            else:
+                new_filename = fixed_filename #custom filename
+            with open(new_filename, 'wb') as fh:
+                fh.write(data)
+            print('fixed file saved as:', new_filename)
+        except Exception as e:
+            raise Exception(f'Error fixing UFF file: {filename}: {e}')
+
