@@ -6,6 +6,7 @@ sys.path.insert(0, my_path + '/../')
 import pyuff
 
 def test_read_write_read_given_data():
+    test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff', header_only=True)
     test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff', force_double=False)
     test_read_write_read_given_data_base('./data/time-history-not-all-columns-filled.uff')
     test_read_write_read_given_data_base('./data/Artemis export - data and dof 05_14102016_105117.uff')
@@ -16,7 +17,7 @@ def test_read_write_read_given_data():
     test_read_write_read_given_data_base('./data/no_spacing2_UFF58_ascii.uff',data_at_the_end)
     test_read_write_read_given_data_base('./data/sample_dataset58_psd.uff')
 
-def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_double=True):
+def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_double=True, header_only=False):
     if file=='':
         return
     #read from file
@@ -36,7 +37,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_do
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_sets(setn=0, header_only=header_only)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -53,17 +54,24 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_do
     #print(a['n_bytes'], b['n_bytes'])
     for k in numeric_keys:
         print('Testing: ', k)
-        np.testing.assert_array_almost_equal(a[k], b[k], decimal=3)
+        if header_only and k in ['data','x']:
+            np.testing.assert_equal(b[k], None)
+        else:
+            np.testing.assert_array_almost_equal(a[k], b[k], decimal=3)
     for k in string_keys:
         print('Testing string: ', k, a[k])
         np.testing.assert_string_equal(a[k], b[k])
 
-    print('Testing data: ')
-    np.testing.assert_array_almost_equal(a['data'], b['data'])
 
-    if data_at_the_end is not None:
-        print('Testing last data line: ')
-        np.testing.assert_array_almost_equal(a['data'][-len(data_at_the_end):], data_at_the_end)
+    if header_only:
+        pass
+    else:
+        print('Testing data: ')
+        np.testing.assert_array_almost_equal(a['data'], b['data'])
+
+        if data_at_the_end is not None:
+            print('Testing last data line: ')
+            np.testing.assert_array_almost_equal(a['data'][-len(data_at_the_end):], data_at_the_end)
 
 
 
