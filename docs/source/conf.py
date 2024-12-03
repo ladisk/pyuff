@@ -186,7 +186,7 @@ epub_exclude_files = ['search.html']
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = ('https://docs.python.org/', None)
 
 # Autodoc options (to show __init__ function in docs)
 autodoc_default_options = {
