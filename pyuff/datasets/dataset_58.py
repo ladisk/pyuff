@@ -827,7 +827,7 @@ that takes on a binary format in the future.
 def _write58(fh, dset, mode='add', _filename=None, force_double=True):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
-        if not (dset['func_type'] in [1, 2, 3, 4, 6, 9]):
+        if not (dset['func_type'] in [0, 1, 2, 3, 4, 6, 9]):
             raise ValueError('Unsupported function type')
         # handle optional fields - only those that are not calculated
         # automatically
