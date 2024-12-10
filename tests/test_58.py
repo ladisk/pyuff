@@ -228,8 +228,68 @@ def test_fix_58b():
     if os.path.exists('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff'):
         os.remove('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff')
 
+def test_write_read_func_type_0():
+    """
+    Test that func_type=0 is handled correctly in _write58.
+    """
+    save_to_file = './data/test_func_type_0.uff'
+
+    # Remove the file if it already exists
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    # Prepare a dataset with func_type=0
+    test_data = np.array([1.0, 2.0, 3.0, 4.0])
+    test_x = np.array([0.0, 1.0, 2.0, 3.0])
+    dataset = pyuff.prepare_58(
+        binary=0,
+        func_type=0,  # General or unknown data
+        rsp_node=0,
+        rsp_dir=0,
+        ref_node=0,
+        ref_dir=0,
+        data=test_data,
+        x=test_x,
+        id1='TestFuncType0',
+        rsp_ent_name='TestEntity',
+        ref_ent_name='TestEntity',
+        abscissa_spacing=1,
+        abscissa_spec_data_type=17,  # Time
+        ordinate_spec_data_type=2,  # Real
+        orddenom_spec_data_type =0
+    )
+
+    # Write the dataset to a UFF file
+    uff_writer = pyuff.UFF(save_to_file)
+    uff_writer.write_sets([dataset], mode='overwrite')
+
+    # Read the dataset back
+    uff_reader = pyuff.UFF(save_to_file)
+    read_data = uff_reader.read_sets()
+
+    # Clean up the file
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    # Validate the content
+    assert read_data, "Expected one dataset to be read."
+    # No need to index; use read_data directly
+    read_dataset = read_data
+
+    # Check basic metadata
+    np.testing.assert_equal(read_dataset['func_type'], 0)
+    np.testing.assert_string_equal(read_dataset['id1'], 'TestFuncType0')
+    np.testing.assert_string_equal(read_dataset['rsp_ent_name'], 'TestEntity')
+    np.testing.assert_string_equal(read_dataset['ref_ent_name'], 'TestEntity')
+
+    # Validate data content
+    np.testing.assert_array_equal(read_dataset['data'], test_data)
+    np.testing.assert_array_equal(read_dataset['x'], test_x)
+
+
 if __name__ == '__main__':
     test_read_write_read_given_data()
+    test_write_read_func_type_0()
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()
