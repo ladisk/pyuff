@@ -11,6 +11,9 @@ def test_read_2414():
     np.testing.assert_array_equal(a['frequency'], np.array([100]))
     np.testing.assert_array_equal(a['x'][3], np.array([3.33652e-09-1j*9.17913e-13]))
 
+    uff_ascii = pyuff.UFF('./data/NX simulation output.uff')
+    a = uff_ascii.read_sets(7)
+    np.testing.assert_array_equal(a['data_at_node'][-1], np.array([5.34055E-02, -0.00000E+00, -1.58675E+00,  0.00000E+00, -8.87909E-18,  0.00000E+00]))
 
 def test_read_2414_general():
     # Reading a universal file as exported by Siemens Simcenter3D (tested in release 2023)
@@ -177,6 +180,7 @@ def test_prepare_2414():
 
 
 if __name__ == '__main__':
+    test_read_2414()
     test_write_2414()
     test_read_2414_general()
     test_write_2414_general()
