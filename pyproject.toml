@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyuff"
-version = "2.4.6"
+version = "2.4.7"
 authors = [{name = "Primož Čermelj, Janko Slavič", email = "janko.slavic@fs.uni-lj.si"}]
 maintainers = [{name = "Janko Slavič et al.", email = "janko.slavic@fs.uni-lj.si"}]
 license = "MIT"
