@@ -288,8 +288,7 @@ def test_write_read_func_type_0():
 
 
 if __name__ == '__main__':
-    test_read_write_read_given_data()
-    test_write_read_func_type_0()
+    test_fix_58b()
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()

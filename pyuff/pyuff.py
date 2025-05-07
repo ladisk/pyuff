@@ -186,7 +186,16 @@ class UFF:
                     ind = data.find(b'    -1', ind + 1)
                     if ind == -1:
                         break
-                    block_ind.append(ind)
+                    if ind+6 == data_len:
+                        block_ind.append(ind)
+                    # Check if the block is valid and ends with LF or CR
+                    elif ind+6 < data_len and data[ind+6] in [10, 13]:
+                        block_ind.append(ind)
+                    # Check the line continues with blanks up to character 80
+                    elif ind+80 < data_len and data[ind+6:ind+80] == \
+                        b'                                                                          ':
+                        block_ind.append(ind)
+                    
                 block_ind = np.asarray(block_ind, dtype='int64')
 
                 # Constructs block indices of start and end values; each pair
