@@ -1090,11 +1090,13 @@ def _extract58(block_data, header_only=False):
                     else:
                         bo = '>'
                     if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                        # single precision - 4 bytes
-                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data), 'd')
+                        # single precision - 4 bytes, note: sometimes split_data wrongly contains CR/LF and 
+                        # therefore the length of split_data is not divisible by 4
+                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data[:(len(split_data) // 4)*4]), 'd')
                     else:
-                        # double precision - 8 bytes
-                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data), 'd')
+                        # double precision - 8 bytes, note: sometimes split_data wrongly contains CR/LF and 
+                        # therefore the length of split_data is not divisible by 8
+                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data[:(len(split_data) // 8)*8]), 'd')
                 except:
                     raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
             else:
