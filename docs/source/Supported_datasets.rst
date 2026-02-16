@@ -64,6 +64,12 @@ Dataset 164
 .. autofunction:: pyuff.prepare_164
 
 
+Dataset 1858
+------------
+
+.. autofunction:: pyuff.prepare_1858
+
+
 Dataset 2411
 -------------
 
