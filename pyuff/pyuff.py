@@ -53,6 +53,7 @@ from .datasets.dataset_58 import _write58, _extract58, get_structure_58, fix_58b
 from .datasets.dataset_82 import _write82, _extract82, get_structure_82
 from .datasets.dataset_151 import _write151, _extract151, get_structure_151
 from .datasets.dataset_164 import _write164, _extract164, get_structure_164
+from .datasets.dataset_1858 import _write1858, _extract1858, get_structure_1858
 from .datasets.dataset_2411 import _write2411, _extract2411, get_structure_2411
 from .datasets.dataset_2412 import _write2412, _extract2412, get_structure_2412
 from .datasets.dataset_2414 import _write2414, _extract2414, get_structure_2414
@@ -60,7 +61,7 @@ from .datasets.dataset_2420 import _write2420, _extract2420, get_structure_2420
 from .datasets.dataset_2429 import _write2429, _extract2429, get_structure_2429
 from .datasets.dataset_2467 import _write2467, _extract2467, get_structure_2467
 
-_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151','164', '2411', '2412', '2414', '2420', '2429', '2467']
+_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151', '164', '1858', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
 class UFF:
@@ -376,6 +377,8 @@ class UFF:
             dset = _extract151(block_data)
         elif self._set_types[int(n)] == 164:
             dset = _extract164(block_data)
+        elif self._set_types[int(n)] == 1858:
+            dset = _extract1858(block_data)
         elif self._set_types[int(n)] == 2411:
             dset = _extract2411(block_data)  # TEMP ADD
         elif self._set_types[int(n)] == 2412:
@@ -447,6 +450,8 @@ class UFF:
                 _write151(fh, dset)
             elif set_type == 164:
                 _write164(fh, dset)
+            elif set_type == 1858:
+                _write1858(fh, dset)
             elif set_type == 2411:
                 _write2411(fh, dset)
             elif set_type == 2412:
