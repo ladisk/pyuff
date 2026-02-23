@@ -286,9 +286,56 @@ def test_write_read_func_type_0():
     np.testing.assert_array_equal(read_dataset['data'], test_data)
     np.testing.assert_array_equal(read_dataset['x'], test_x)
 
+def test_double_uneven():
+    test_double_uneven_base()
+    test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
+
+
+def test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,300,500,2000]):
+    save_to_file = './data/temp.uff'
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+        
+    uffwrite = pyuff.UFF(save_to_file)
+    my_set = pyuff.prepare_58(binary=None, id1='my_test', 
+                 func_type=9, ver_num=0, load_case_id=0, 
+                 rsp_ent_name='CH1', rsp_node=0, rsp_dir=1, 
+                 ord_data_type=4, num_pts=5, abscissa_spacing=0, 
+                 abscissa_spec_data_type=18,
+                 ordinate_spec_data_type=12,
+                 data = test_data,
+                 x = test_x,
+                 return_full_dict=True)
+
+    for key,value in my_set.items():
+        if value is None:
+            my_set[key] = 0
+
+    uffwrite._write_set(my_set,'add')
+
+    uffread = pyuff.UFF(save_to_file)
+    read_data = uffread.read_sets()
+
+    # Clean up the file
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    # Validate the content
+    assert read_data, "Expected one dataset to be read."
+    # No need to index; use read_data directly
+    read_dataset = read_data
+
+    # Check basic metadata
+    np.testing.assert_equal(read_dataset['func_type'], 9)
+    np.testing.assert_string_equal(read_dataset['id1'], 'my_test')
+    np.testing.assert_string_equal(read_dataset['rsp_ent_name'], 'CH1')
+    # Validate data content
+    np.testing.assert_array_equal(read_dataset['data'], test_data)
+    np.testing.assert_array_equal(read_dataset['x'], test_x)
 
 if __name__ == '__main__':
-    test_fix_58b()
+    test_double_uneven(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,300,500,2000])
+    test_double_uneven(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()

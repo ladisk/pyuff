@@ -993,7 +993,7 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                         fh.write(n4_blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4_blocks]))
                         if rem_vals > 0:
                             fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
-                            fh.write((''.join(fmt[rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
+                            fh.write((''.join(fmt[:rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
                 else:
                     if is_even:
                         fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
