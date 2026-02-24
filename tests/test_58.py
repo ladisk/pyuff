@@ -333,6 +333,51 @@ def test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,30
     np.testing.assert_array_equal(read_dataset['data'], test_data)
     np.testing.assert_array_equal(read_dataset['x'], test_x)
 
+def test_write_read_58_utf8_headers():
+    """Test round-trip with non-ASCII (UTF-8) characters in header fields. Ref: GitHub issues #87, #89."""
+    for binary in (0, 1):
+        save_to_file = './data/temp58_utf8.uff'
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+
+        frequency = np.arange(10, dtype=float)
+        data = np.random.normal(size=len(frequency)) + 1j * np.random.normal(size=len(frequency))
+
+        dataset = pyuff.prepare_58(
+            binary=binary,
+            func_type=4,
+            rsp_node=1,
+            rsp_dir=1,
+            ref_dir=1,
+            ref_node=1,
+            data=data,
+            x=frequency,
+            id1='Time for 车速',
+            id2='Ünit tëst àcc',
+            id3='Données résultat',
+            rsp_ent_name='Tëst',
+            ref_ent_name='Rëf',
+            abscissa_spacing=1,
+            abscissa_spec_data_type=18,
+            ordinate_spec_data_type=12,
+            orddenom_spec_data_type=13)
+
+        uffwrite = pyuff.UFF(save_to_file)
+        uffwrite._write_set(dataset, 'add')
+
+        uff_read = pyuff.UFF(save_to_file)
+        b = uff_read.read_sets(0)
+
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+
+        np.testing.assert_string_equal(b['id1'], 'Time for 车速')
+        np.testing.assert_string_equal(b['id2'], 'Ünit tëst àcc')
+        np.testing.assert_string_equal(b['id3'], 'Données résultat')
+        np.testing.assert_string_equal(b['rsp_ent_name'], 'Tëst')
+        np.testing.assert_string_equal(b['ref_ent_name'], 'Rëf')
+
+
 if __name__ == '__main__':
     test_double_uneven(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,300,500,2000])
     test_double_uneven(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
