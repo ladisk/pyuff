@@ -174,6 +174,67 @@ def test_prepare_55():
         raise Exception('Not correct type')
 
 
+def test_write_read_55_complex_eigenvalues():
+    """Test round-trip for complex eigenvalue data (analysis_type=3). Ref: GitHub issue #98."""
+    save_to_file = './data/temp55_complex.uff'
+
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    node_nums = [1, 2, 3, 4]
+
+    # Complex eigenvalue and modal parameters
+    eig = 1.5 + 2.3j
+    modal_a = 0.1 + 0.2j
+    modal_b = 0.3 + 0.4j
+
+    # Complex mode shape data
+    r1 = np.array([1.0+0.5j, 2.0+1.0j, 3.0+1.5j, 4.0+2.0j])
+    r2 = np.array([0.5+0.1j, 1.5+0.2j, 2.5+0.3j, 3.5+0.4j])
+    r3 = np.array([0.1+0.9j, 0.2+0.8j, 0.3+0.7j, 0.4+0.6j])
+
+    data = pyuff.prepare_55(
+        model_type=1,
+        id1='Complex eigenvalue test',
+        id2='NONE',
+        id3='NONE',
+        id4='NONE',
+        id5='NONE',
+        analysis_type=3,
+        data_ch=2,
+        spec_data_type=8,
+        data_type=5,
+        r1=r1,
+        r2=r2,
+        r3=r3,
+        n_data_per_node=3,
+        node_nums=node_nums,
+        load_case=1,
+        mode_n=1,
+        eig=eig,
+        modal_a=modal_a,
+        modal_b=modal_b)
+
+    uffwrite = pyuff.UFF(save_to_file)
+    uffwrite._write_set(data, 'add')
+
+    uff_read = pyuff.UFF(save_to_file)
+    b = uff_read.read_sets(0)
+
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+
+    # Verify complex eigenvalue parameters
+    np.testing.assert_almost_equal(b['eig'], eig, decimal=3)
+    np.testing.assert_almost_equal(b['modal_a'], modal_a, decimal=3)
+    np.testing.assert_almost_equal(b['modal_b'], modal_b, decimal=3)
+
+    # Verify complex mode shape data
+    np.testing.assert_array_almost_equal(b['r1'], r1, decimal=3)
+    np.testing.assert_array_almost_equal(b['r2'], r2, decimal=3)
+    np.testing.assert_array_almost_equal(b['r3'], r3, decimal=3)
+
+
 if __name__ == '__main__':
     test_read_write_read_given_data()
     test_write_read_55()
