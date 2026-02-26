@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyuff"
-version = "2.5.3"
+version = "2.5.4"
 authors = [{name = "Primož Čermelj, Janko Slavič", email = "janko.slavic@fs.uni-lj.si"}]
 maintainers = [{name = "Janko Slavič et al.", email = "janko.slavic@fs.uni-lj.si"}]
 license = "MIT"
 description = "UFF (Universal File Format) read/write."
 readme = "README.rst"
 keywords = ['UFF', 'UNV', 'Universal File Format', 'read/write']
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "numpy",
 ]
