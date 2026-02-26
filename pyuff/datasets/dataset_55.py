@@ -672,18 +672,18 @@ def prepare_55(
         raise ValueError('data_type can be 2:Real or 5:Complex')
     if np.array(n_data_per_node).dtype != int and n_data_per_node != None:
         raise TypeError('n_data_per_node must be integers')
-    if np.array(r1).dtype != float and r1 != None:
-        raise TypeError('r1 must have float values')
-    if np.array(r2).dtype != float and r2 != None:
-        raise TypeError('r2 must have float values')
-    if np.array(r3).dtype != float and r3 != None:
-        raise TypeError('r3 must have float values')
-    if np.array(r4).dtype != float and r4 != None:
-        raise TypeError('r4 must have float values')
-    if np.array(r5).dtype != float and r5 != None:
-        raise TypeError('r5 must have float values')
-    if np.array(r6).dtype != float and r6 != None:
-        raise TypeError('r6 must have float values')
+    if not np.issubdtype(np.array(r1).dtype, np.number) and r1 != None:
+        raise TypeError('r1 must have numeric (float or complex) values')
+    if not np.issubdtype(np.array(r2).dtype, np.number) and r2 != None:
+        raise TypeError('r2 must have numeric (float or complex) values')
+    if not np.issubdtype(np.array(r3).dtype, np.number) and r3 != None:
+        raise TypeError('r3 must have numeric (float or complex) values')
+    if not np.issubdtype(np.array(r4).dtype, np.number) and r4 != None:
+        raise TypeError('r4 must have numeric (float or complex) values')
+    if not np.issubdtype(np.array(r5).dtype, np.number) and r5 != None:
+        raise TypeError('r5 must have numeric (float or complex) values')
+    if not np.issubdtype(np.array(r6).dtype, np.number) and r6 != None:
+        raise TypeError('r6 must have numeric (float or complex) values')
     if type(load_case) != int and load_case != None:
         raise TypeError('load_case must be integer')
     if type(mode_n) != int and mode_n != None:
@@ -696,12 +696,12 @@ def prepare_55(
         raise TypeError('modal_damp_vis must be float')
     if type(modal_damp_his) != float and modal_damp_his != None:
         raise TypeError('modal_damp_his must be float')
-    if np.array(eig).dtype != float and eig != None:
-        raise TypeError('eig must be float')
-    if np.array(modal_a).dtype != float and modal_a != None:
-        raise TypeError('modal_a must be float')   
-    if np.array(modal_b).dtype != float and modal_b != None:
-        raise TypeError('modal_b must be float')
+    if not np.issubdtype(np.array(eig).dtype, np.number) and eig != None:
+        raise TypeError('eig must be numeric (float or complex)')
+    if not np.issubdtype(np.array(modal_a).dtype, np.number) and modal_a != None:
+        raise TypeError('modal_a must be numeric (float or complex)')
+    if not np.issubdtype(np.array(modal_b).dtype, np.number) and modal_b != None:
+        raise TypeError('modal_b must be numeric (float or complex)')
     if type(freq_step_n) != int and freq_step_n != None:
         raise TypeError('freq_step_n must be int')
     if np.array(node_nums).dtype != int and node_nums != None:
