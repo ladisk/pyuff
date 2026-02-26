@@ -902,11 +902,6 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
 
         # handling abscissa spacing automatically
         # is_even = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
-        # decode utf to ascii
-        for k, v in dset.items():
-            if type(v) == str:
-                dset[k] = v.encode("utf-8").decode('ascii','ignore')
-
         dset['abscissa_min'] = dset['x'][0]
         dx = dset['x'][1] - dset['x'][0]
         fh.write('%6i\n%6i' % (-1, 58))
@@ -977,9 +972,9 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 [fh.write(struct.pack('>d', datai)) for datai in data]
             fh.close()
             if mode.lower() == 'overwrite':
-                fh = open(_filename, 'wt')
+                fh = open(_filename, 'wt', encoding='utf-8')
             elif mode.lower() == 'add':
-                fh = open(_filename, 'at')
+                fh = open(_filename, 'at', encoding='utf-8')
         else:
             if is_double: # write double precision
                 n4_blocks = len(data) // 4

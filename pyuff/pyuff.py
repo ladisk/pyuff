@@ -416,13 +416,13 @@ class UFF:
         if mode.lower() == 'overwrite':
             # overwrite mode
             try:
-                fh = open(self._filename, 'wt')
+                fh = open(self._filename, 'wt', encoding='utf-8')
             except:
                 raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         elif mode.lower() == 'add':
             # add (append) mode
             try:
-                fh = open(self._filename, 'at')
+                fh = open(self._filename, 'at', encoding='utf-8')
             except:
                 raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         else:
