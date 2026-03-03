@@ -47,7 +47,7 @@ warnings.simplefilter("default")
 
 
 from .datasets.dataset_15 import _write15, _extract15, get_structure_15
-from .datasets.dataset_18 import _extract18, get_structure_18
+from .datasets.dataset_18 import _write18, _extract18, get_structure_18
 from .datasets.dataset_55 import _write55, _extract55, get_structure_55
 from .datasets.dataset_58 import _write58, _extract58, get_structure_58, fix_58b
 from .datasets.dataset_82 import _write82, _extract82, get_structure_82
@@ -62,7 +62,7 @@ from .datasets.dataset_2420 import _write2420, _extract2420, get_structure_2420
 from .datasets.dataset_2429 import _write2429, _extract2429, get_structure_2429
 from .datasets.dataset_2467 import _write2467, _extract2467, get_structure_2467
 
-_SUPPORTED_SETS = ['15', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
+_SUPPORTED_SETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
 class UFF:
@@ -367,7 +367,7 @@ class UFF:
         if self._set_types[int(n)] == 15:
             dset = _extract15(block_data)
         elif self._set_types[int(n)] == 18:
-            dset = _extract18(block_data)  # TEMP ADD
+            dset = _extract18(block_data)
         elif self._set_types[int(n)] == 55:
             dset = _extract55(block_data)
         elif self._set_types[int(n)] == 58:
@@ -443,6 +443,8 @@ class UFF:
 
             if set_type == 15:
                 _write15(fh, dset)
+            elif set_type == 18:
+                _write18(fh, dset)
             elif set_type == 55:
                 _write55(fh, dset)
             elif set_type == 58:
