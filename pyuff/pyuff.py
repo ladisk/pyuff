@@ -43,7 +43,6 @@ Notes:
 import os
 import numpy as np
 import warnings
-warnings.simplefilter("default")
 
 
 from .datasets.dataset_15 import _write15, _extract15, get_structure_15
@@ -103,7 +102,8 @@ class UFF:
         
         elif fileName != None:
             self._filename = fileName
-            warnings.warn('Argument ``fileName`` will be deprecated in the future. Please use ``filename``')
+            warnings.warn('Argument ``fileName`` will be deprecated in the future. Please use ``filename``',
+                          FutureWarning, stacklevel=2)
         
 
         
