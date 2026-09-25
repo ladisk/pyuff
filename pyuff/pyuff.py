@@ -297,11 +297,12 @@ class UFF:
         calculated automatically and the dset is updated - as dset is actually
         an alias (aka pointer), this is reflected at the caller too.
 
-        The required fields are:
-            dset - dictionary representing the data-set
-            mode - 'add' or 'overwrite'
-            force_double - True or False (default True). Single precision should be avoided, 
-                           therefore by default data is saved with double precision.
+        Parameters:
+
+        - ``dsets``: a dictionary, or a list of dictionaries, one per data-set
+        - ``mode``: ``'add'`` (default) or ``'overwrite'``
+        - ``force_double``: ``True`` (default) or ``False``; single precision should be
+          avoided, therefore by default data is saved with double precision.
         """
         if (not type(dsets).__name__ == 'list'):
             dsets = [dsets]
