@@ -1,28 +1,51 @@
 name: Release and Publish to PyPI
+
+# Creating a GitHub Release (or pushing a tag vX.Y.Z) runs the tests, checks
+# that the tag matches the version in pyproject.toml and pyuff/__init__.py,
+# builds the package and publishes it to PyPI.
+
 on:
   push:
     tags:
       - 'v*'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.13'
+
+      - name: Check that the tag matches the package version
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          module=$(python -c "import re; print(re.search(r'__version__ = [\"\x27]([^\"\x27]+)', open('pyuff/__init__.py').read()).group(1))")
+          if [ "$tag" != "$version" ] || [ "$tag" != "$module" ]; then
+            echo "tag v$tag, pyproject.toml $version and pyuff/__init__.py $module do not agree" >&2
+            exit 1
+          fi
 
       - name: Install dependencies
-        run: pip install -U build
+        run: pip install -U build twine pytest
+
+      - name: Run tests
+        run: |
+          pip install .
+          pytest
 
       - name: Build package
-        run: python -m build
+        run: |
+          python -m build
+          python -m twine check dist/*
 
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.14.2
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
