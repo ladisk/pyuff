@@ -2,12 +2,18 @@ name: Release and Publish to PyPI
 
 # Creating a GitHub Release (or pushing a tag vX.Y.Z) runs the tests, checks
 # that the tag matches the version in pyproject.toml,
-# builds the package and publishes it to PyPI.
+# builds the package and publishes it to PyPI through trusted publishing
+# (no API token: PyPI trusts this workflow's OIDC token, see
+# https://docs.pypi.org/trusted-publishers/).
 
 on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   publish:
@@ -45,6 +51,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
