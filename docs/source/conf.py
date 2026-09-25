@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import tomllib
 sys.path.insert(0, os.path.abspath('../..'))
 sys.setrecursionlimit(1500)
 
@@ -24,10 +25,11 @@ project = 'pyuff'
 copyright = '2014-2017 Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc'
 author = 'Primož Čermelj, Matjaž Mršnik, Miha Pirnat, Janko Slavič, Blaž Starc'
 
+# The full version, including alpha/beta/rc tags, from pyproject.toml
+with open(os.path.join(os.path.dirname(__file__), '..', '..', 'pyproject.toml'), 'rb') as f:
+    release = tomllib.load(f)['project']['version']
 # The short X.Y version
-version = ''
-# The full version, including alpha/beta/rc tags
-release = '2014'
+version = '.'.join(release.split('.')[:2])
 
 
 # -- General configuration ---------------------------------------------------
