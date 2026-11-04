@@ -11,7 +11,7 @@ license = "MIT"
 description = "UFF (Universal File Format) read/write."
 readme = "README.rst"
 keywords = ['UFF', 'UNV', 'Universal File Format', 'read/write']
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 dependencies = [
     "numpy",
 ]
@@ -20,10 +20,9 @@ classifiers = [
     'Intended Audience :: Developers',
     'Topic :: Scientific/Engineering',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3.14',
+    'Programming Language :: Python :: 3.15',
     "License :: OSI Approved :: MIT License",
 ]
 
