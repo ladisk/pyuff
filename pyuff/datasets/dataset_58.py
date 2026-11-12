@@ -968,10 +968,8 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 data[2::3] = dset['data'].imag
         if dset['binary']:
             fh.close()
-            if mode.lower() == 'overwrite':
-                fh = open(_filename, 'wb')
-            elif mode.lower() == 'add':
-                fh = open(_filename, 'ab')
+            # the header was just written to the file: append in both modes
+            fh = open(_filename, 'ab')
             # write data in the precision given by the ordinate data type
             if is_double:
                 value_format = 'd'
@@ -991,10 +989,7 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 rows['y'] = data.reshape(num_pts, -1)[:, 1:]
                 fh.write(rows.tobytes())
             fh.close()
-            if mode.lower() == 'overwrite':
-                fh = open(_filename, 'wt', encoding='utf-8')
-            elif mode.lower() == 'add':
-                fh = open(_filename, 'at', encoding='utf-8')
+            fh = open(_filename, 'at', encoding='utf-8')
         else:
             if is_double: # write double precision
                 n4_blocks = len(data) // 4

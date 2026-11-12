@@ -437,6 +437,27 @@ def test_read_58b_written_by_older_pyuff():
         np.testing.assert_array_equal(b['x'], x)
 
 
+def test_write_58b_overwrite():
+    """Binary data sets written in the overwrite mode keep their header."""
+    save_to_file = './data/temp58b_overwrite.uff'
+    x = np.arange(5.)
+    data = np.array([1., -2., 3., -4., 5.])
+    datasets = [pyuff.prepare_58(binary=1, func_type=1, rsp_node=1, rsp_dir=1, ref_node=0, ref_dir=0,
+                                 data=data * (i + 1), x=x, id1='set %i' % i, abscissa_spacing=1,
+                                 abscissa_spec_data_type=17, ordinate_spec_data_type=12,
+                                 orddenom_spec_data_type=0) for i in range(2)]
+    uff = pyuff.UFF(save_to_file)
+    uff.write_sets(datasets[0], mode='overwrite')
+    uff.write_sets(datasets, mode='overwrite')
+    b = pyuff.UFF(save_to_file).read_sets()
+    os.remove(save_to_file)
+
+    np.testing.assert_equal(len(b), 2)
+    for i in range(2):
+        np.testing.assert_string_equal(b[i]['id1'], 'set %i' % i)
+        np.testing.assert_array_equal(b[i]['data'], data * (i + 1))
+
+
 if __name__ == '__main__':
     test_double_uneven(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,300,500,2000])
     test_double_uneven(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
