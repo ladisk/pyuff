@@ -898,9 +898,12 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
 
         # number of bytes of the binary data (58b): every value written, i.e. the
-        # real and imaginary part for complex data and the abscissa for uneven spacing
-        n_values = (1 if is_r else 2) + (0 if is_even else 1)
-        n_bytes = num_pts * n_values * n_value_bytes
+        # real and imaginary part for complex data and the abscissa for uneven spacing;
+        # the abscissa is always real single precision
+        n_ord_values = 1 if is_r else 2
+        n_bytes = num_pts * n_ord_values * n_value_bytes
+        if not is_even:
+            n_bytes += num_pts * 4
 
         if 'n_bytes' in dset.keys():
             dset['n_bytes'] = n_bytes
@@ -975,9 +978,18 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
             else:
                 value_format = 'f'
             if bo == 1:
-                [fh.write(struct.pack('<' + value_format, datai)) for datai in data]
+                byte_order = '<'
             else:
-                [fh.write(struct.pack('>' + value_format, datai)) for datai in data]
+                byte_order = '>'
+            if is_even:
+                fh.write(data.astype(byte_order + value_format).tobytes())
+            else:
+                # uneven spacing: the abscissa is always real single precision
+                rows = np.zeros(num_pts, [('x', byte_order + 'f'),
+                                          ('y', byte_order + value_format, (n_ord_values,))])
+                rows['x'] = dset['x']
+                rows['y'] = data.reshape(num_pts, -1)[:, 1:]
+                fh.write(rows.tobytes())
             fh.close()
             if mode.lower() == 'overwrite':
                 fh = open(_filename, 'wt', encoding='utf-8')
@@ -1096,6 +1108,15 @@ def _extract58(block_data, header_only=False):
                         # single precision - 4 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 4
                         values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data[:(len(split_data) // 4)*4]), 'd')
+                    elif (dset['abscissa_spacing'] == 0) and \
+                            (len(split_data) < dset['num_pts'] * (8 + 8 * (1 if dset['ord_data_type'] == 4 else 2))):
+                        # double precision, uneven abscissa: the abscissa is real single precision
+                        # (pyuff 2.5.8 and older wrote it in double precision; those records are
+                        # longer and are read below)
+                        n_ord_values = 1 if dset['ord_data_type'] == 4 else 2
+                        rows = np.frombuffer(split_data[:dset['num_pts'] * (4 + 8 * n_ord_values)],
+                                             [('x', bo + 'f'), ('y', bo + 'd', (n_ord_values,))])
+                        values = np.column_stack((rows['x'], rows['y'])).ravel().astype('d')
                     else:
                         # double precision - 8 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 8

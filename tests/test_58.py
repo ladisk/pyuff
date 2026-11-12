@@ -391,15 +391,16 @@ def _58b_byte_count(filename):
 
 def test_write_58b_byte_count():
     """The 58b header holds the number of bytes of binary data:
-    points x values per point x bytes per value, abscissa included for uneven spacing."""
+    points x values per point x bytes per value, abscissa included for uneven spacing.
+    The abscissa is always real single precision (4 bytes)."""
     save_to_file = './data/temp58b_byte_count.uff'
     real = np.array([1., -2., 3., -4., 5.])
     cplx = real + 1j * real[::-1]
     # data, abscissa spacing, force_double, ordinate data type, bytes per point
     cases = [(real, 1, True, None, 8),
              (cplx, 1, True, None, 16),
-             (real, 0, True, None, 16),
-             (cplx, 0, True, None, 24),
+             (real, 0, True, None, 12),
+             (cplx, 0, True, None, 20),
              (real, 1, False, 2, 4),
              (cplx, 1, False, 5, 8),
              (real, 0, False, 2, 8),
