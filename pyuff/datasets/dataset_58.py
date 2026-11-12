@@ -888,17 +888,22 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
 
         if dset['ord_data_type'] in [4, 6]: # double precision
             is_double = True
-            n_bytes = num_pts * 8
+            n_value_bytes = 8
         elif dset['ord_data_type'] in [2, 5]: # sigle precision
             is_double = False
-            n_bytes = num_pts * 4
-
-        if 'n_bytes' in dset.keys():
-            dset['n_bytes'] = n_bytes
+            n_value_bytes = 4
 
         ord_data_type = dset['ord_data_type']
 
         is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
+
+        # number of bytes of the binary data (58b): every value written, i.e. the
+        # real and imaginary part for complex data and the abscissa for uneven spacing
+        n_values = (1 if is_r else 2) + (0 if is_even else 1)
+        n_bytes = num_pts * n_values * n_value_bytes
+
+        if 'n_bytes' in dset.keys():
+            dset['n_bytes'] = n_bytes
 
         # handling abscissa spacing automatically
         # is_even = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
@@ -958,18 +963,21 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 data[0:-2:3] = dset['x']
                 data[1:-1:3] = dset['data'].real
                 data[2::3] = dset['data'].imag
-        # always write data in double precision
         if dset['binary']:
             fh.close()
             if mode.lower() == 'overwrite':
                 fh = open(_filename, 'wb')
             elif mode.lower() == 'add':
                 fh = open(_filename, 'ab')
-            # write data
-            if bo == 1:
-                [fh.write(struct.pack('<d', datai)) for datai in data]
+            # write data in the precision given by the ordinate data type
+            if is_double:
+                value_format = 'd'
             else:
-                [fh.write(struct.pack('>d', datai)) for datai in data]
+                value_format = 'f'
+            if bo == 1:
+                [fh.write(struct.pack('<' + value_format, datai)) for datai in data]
+            else:
+                [fh.write(struct.pack('>' + value_format, datai)) for datai in data]
             fh.close()
             if mode.lower() == 'overwrite':
                 fh = open(_filename, 'wt', encoding='utf-8')
