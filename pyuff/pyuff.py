@@ -297,6 +297,9 @@ class UFF:
         calculated automatically and the dset is updated - as dset is actually
         an alias (aka pointer), this is reflected at the caller too.
 
+        NaN and infinite values in ``data`` are written as 0 and as the
+        largest finite float, respectively, with a warning.
+
         Parameters:
 
         - ``dsets``: a dictionary, or a list of dictionaries, one per data-set
@@ -440,6 +443,13 @@ class UFF:
                 raise Exception('Data-set\'s dictionary is missing the required \'type\' key')
             # handle nan or inf
             if 'data' in dset.keys():
+                data = np.asarray(dset['data'])
+                if np.issubdtype(data.dtype, np.inexact):
+                    n_not_finite = np.count_nonzero(~np.isfinite(data))
+                    if n_not_finite:
+                        warnings.warn('Data-set %s: %i of %i data values are NaN or infinite; '
+                                      'NaN is written as 0 and infinity as the largest finite '
+                                      'float.' % (set_type, n_not_finite, data.size), stacklevel=3)
                 dset['data'] = np.nan_to_num(dset['data'])
 
             if set_type == 15:
