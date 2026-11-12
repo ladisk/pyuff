@@ -286,6 +286,25 @@ def test_write_read_func_type_0():
     np.testing.assert_array_equal(read_dataset['data'], test_data)
     np.testing.assert_array_equal(read_dataset['x'], test_x)
 
+def test_write_read_all_func_types():
+    """All function types of the format (0-27) share the same record layout."""
+    save_to_file = './data/temp58_func_types.uff'
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+    x = np.arange(5.)
+    data = np.array([1., -2., 3., -4., 5.]) * (1 + 1j)
+    datasets = [pyuff.prepare_58(binary=binary, func_type=func_type, rsp_node=1, rsp_dir=1, ref_node=1,
+                                 ref_dir=1, data=data, x=x, abscissa_spacing=1, abscissa_spec_data_type=18,
+                                 ordinate_spec_data_type=12, orddenom_spec_data_type=13)
+                for func_type in range(28) for binary in (0, 1)]
+    pyuff.UFF(save_to_file).write_sets(datasets, mode='add')
+    b = pyuff.UFF(save_to_file).read_sets()
+    os.remove(save_to_file)
+
+    np.testing.assert_equal([d['func_type'] for d in b], [d['func_type'] for d in datasets])
+    for d in b:
+        np.testing.assert_array_equal(d['data'], data)
+
 def test_double_uneven():
     test_double_uneven_base()
     test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
