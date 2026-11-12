@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 
 def get_structure_18(raw=False):
@@ -60,7 +60,7 @@ def _write18(fh, dset):
                 int(dset['ref_cs_num'][i]),
                 int(dset['color'][i]),
                 int(dset['method'][i])))
-            fh.write('%-40s\n' % dset['cs_name'][i])
+            fh.write('%-40s\n' % _fit_string(dset['cs_name'][i], 40, 'cs_name', 18))
             fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
                 dset['ref_o'][i][0], dset['ref_o'][i][1], dset['ref_o'][i][2],
                 dset['x_point'][i][0], dset['x_point'][i][1], dset['x_point'][i][2]))

@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_1858(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -155,9 +155,9 @@ def _write1858(fh, dset):
         fh.write('%15.7e%15.7e%15.7e%15.7e%15.7e\n' % (0, 0, 0, 0, 0))
 
         fh.write('%-4s%2s%-4s\n' % (
-            dset['response_direction'],
+            _fit_string(dset['response_direction'], 4, 'response_direction', 1858),
             '',
-            dset['reference_direction'],
+            _fit_string(dset['reference_direction'], 4, 'reference_direction', 1858),
         ))
 
         fh.write('%-80s\n' % 'NONE')

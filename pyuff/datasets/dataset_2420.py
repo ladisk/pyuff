@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_2420(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -58,7 +58,7 @@ def _write2420(fh, dset):
         dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i%74s\n' % (-1, 2420, ' '))
         fh.write('%10i\n' % (dset['Part_UID']))
-        fh.write('%-80s\n' % (dset['Part_Name']))
+        fh.write('%-80s\n' % (_fit_string(dset['Part_Name'], 80, 'Part_Name', 2420)))
 
         # -- Check Dimensions of input arrays
         num_CS = len(dset['CS_sys_labels'])
@@ -66,7 +66,7 @@ def _write2420(fh, dset):
             raise IndexError("Values missing for one or more CS")
         for node in range(num_CS):
             fh.write('%10i%10i%10i\n' % (dset['CS_sys_labels'][node], dset['CS_types'][node], dset['CS_colors'][node]))
-            fh.write('%s\n' % dset['CS_names'][node])
+            fh.write('%s\n' % _fit_string(dset['CS_names'][node], 80, 'CS_names', 2420))
             fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][0, :]))
             fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][1, :]))
             fh.write('%25.16e%25.16e%25.16e\n' % tuple(dset['CS_matrices'][node][2, :]))

@@ -3,7 +3,7 @@ import struct
 import sys
 import os
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_58(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -922,34 +922,39 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
             fh.write('b%6i%6i%12i%12i%6i%6i%12i%12i\n' % (bo, 2, 11, n_bytes, 0, 0, 0, 0))
         else:
             fh.write('%74s\n' % ' ')
-        fh.write('%-80s\n' % dset['id1'])
-        fh.write('%-80s\n' % dset['id2'])
-        fh.write('%-80s\n' % dset['id3'])
-        fh.write('%-80s\n' % dset['id4'])
-        fh.write('%-80s\n' % dset['id5'])
+        fh.write('%-80s\n' % _fit_string(dset['id1'], 80, 'id1', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id2'], 80, 'id2', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id3'], 80, 'id3', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id4'], 80, 'id4', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id5'], 80, 'id5', 58))
         fh.write('%5i%10i%5i%10i %10s%10i%4i %10s%10i%4i\n' %
                     (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
-                    dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
+                    _fit_string(dset['rsp_ent_name'], 10, 'rsp_ent_name', 58), dset['rsp_node'], dset['rsp_dir'],
+                    _fit_string(dset['ref_ent_name'], 10, 'ref_ent_name', 58),
                     dset['ref_node'], dset['ref_dir']))
         fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ord_data_type, num_pts, is_even,
                                                         is_even * dset['abscissa_min'], is_even * dx,
                                                         dset['z_axis_value']))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
                                                     dset['abscissa_len_unit_exp'], dset['abscissa_force_unit_exp'],
-                                                    dset['abscissa_temp_unit_exp'], dset['abscissa_axis_lab'],
-                                                    dset['abscissa_axis_units_lab']))
+                                                    dset['abscissa_temp_unit_exp'],
+                                                    _fit_string(dset['abscissa_axis_lab'], 20, 'abscissa_axis_lab', 58),
+                                                    _fit_string(dset['abscissa_axis_units_lab'], 20, 'abscissa_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['ordinate_spec_data_type'],
                                                     dset['ordinate_len_unit_exp'], dset['ordinate_force_unit_exp'],
-                                                    dset['ordinate_temp_unit_exp'], dset['ordinate_axis_lab'],
-                                                    dset['ordinate_axis_units_lab']))
+                                                    dset['ordinate_temp_unit_exp'],
+                                                    _fit_string(dset['ordinate_axis_lab'], 20, 'ordinate_axis_lab', 58),
+                                                    _fit_string(dset['ordinate_axis_units_lab'], 20, 'ordinate_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['orddenom_spec_data_type'],
                                                     dset['orddenom_len_unit_exp'], dset['orddenom_force_unit_exp'],
-                                                    dset['orddenom_temp_unit_exp'], dset['orddenom_axis_lab'],
-                                                    dset['orddenom_axis_units_lab']))
+                                                    dset['orddenom_temp_unit_exp'],
+                                                    _fit_string(dset['orddenom_axis_lab'], 20, 'orddenom_axis_lab', 58),
+                                                    _fit_string(dset['orddenom_axis_units_lab'], 20, 'orddenom_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['z_axis_spec_data_type'],
                                                     dset['z_axis_len_unit_exp'], dset['z_axis_force_unit_exp'],
-                                                    dset['z_axis_temp_unit_exp'], dset['z_axis_axis_lab'],
-                                                    dset['z_axis_axis_units_lab']))
+                                                    dset['z_axis_temp_unit_exp'],
+                                                    _fit_string(dset['z_axis_axis_lab'], 20, 'z_axis_axis_lab', 58),
+                                                    _fit_string(dset['z_axis_axis_units_lab'], 20, 'z_axis_axis_units_lab', 58)))
         if is_r:
             if is_even:
                 data = dset['data'].copy()

@@ -2,7 +2,7 @@ import numpy as np
 import time
 import os
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_151(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -61,15 +61,18 @@ def _write151(fh, dset):
                                         'time_file_written': ts})
         # write strings to the file
         fh.write('%6i\n%6i%74s\n' % (-1, 151, ' '))
-        fh.write('%-80s\n' % dset['model_name'])
-        fh.write('%-80s\n' % dset['description'])
-        fh.write('%-80s\n' % dset['db_app'])
-        fh.write('%-10s%-10s%10s%10s%10s\n' % (dset['date_db_created'],
-                                                dset['time_db_created'], dset['version_db1'], dset['version_db2'],
+        fh.write('%-80s\n' % _fit_string(dset['model_name'], 80, 'model_name', 151))
+        fh.write('%-80s\n' % _fit_string(dset['description'], 80, 'description', 151))
+        fh.write('%-80s\n' % _fit_string(dset['db_app'], 80, 'db_app', 151))
+        fh.write('%-10s%-10s%10s%10s%10s\n' % (_fit_string(dset['date_db_created'], 10, 'date_db_created', 151),
+                                                _fit_string(dset['time_db_created'], 10, 'time_db_created', 151),
+                                                dset['version_db1'], dset['version_db2'],
                                                 dset['file_type']))
-        fh.write('%-10s%-10s\n' % (dset['date_db_saved'], dset['time_db_saved']))
-        fh.write('%-80s\n' % dset['program'])
-        fh.write('%-10s%-10s\n' % (dset['date_file_written'], dset['time_file_written']))
+        fh.write('%-10s%-10s\n' % (_fit_string(dset['date_db_saved'], 10, 'date_db_saved', 151),
+                                     _fit_string(dset['time_db_saved'], 10, 'time_db_saved', 151)))
+        fh.write('%-80s\n' % _fit_string(dset['program'], 80, 'program', 151))
+        fh.write('%-10s%-10s\n' % (_fit_string(dset['date_file_written'], 10, 'date_file_written', 151),
+                                     _fit_string(dset['time_file_written'], 10, 'time_file_written', 151)))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')

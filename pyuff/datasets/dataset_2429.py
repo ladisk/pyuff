@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_2429(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -125,7 +125,7 @@ def _write2429(fh, dset):
                                                             dset['active_contact_set_no_for_group'],
                                                             len(dset['entity_type_code'])))
         # Record 2
-        fh.write('%-40s\n' % (dset['group_name']))
+        fh.write('%-40s\n' % (_fit_string(dset['group_name'], 40, 'group_name', 2429)))
 
         # Record 3-N
         # Write the full lines (which have 4 pairs)
