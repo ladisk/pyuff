@@ -1,5 +1,6 @@
 import pyuff
 import numpy as np
+import warnings
 
 def _opt_fields(dict, fields_dict):
     """Sets the optional fields of the dict dictionary. 
@@ -117,6 +118,24 @@ def _write_record(fh, values, formats, multiline=False, fstring=True):
         to_write = to_write + '\n'
 
     fh.write(to_write)
+
+def _fit_string(value, width, field, set_type):
+    """Returns the value as a string of at most width characters.
+
+    A longer string does not fit the fixed-width field of the record; it is
+    truncated with a warning naming the data-set and the field.
+
+    :param value: value to be written to a text field
+    :param width: width of the field (characters)
+    :param field: name of the field (key of the dataset dictionary)
+    :param set_type: data-set number
+    """
+    value = str(value)
+    if len(value) > width:
+        warnings.warn('Data-set %s: %s is longer than %i characters and is truncated to %r.'
+                      % (set_type, field, width, value[:width]), stacklevel=5)
+        value = value[:width]
+    return value
 
 def check_dict_for_none(dataset):
     dataset1 = {}

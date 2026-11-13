@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_2467(raw=False):
     """(source: https://github.com/victorsndvg/FEconv/blob/master/source/unv/module_dataset_2467.f90)"""
@@ -76,7 +76,7 @@ def _write2467(fh, dset):
                                                              group['active_contact_set_no_for_group'],
                                                              len(group['entity_type_code'])))
             # Record 2
-            fh.write('%-40s\n' % (group['group_name']))
+            fh.write('%-40s\n' % (_fit_string(group['group_name'], 40, 'group_name', 2467)))
 
             # Record 3-N
             # Write the full lines (which have 4 pairs)

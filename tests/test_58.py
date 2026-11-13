@@ -286,6 +286,25 @@ def test_write_read_func_type_0():
     np.testing.assert_array_equal(read_dataset['data'], test_data)
     np.testing.assert_array_equal(read_dataset['x'], test_x)
 
+def test_write_read_all_func_types():
+    """All function types of the format (0-27) share the same record layout."""
+    save_to_file = './data/temp58_func_types.uff'
+    if os.path.exists(save_to_file):
+        os.remove(save_to_file)
+    x = np.arange(5.)
+    data = np.array([1., -2., 3., -4., 5.]) * (1 + 1j)
+    datasets = [pyuff.prepare_58(binary=binary, func_type=func_type, rsp_node=1, rsp_dir=1, ref_node=1,
+                                 ref_dir=1, data=data, x=x, abscissa_spacing=1, abscissa_spec_data_type=18,
+                                 ordinate_spec_data_type=12, orddenom_spec_data_type=13)
+                for func_type in range(28) for binary in (0, 1)]
+    pyuff.UFF(save_to_file).write_sets(datasets, mode='add')
+    b = pyuff.UFF(save_to_file).read_sets()
+    os.remove(save_to_file)
+
+    np.testing.assert_equal([d['func_type'] for d in b], [d['func_type'] for d in datasets])
+    for d in b:
+        np.testing.assert_array_equal(d['data'], data)
+
 def test_double_uneven():
     test_double_uneven_base()
     test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0], test_x=[20.0,100,300,500])
@@ -376,6 +395,86 @@ def test_write_read_58_utf8_headers():
         np.testing.assert_string_equal(b['id3'], 'Données résultat')
         np.testing.assert_string_equal(b['rsp_ent_name'], 'Tëst')
         np.testing.assert_string_equal(b['ref_ent_name'], 'Rëf')
+
+
+def _58b_byte_count(filename):
+    """Returns the byte count from the 58b header and the number of bytes
+    between the 11 header records and the closing -1 (one data set per file)."""
+    with open(filename, 'rb') as f:
+        raw = f.read()
+    lines = raw.split(b'\n')
+    n_bytes = int(lines[1][31:43])
+    start = sum(len(line) + 1 for line in lines[:13])
+    end = raw.rindex(b'    -1')
+    return n_bytes, end - start
+
+def test_write_58b_byte_count():
+    """The 58b header holds the number of bytes of binary data:
+    points x values per point x bytes per value, abscissa included for uneven spacing.
+    The abscissa is always real single precision (4 bytes)."""
+    save_to_file = './data/temp58b_byte_count.uff'
+    real = np.array([1., -2., 3., -4., 5.])
+    cplx = real + 1j * real[::-1]
+    # data, abscissa spacing, force_double, ordinate data type, bytes per point
+    cases = [(real, 1, True, None, 8),
+             (cplx, 1, True, None, 16),
+             (real, 0, True, None, 12),
+             (cplx, 0, True, None, 20),
+             (real, 1, False, 2, 4),
+             (cplx, 1, False, 5, 8),
+             (real, 0, False, 2, 8),
+             (cplx, 0, False, 5, 12)]
+    for data, spacing, force_double, ord_data_type, bytes_per_point in cases:
+        x = np.arange(5.) if spacing else np.array([1., 2., 4., 8., 16.])
+        if os.path.exists(save_to_file):
+            os.remove(save_to_file)
+        dataset = pyuff.prepare_58(binary=1, func_type=4, rsp_node=1, rsp_dir=1, ref_node=1, ref_dir=1,
+                                   data=data, x=x, abscissa_spacing=spacing, ord_data_type=ord_data_type,
+                                   abscissa_spec_data_type=18, ordinate_spec_data_type=12,
+                                   orddenom_spec_data_type=13)
+        pyuff.UFF(save_to_file).write_sets(dataset, 'add', force_double=force_double)
+        n_bytes, n_written = _58b_byte_count(save_to_file)
+        b = pyuff.UFF(save_to_file).read_sets(0)
+        os.remove(save_to_file)
+
+        np.testing.assert_equal(n_written, len(x) * bytes_per_point)
+        np.testing.assert_equal(n_bytes, n_written)
+        np.testing.assert_array_equal(b['data'], data)
+        np.testing.assert_array_equal(b['x'], x)
+
+def test_read_58b_written_by_older_pyuff():
+    """Files written by pyuff 2.5.8 and older carry a wrong byte count for complex
+    and uneven data, and a double precision abscissa for uneven data."""
+    x_even = np.arange(5.)
+    x_uneven = np.array([1., 2., 4., 8., 16.])
+    real = np.array([1., -2., 3., -4., 5.])
+    cplx = real + 1j * real[::-1]
+    sets = pyuff.UFF('./data/58b_pyuff_2.5.8_byte_count.uff').read_sets()
+    np.testing.assert_equal([s['n_bytes'] for s in sets], [40, 40, 40, 40])
+    for b, (data, x) in zip(sets, [(real, x_even), (cplx, x_even), (real, x_uneven), (cplx, x_uneven)]):
+        np.testing.assert_array_equal(b['data'], data)
+        np.testing.assert_array_equal(b['x'], x)
+
+
+def test_write_58b_overwrite():
+    """Binary data sets written in the overwrite mode keep their header."""
+    save_to_file = './data/temp58b_overwrite.uff'
+    x = np.arange(5.)
+    data = np.array([1., -2., 3., -4., 5.])
+    datasets = [pyuff.prepare_58(binary=1, func_type=1, rsp_node=1, rsp_dir=1, ref_node=0, ref_dir=0,
+                                 data=data * (i + 1), x=x, id1='set %i' % i, abscissa_spacing=1,
+                                 abscissa_spec_data_type=17, ordinate_spec_data_type=12,
+                                 orddenom_spec_data_type=0) for i in range(2)]
+    uff = pyuff.UFF(save_to_file)
+    uff.write_sets(datasets[0], mode='overwrite')
+    uff.write_sets(datasets, mode='overwrite')
+    b = pyuff.UFF(save_to_file).read_sets()
+    os.remove(save_to_file)
+
+    np.testing.assert_equal(len(b), 2)
+    for i in range(2):
+        np.testing.assert_string_equal(b[i]['id1'], 'set %i' % i)
+        np.testing.assert_array_equal(b[i]['data'], data * (i + 1))
 
 
 if __name__ == '__main__':

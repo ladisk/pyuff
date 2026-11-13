@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 
 def get_structure_2400(raw=False):
@@ -64,10 +64,11 @@ def _write2400(fh, dset):
         fh.write('%6i\n%6i%74s\n' % (-1, 2400, ' '))
         fh.write('%12i%6i%6i%12i\n' % (dset['model_uid'], dset['entity_type'],
                                         dset['entity_subtype'], dset['version_number']))
-        fh.write('%-80s\n' % dset['entity_name'])
-        fh.write('%-80s\n' % dset['part_number'])
+        fh.write('%-80s\n' % _fit_string(dset['entity_name'], 80, 'entity_name', 2400))
+        fh.write('%-80s\n' % _fit_string(dset['part_number'], 80, 'part_number', 2400))
         fh.write('%s\n' % ''.join(['%2i' % v for v in dset['status_mask']]))
-        fh.write('%-10s%-10s%12i%12i%12i\n' % (dset['date'], dset['time'],
+        fh.write('%-10s%-10s%12i%12i%12i\n' % (_fit_string(dset['date'], 10, 'date', 2400),
+                                                 _fit_string(dset['time'], 10, 'time', 2400),
                                                  dset['idm_version_id'], dset['idm_item_id'],
                                                  dset['primary_parent_uid']))
         fh.write('%12i\n' % dset['optimization_switches'])

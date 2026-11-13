@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_82(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -57,7 +57,7 @@ def _write82(fh, dset):
         n_nodes = np.sum((dset['nodes'][1:] - dset['nodes'][:-1]) != 0) + 1
         fh.write('%6i\n%6i%74s\n' % (-1, 82, ' '))
         fh.write('%10i%10i%10i\n' % (dset['trace_num'], n_nodes, dset['color']))
-        fh.write('%-80s\n' % dset['id'])
+        fh.write('%-80s\n' % _fit_string(dset['id'], 80, 'id', 82))
         sl = 0
         n8_blocks = n_nodes // 8
         rem_lines = n_nodes % 8

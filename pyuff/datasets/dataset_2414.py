@@ -1,7 +1,7 @@
 import numpy as np
 import math as math
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_2414(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -564,13 +564,13 @@ def _write2414(fh, dset):
 
         # Write general fields
         fh.write('%10i\n' % (dset['analysis_dataset_label'])) #Loadcase number (DS2414_num)
-        fh.write('%-80s\n' % (dset['analysis_dataset_name'])) #usually with the frequency
+        fh.write('%-80s\n' % (_fit_string(dset['analysis_dataset_name'], 80, 'analysis_dataset_name', 2414))) #usually with the frequency
         fh.write('%10i\n' % (dset['dataset_location']))
-        fh.write('%-80s\n' % dset['id1'])
-        fh.write('%-80s\n' % dset['id2'])
-        fh.write('%-80s\n' % dset['id3']) #usually with the frequency
-        fh.write('%-80s\n' % dset['id4']) #usually with the loadcase
-        fh.write('%-80s\n' % dset['id5'])
+        fh.write('%-80s\n' % _fit_string(dset['id1'], 80, 'id1', 2414))
+        fh.write('%-80s\n' % _fit_string(dset['id2'], 80, 'id2', 2414))
+        fh.write('%-80s\n' % _fit_string(dset['id3'], 80, 'id3', 2414)) #usually with the frequency
+        fh.write('%-80s\n' % _fit_string(dset['id4'], 80, 'id4', 2414)) #usually with the loadcase
+        fh.write('%-80s\n' % _fit_string(dset['id5'], 80, 'id5', 2414))
 
         fh.write('%10i%10i%10i%10i%10i%10i\n' % (
                                         dset['model_type'], 

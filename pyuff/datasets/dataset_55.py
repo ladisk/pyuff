@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_55(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -401,11 +401,11 @@ def _write55(fh, dset):
             data_type = 2
         # Write strings to the file
         fh.write('%6i\n%6i%74s\n' % (-1, 55, ' '))
-        fh.write('%-80s\n' % dset['id1'])
-        fh.write('%-80s\n' % dset['id2'])
-        fh.write('%-80s\n' % dset['id3'])
-        fh.write('%-80s\n' % dset['id4'])
-        fh.write('%-80s\n' % dset['id5'])
+        fh.write('%-80s\n' % _fit_string(dset['id1'], 80, 'id1', 55))
+        fh.write('%-80s\n' % _fit_string(dset['id2'], 80, 'id2', 55))
+        fh.write('%-80s\n' % _fit_string(dset['id3'], 80, 'id3', 55))
+        fh.write('%-80s\n' % _fit_string(dset['id4'], 80, 'id4', 55))
+        fh.write('%-80s\n' % _fit_string(dset['id5'], 80, 'id5', 55))
         fh.write('%10i%10i%10i%10i%10i%10i\n' %
                     (dset['model_type'], dset['analysis_type'], dset['data_ch'],
                     dset['spec_data_type'], data_type, n_data_per_node))

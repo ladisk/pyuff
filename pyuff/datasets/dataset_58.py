@@ -3,7 +3,7 @@ import struct
 import sys
 import os
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_58(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -827,7 +827,8 @@ that takes on a binary format in the future.
 def _write58(fh, dset, mode='add', _filename=None, force_double=True):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
-        if not (dset['func_type'] in [0, 1, 2, 3, 4, 6, 9]):
+        # function types 0-27 of the format; the record layout does not depend on the type
+        if not (dset['func_type'] in range(28)):
             raise ValueError('Unsupported function type')
         # handle optional fields - only those that are not calculated
         # automatically
@@ -888,17 +889,25 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
 
         if dset['ord_data_type'] in [4, 6]: # double precision
             is_double = True
-            n_bytes = num_pts * 8
+            n_value_bytes = 8
         elif dset['ord_data_type'] in [2, 5]: # sigle precision
             is_double = False
-            n_bytes = num_pts * 4
-
-        if 'n_bytes' in dset.keys():
-            dset['n_bytes'] = n_bytes
+            n_value_bytes = 4
 
         ord_data_type = dset['ord_data_type']
 
         is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
+
+        # number of bytes of the binary data (58b): every value written, i.e. the
+        # real and imaginary part for complex data and the abscissa for uneven spacing;
+        # the abscissa is always real single precision
+        n_ord_values = 1 if is_r else 2
+        n_bytes = num_pts * n_ord_values * n_value_bytes
+        if not is_even:
+            n_bytes += num_pts * 4
+
+        if 'n_bytes' in dset.keys():
+            dset['n_bytes'] = n_bytes
 
         # handling abscissa spacing automatically
         # is_even = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
@@ -913,34 +922,39 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
             fh.write('b%6i%6i%12i%12i%6i%6i%12i%12i\n' % (bo, 2, 11, n_bytes, 0, 0, 0, 0))
         else:
             fh.write('%74s\n' % ' ')
-        fh.write('%-80s\n' % dset['id1'])
-        fh.write('%-80s\n' % dset['id2'])
-        fh.write('%-80s\n' % dset['id3'])
-        fh.write('%-80s\n' % dset['id4'])
-        fh.write('%-80s\n' % dset['id5'])
+        fh.write('%-80s\n' % _fit_string(dset['id1'], 80, 'id1', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id2'], 80, 'id2', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id3'], 80, 'id3', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id4'], 80, 'id4', 58))
+        fh.write('%-80s\n' % _fit_string(dset['id5'], 80, 'id5', 58))
         fh.write('%5i%10i%5i%10i %10s%10i%4i %10s%10i%4i\n' %
                     (dset['func_type'], dset['func_id'], dset['ver_num'], dset['load_case_id'],
-                    dset['rsp_ent_name'], dset['rsp_node'], dset['rsp_dir'], dset['ref_ent_name'],
+                    _fit_string(dset['rsp_ent_name'], 10, 'rsp_ent_name', 58), dset['rsp_node'], dset['rsp_dir'],
+                    _fit_string(dset['ref_ent_name'], 10, 'ref_ent_name', 58),
                     dset['ref_node'], dset['ref_dir']))
         fh.write('%10i%10i%10i%13.5e%13.5e%13.5e\n' % (ord_data_type, num_pts, is_even,
                                                         is_even * dset['abscissa_min'], is_even * dx,
                                                         dset['z_axis_value']))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['abscissa_spec_data_type'],
                                                     dset['abscissa_len_unit_exp'], dset['abscissa_force_unit_exp'],
-                                                    dset['abscissa_temp_unit_exp'], dset['abscissa_axis_lab'],
-                                                    dset['abscissa_axis_units_lab']))
+                                                    dset['abscissa_temp_unit_exp'],
+                                                    _fit_string(dset['abscissa_axis_lab'], 20, 'abscissa_axis_lab', 58),
+                                                    _fit_string(dset['abscissa_axis_units_lab'], 20, 'abscissa_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['ordinate_spec_data_type'],
                                                     dset['ordinate_len_unit_exp'], dset['ordinate_force_unit_exp'],
-                                                    dset['ordinate_temp_unit_exp'], dset['ordinate_axis_lab'],
-                                                    dset['ordinate_axis_units_lab']))
+                                                    dset['ordinate_temp_unit_exp'],
+                                                    _fit_string(dset['ordinate_axis_lab'], 20, 'ordinate_axis_lab', 58),
+                                                    _fit_string(dset['ordinate_axis_units_lab'], 20, 'ordinate_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['orddenom_spec_data_type'],
                                                     dset['orddenom_len_unit_exp'], dset['orddenom_force_unit_exp'],
-                                                    dset['orddenom_temp_unit_exp'], dset['orddenom_axis_lab'],
-                                                    dset['orddenom_axis_units_lab']))
+                                                    dset['orddenom_temp_unit_exp'],
+                                                    _fit_string(dset['orddenom_axis_lab'], 20, 'orddenom_axis_lab', 58),
+                                                    _fit_string(dset['orddenom_axis_units_lab'], 20, 'orddenom_axis_units_lab', 58)))
         fh.write('%10i%5i%5i%5i %-20s %-20s\n' % (dset['z_axis_spec_data_type'],
                                                     dset['z_axis_len_unit_exp'], dset['z_axis_force_unit_exp'],
-                                                    dset['z_axis_temp_unit_exp'], dset['z_axis_axis_lab'],
-                                                    dset['z_axis_axis_units_lab']))
+                                                    dset['z_axis_temp_unit_exp'],
+                                                    _fit_string(dset['z_axis_axis_lab'], 20, 'z_axis_axis_lab', 58),
+                                                    _fit_string(dset['z_axis_axis_units_lab'], 20, 'z_axis_axis_units_lab', 58)))
         if is_r:
             if is_even:
                 data = dset['data'].copy()
@@ -958,23 +972,30 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 data[0:-2:3] = dset['x']
                 data[1:-1:3] = dset['data'].real
                 data[2::3] = dset['data'].imag
-        # always write data in double precision
         if dset['binary']:
             fh.close()
-            if mode.lower() == 'overwrite':
-                fh = open(_filename, 'wb')
-            elif mode.lower() == 'add':
-                fh = open(_filename, 'ab')
-            # write data
-            if bo == 1:
-                [fh.write(struct.pack('<d', datai)) for datai in data]
+            # the header was just written to the file: append in both modes
+            fh = open(_filename, 'ab')
+            # write data in the precision given by the ordinate data type
+            if is_double:
+                value_format = 'd'
             else:
-                [fh.write(struct.pack('>d', datai)) for datai in data]
+                value_format = 'f'
+            if bo == 1:
+                byte_order = '<'
+            else:
+                byte_order = '>'
+            if is_even:
+                fh.write(data.astype(byte_order + value_format).tobytes())
+            else:
+                # uneven spacing: the abscissa is always real single precision
+                rows = np.zeros(num_pts, [('x', byte_order + 'f'),
+                                          ('y', byte_order + value_format, (n_ord_values,))])
+                rows['x'] = dset['x']
+                rows['y'] = data.reshape(num_pts, -1)[:, 1:]
+                fh.write(rows.tobytes())
             fh.close()
-            if mode.lower() == 'overwrite':
-                fh = open(_filename, 'wt', encoding='utf-8')
-            elif mode.lower() == 'add':
-                fh = open(_filename, 'at', encoding='utf-8')
+            fh = open(_filename, 'at', encoding='utf-8')
         else:
             if is_double: # write double precision
                 n4_blocks = len(data) // 4
@@ -1088,6 +1109,15 @@ def _extract58(block_data, header_only=False):
                         # single precision - 4 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 4
                         values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data[:(len(split_data) // 4)*4]), 'd')
+                    elif (dset['abscissa_spacing'] == 0) and \
+                            (len(split_data) < dset['num_pts'] * (8 + 8 * (1 if dset['ord_data_type'] == 4 else 2))):
+                        # double precision, uneven abscissa: the abscissa is real single precision
+                        # (pyuff 2.5.8 and older wrote it in double precision; those records are
+                        # longer and are read below)
+                        n_ord_values = 1 if dset['ord_data_type'] == 4 else 2
+                        rows = np.frombuffer(split_data[:dset['num_pts'] * (4 + 8 * n_ord_values)],
+                                             [('x', bo + 'f'), ('y', bo + 'd', (n_ord_values,))])
+                        values = np.column_stack((rows['x'], rows['y'])).ravel().astype('d')
                     else:
                         # double precision - 8 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 8

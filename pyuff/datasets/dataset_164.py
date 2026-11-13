@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_164(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -52,7 +52,9 @@ def _write164(fh, dset):
                                         'temp_mode': 1})
         # write strings to the file
         fh.write('%6i\n%6i%74s\n' % (-1, 164, ' '))
-        fh.write('%10i%20s%10i\n' % (dset['units_code'], dset['units_description'], dset['temp_mode']))
+        fh.write('%10i%20s%10i\n' % (dset['units_code'],
+                                       _fit_string(dset['units_description'], 20, 'units_description', 164),
+                                       dset['temp_mode']))
         str = '%25.16e%25.16e%25.16e\n%25.16e\n' % (
             dset['length'], dset['force'], dset['temp'], dset['temp_offset'])
         str = str.replace('e+', 'D+')
