@@ -257,6 +257,11 @@ class UFF:
                      This usefull for large files.         
         """
         dset = []
+        if not self.file_exists():
+            raise Exception('Cannot read from a non-existing file: ' + self._filename)
+        if not self._refreshed:
+            if not self.refresh():
+                raise Exception('Cannot read from the file: ' + self._filename)
         if setn is None:
             read_range = range(0, self._n_sets)
         else:
@@ -264,11 +269,6 @@ class UFF:
                 read_range = [setn]
             else:
                 read_range = setn
-        if not self.file_exists():
-            raise Exception('Cannot read from a non-existing file: ' + self._filename)
-        if not self._refreshed:
-            if not self.refresh():
-                raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
                 dset.append(self._read_set(ii, header_only=header_only))
@@ -324,6 +324,7 @@ class UFF:
                 self._write_set(dsets[ii], 'add', force_double=force_double)
         else:
             raise Exception('Unknown mode: ' + mode)
+        self.refresh()
 
     def _read_set(self, n, header_only=False):
         """
@@ -490,7 +491,9 @@ class UFF:
             raise  # re-raise the last exception
         else:
             fh.close()
-        self.refresh()
+        # the file has changed: its index of data-sets is rebuilt when it is
+        # needed next, not after every data-set (write_sets writes many)
+        self._refreshed = False
 
 
 if __name__ == '__main__':
