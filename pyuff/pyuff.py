@@ -225,9 +225,11 @@ class UFF:
                     si = self._block_ind[ii, 0]
                     ei = self._block_ind[ii, 1]
                     try:
-                        block_data = data[si:ei + 1].splitlines()
-                        self._set_types[ii] = int(block_data[1][0:6])
-                        if block_data[1][6].lower() == 'b':
+                        # only the second line (data-set type, 'b' for binary) is
+                        # needed; it follows the '    -1' line within 200 bytes
+                        type_line = data[si:min(si + 200, ei + 1)].splitlines()[1]
+                        self._set_types[ii] = int(type_line[0:6])
+                        if type_line[6:7].lower() == b'b':
                             self._set_formats[ii] = 1
                     except:
                         # Some non-valid blocks found; ignore the exception
@@ -257,6 +259,11 @@ class UFF:
                      This usefull for large files.         
         """
         dset = []
+        if not self.file_exists():
+            raise Exception('Cannot read from a non-existing file: ' + self._filename)
+        if not self._refreshed:
+            if not self.refresh():
+                raise Exception('Cannot read from the file: ' + self._filename)
         if setn is None:
             read_range = range(0, self._n_sets)
         else:
@@ -264,11 +271,6 @@ class UFF:
                 read_range = [setn]
             else:
                 read_range = setn
-        if not self.file_exists():
-            raise Exception('Cannot read from a non-existing file: ' + self._filename)
-        if not self._refreshed:
-            if not self.refresh():
-                raise Exception('Cannot read from the file: ' + self._filename)
         try:
             for ii in read_range:
                 dset.append(self._read_set(ii, header_only=header_only))
@@ -324,6 +326,7 @@ class UFF:
                 self._write_set(dsets[ii], 'add', force_double=force_double)
         else:
             raise Exception('Unknown mode: ' + mode)
+        self.refresh()
 
     def _read_set(self, n, header_only=False):
         """
@@ -490,7 +493,9 @@ class UFF:
             raise  # re-raise the last exception
         else:
             fh.close()
-        self.refresh()
+        # the file has changed: its index of data-sets is rebuilt when it is
+        # needed next, not after every data-set (write_sets writes many)
+        self._refreshed = False
 
 
 if __name__ == '__main__':

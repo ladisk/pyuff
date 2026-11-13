@@ -668,12 +668,10 @@ def _write2414(fh, dset):
             
             # The data and structure of Record 14 and 15 depend on the 'dataset_location'
             if dset['dataset_location'] == 1:
-                for index in range(dset['node_nums'].shape[0]):
-                    fh.write('%10i\n' % (dset['node_nums'][index]))
-                    for field in dset['data_at_node'][index]:
-                        # number of values unknown, so loop
-                        fh.write('%13.5e' % (field))
-                    fh.write('\n')
+                # the number of values may differ from node to node
+                lines = ['%10i\n' % node + '%13.5e' * len(values) % tuple(values) + '\n'
+                         for node, values in zip(dset['node_nums'], dset['data_at_node'])]
+                fh.write(''.join(lines))
                 fh.write('%6i\n' % (-1))
 
             elif dset['dataset_location'] == 2:
@@ -788,10 +786,9 @@ def _extract2414(block_data):
             split_data = split_data.splitlines()
             if dset['dataset_location'] == 1:
                 # Data at nodes
-                record14 = np.asarray([str.split() for str in split_data[0::2]], 'U')
                 # record 15 not always same number of fields, so a list of ndarray
-                record15 = [np.array([float(elem) for elem in item.split()], float) for item in split_data[1::2]]
-                dset['node_nums'] = np.array(record14[:,0].copy(), dtype=int)
+                record15 = [np.array(line.split(), float) for line in split_data[1::2]]
+                dset['node_nums'] = np.array([line.split()[0] for line in split_data[0::2]], dtype=int)
                 dset['data_at_node'] = record15
 
             elif dset['dataset_location'] == 2:

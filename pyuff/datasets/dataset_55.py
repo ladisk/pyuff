@@ -426,26 +426,21 @@ def _write55(fh, dset):
                 dset['modal_b'].real, dset['modal_b'].imag))
         else:
             raise ValueError('Unsupported analysis type')
-        n = len(dset['node_nums'])
+        # Records 14 and 15 of every node: node number, then its values
         if data_type == 2:
             # Real data
             if n_data_per_node == 3:
-                for k in range(0, n):
-                    fh.write('%10i\n' % dset['node_nums'][k])
-                    fh.write('%13.5e%13.5e%13.5e\n' % (dset['r1'][k], dset['r2'][k], dset['r3'][k]))
+                rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'])
+                fh.write(''.join('%10i\n%13.5e%13.5e%13.5e\n' % row for row in rows))
             else:
-                for k in range(0, n):
-                    fh.write('%10i\n' % dset['node_nums'][k])
-                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
-                                (dset['r1'][k], dset['r2'][k], dset['r3'][k], dset['r4'][k], dset['r5'][k],
-                                dset['r6'][k]))
+                rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'], dset['r4'], dset['r5'], dset['r6'])
+                fh.write(''.join('%10i\n%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % row for row in rows))
         elif data_type == 5:
             # Complex data; n_data_per_node is assumed being 3
-            for k in range(0, n):
-                fh.write('%10i\n' % dset['node_nums'][k])
-                fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
-                            (dset['r1'][k].real, dset['r1'][k].imag, dset['r2'][k].real, dset['r2'][k].imag,
-                            dset['r3'][k].real, dset['r3'][k].imag))
+            rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'])
+            fh.write(''.join('%10i\n%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
+                             (node, r1.real, r1.imag, r2.real, r2.imag, r3.real, r3.imag)
+                             for node, r1, r2, r3 in rows))
         else:
             raise ValueError('Unsupported data type')
         fh.write('%6i\n' % -1)
@@ -504,7 +499,9 @@ def _extract55(block_data):
             # Body
         split_data = ''.join(split_data[10:])
         node_nums = np.asarray([int(str) for str in split_data.splitlines(True)[::2]])
-        node_vals = np.array([[str[i*13:(i+1)*13] for i in range(len(str)//13) ] for str in split_data.splitlines(True)[1::2]], 'd').flatten()
+        # values are in fields of 13 characters, which may touch each other
+        value_lines = split_data.splitlines()[1::2]
+        node_vals = np.array([line[i:i + 13] for line in value_lines for i in range(0, len(line) - 12, 13)], 'd')
         if dset['data_type'] == 2:
             # real data
             if dset['n_data_per_node'] == 3:
