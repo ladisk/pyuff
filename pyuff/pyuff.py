@@ -225,9 +225,11 @@ class UFF:
                     si = self._block_ind[ii, 0]
                     ei = self._block_ind[ii, 1]
                     try:
-                        block_data = data[si:ei + 1].splitlines()
-                        self._set_types[ii] = int(block_data[1][0:6])
-                        if block_data[1][6].lower() == 'b':
+                        # only the second line (data-set type, 'b' for binary) is
+                        # needed; it follows the '    -1' line within 200 bytes
+                        type_line = data[si:min(si + 200, ei + 1)].splitlines()[1]
+                        self._set_types[ii] = int(type_line[0:6])
+                        if type_line[6:7].lower() == b'b':
                             self._set_formats[ii] = 1
                     except:
                         # Some non-valid blocks found; ignore the exception

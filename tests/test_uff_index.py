@@ -37,3 +37,11 @@ def test_read_after_writing_single_sets(tmp_path):
     assert [dset['rsp_node'] for dset in sets] == [1, 2, 3]
     assert uff.read_sets(2)['rsp_node'] == 3
 
+
+def test_set_formats(tmp_path):
+    uff = pyuff.UFF(tmp_path / 'frf.uff')
+    uff.write_sets([_prepare_frf(1, binary=0), _prepare_frf(2, binary=1), _prepare_frf(3, binary=0)], 'add')
+
+    np.testing.assert_array_equal(uff.get_set_formats(), [0, 1, 0])
+    np.testing.assert_array_equal(pyuff.UFF(tmp_path / 'frf.uff').get_set_formats(), [0, 1, 0])
+    np.testing.assert_array_equal(pyuff.UFF('./data/Sample_UFF58b_bin.uff').get_set_formats(), [1])
