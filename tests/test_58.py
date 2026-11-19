@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import sys, os
 my_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, my_path + '/../')
@@ -475,6 +476,25 @@ def test_write_58b_overwrite():
     for i in range(2):
         np.testing.assert_string_equal(b[i]['id1'], 'set %i' % i)
         np.testing.assert_array_equal(b[i]['data'], data * (i + 1))
+
+
+@pytest.mark.parametrize('binary', [0, 1])
+@pytest.mark.parametrize('abscissa_spacing', [0, 1])
+@pytest.mark.parametrize('data', [np.array([2.5]), np.array([1.0 + 1.0j])])
+def test_write_read_58_single_point(tmp_path, binary, abscissa_spacing, data):
+    # one point is written as even, with a unit abscissa increment
+    dset = pyuff.prepare_58(binary=binary, func_type=4, rsp_node=1, rsp_dir=1, ref_node=1, ref_dir=3,
+                            ord_data_type=6 if np.iscomplexobj(data) else 4, abscissa_spacing=abscissa_spacing,
+                            x=np.array([10.0]), data=data, id1='one point', rsp_ent_name='pt', ref_ent_name='pt',
+                            abscissa_spec_data_type=18, ordinate_spec_data_type=12, orddenom_spec_data_type=13)
+    path = tmp_path / 'one.uff'
+    pyuff.UFF(path).write_sets(dset, 'overwrite')
+    b = pyuff.UFF(path).read_sets(0)
+
+    np.testing.assert_array_equal(b['x'], [10.0])
+    np.testing.assert_array_equal(b['data'], data)
+    assert b['abscissa_spacing'] == 1
+    assert b['abscissa_inc'] == 1.0
 
 
 if __name__ == '__main__':

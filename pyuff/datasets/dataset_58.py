@@ -897,6 +897,9 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         ord_data_type = dset['ord_data_type']
 
         is_even = bool(dset['abscissa_spacing'])  # handling even/uneven abscissa spacing manually
+        if len(dset['x']) == 1:
+            # a single point is written as even, with a unit abscissa increment
+            is_even = True
 
         # number of bytes of the binary data (58b): every value written, i.e. the
         # real and imaginary part for complex data and the abscissa for uneven spacing;
@@ -912,7 +915,7 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
         # handling abscissa spacing automatically
         # is_even = len( set( [ dset['x'][ii]-dset['x'][ii-1] for ii in range(1,len(dset['x'])) ] ) ) == 1
         dset['abscissa_min'] = dset['x'][0]
-        dx = dset['x'][1] - dset['x'][0]
+        dx = dset['x'][1] - dset['x'][0] if len(dset['x']) > 1 else 1
         fh.write('%6i\n%6i' % (-1, 58))
         if dset['binary']:
             if sys.byteorder == 'little':
