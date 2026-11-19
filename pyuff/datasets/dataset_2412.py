@@ -71,12 +71,28 @@ def _write2412(fh, dset):
                         elem['beam_foreend_cross'],
                         elem['beam_aftend_cross']
                     ))
-                for ii in elem['nodes_nums']:
-                    fh.write('%10i' % ii)
-                fh.write('\n')
+                # Node labels, at most 8 in a line (format 8I10)
+                nodes = list(elem['nodes_nums'])
+                for j in range(0, len(nodes), 8):
+                    fh.write('%10i' * len(nodes[j:j + 8]) % tuple(nodes[j:j + 8]) + '\n')
         fh.write('%6i\n' % -1)
     except:
         raise Exception('Error writing data-set #2412')
+
+
+def _read_node_labels(split_data, i, num_nodes):
+    """Returns the node labels of an element, which start at line i, and the
+    index of the line after them.
+
+    The labels are in lines of at most 8 (format 8I10); files written by
+    pyuff 2.6.1 and older have all labels in one line.
+    """
+    nodes = [int(e) for e in split_data[i]]
+    i += 1
+    while len(nodes) < num_nodes:
+        nodes += [int(e) for e in split_data[i]]
+        i += 1
+    return nodes, i
 
 
 def _extract2412(block_data):
@@ -106,12 +122,10 @@ def _extract2412(block_data):
                 dict_tmp['beam_orientation'] = int(split_data[i+1][0])
                 dict_tmp['beam_foreend_cross'] = int(split_data[i + 1][1])
                 dict_tmp['beam_aftend_cross'] = int(split_data[i + 1][2])
-                dict_tmp['nodes_nums'] = [int(e) for e in split_data[i+2]]
-                i += 3
+                dict_tmp['nodes_nums'], i = _read_node_labels(split_data, i + 2, dict_tmp['num_nodes'])
             else:
-                # element is no rod and covers 2 lines
-                dict_tmp['nodes_nums'] = [int(e) for e in split_data[i+1]]
-                i += 2
+                # element is no rod: record 1 is followed by the node labels
+                dict_tmp['nodes_nums'], i = _read_node_labels(split_data, i + 1, dict_tmp['num_nodes'])
             desc = dict_tmp['fe_descriptor']
             if not desc in dset:
                 dset[desc] = []
