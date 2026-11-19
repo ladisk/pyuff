@@ -104,48 +104,43 @@ Records 1 thru n are repeated for each group in the model.
         print(out)   
 def _write2429(fh, dset):
     try:
-        dict = {'active_constraint_set_no_for_group': 0,
-                'active_restraint_set_no_for_group': 0,
-                'active_load_set_no_for_group': 0,
-                'active_dof_set_no_for_group': 0,
-                'active_temperature_set_no_for_group': 0,
-                'active_contact_set_no_for_group': 0 }
-
-        dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i\n' % (-1, 2429))
-
-        # Record 1
-        # Field 8 (last field) contains the number or entities in the group
-        fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['group_number'], 
-                                                            dset['active_constraint_set_no_for_group'],
-                                                            dset['active_restraint_set_no_for_group'],
-                                                            dset['active_load_set_no_for_group'],
-                                                            dset['active_dof_set_no_for_group'],
-                                                            dset['active_temperature_set_no_for_group'],
-                                                            dset['active_contact_set_no_for_group'],
-                                                            len(dset['entity_type_code'])))
-        # Record 2
-        fh.write('%-40s\n' % (_fit_string(dset['group_name'], 40, 'group_name', 2429)))
-
-        # Record 3-N
-        # Write the full lines (which have 4 pairs)
-        for i in range(len(dset['entity_type_code']) // 4):
-            fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4],
-                                                                dset['entity_type_code'][i * 4 + 1], dset['entity_tag'][i * 4 + 1],
-                                                                dset['entity_type_code'][i * 4 + 2], dset['entity_tag'][i * 4 + 2],
-                                                                dset['entity_type_code'][i * 4 + 3], dset['entity_tag'][i * 4 + 3]))
-        # Write the last line
-        for i in range(len(dset['entity_type_code']) % 4):
-            # don't write the line break just yet
-            fh.write('%10i%10i' % (dset['entity_type_code'][i * 4], dset['entity_tag'][i * 4]))
-        # Write the missing line break, but only if a non full last line has been written
-        if (len(dset['entity_type_code']) % 4 != 0):
-            fh.write('\n')
-
+        # The groups are in dset['groups'], as returned by the reader and by
+        # prepare_2429; a single group at the top level is accepted as well
+        groups = dset['groups'] if 'groups' in dset else [dset]
+        for group in groups:
+            _write_group(fh, group)
         fh.write('%6i\n' % -1)
 
     except:
         raise Exception('Error writing data-set #2429')
+
+
+def _write_group(fh, group):
+    """Writes records 1 to N of one permanent group."""
+    group = _opt_fields(group, {'active_constraint_set_no_for_group': 0,
+                                'active_restraint_set_no_for_group': 0,
+                                'active_load_set_no_for_group': 0,
+                                'active_dof_set_no_for_group': 0,
+                                'active_temperature_set_no_for_group': 0,
+                                'active_contact_set_no_for_group': 0})
+    # Record 1
+    # Field 8 (last field) contains the number or entities in the group
+    fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (group['group_number'],
+                                                     group['active_constraint_set_no_for_group'],
+                                                     group['active_restraint_set_no_for_group'],
+                                                     group['active_load_set_no_for_group'],
+                                                     group['active_dof_set_no_for_group'],
+                                                     group['active_temperature_set_no_for_group'],
+                                                     group['active_contact_set_no_for_group'],
+                                                     len(group['entity_type_code'])))
+    # Record 2
+    fh.write('%-40s\n' % (_fit_string(group['group_name'], 40, 'group_name', 2429)))
+
+    # Record 3-N: pairs of entity type code and tag, at most 4 pairs in a line
+    pairs = [value for pair in zip(group['entity_type_code'], group['entity_tag']) for value in pair]
+    for i in range(0, len(pairs), 8):
+        fh.write('%10i' * len(pairs[i:i + 8]) % tuple(pairs[i:i + 8]) + '\n')
 
 
 def _extract2429(block_data):
