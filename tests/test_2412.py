@@ -78,3 +78,14 @@ def test_prepare_2412():
 if __name__ == '__main__':
     # test_read_2412()
     test_read_write_2412_mixed()
+
+def test_read_write_2412_beams(tmp_path):
+    # Linear beams (fe descriptor 21) have the beam record before the nodes
+    a = pyuff.UFF('./data/simcenter_exported_result.uff').read_sets(2)
+    path = tmp_path / 'beams.uff'
+    pyuff.UFF(path).write_sets(a, 'add')
+    b = pyuff.UFF(path).read_sets(0)
+
+    for desc in (21, 91, 94):
+        assert b[desc] == a[desc]
+    assert b[21][0]['beam_orientation'] == a[21][0]['beam_orientation']

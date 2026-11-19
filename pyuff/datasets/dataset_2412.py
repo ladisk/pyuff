@@ -3,6 +3,10 @@ import itertools
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
 
+# FE descriptor ids of beam elements (rod, linear, tapered, curved and parabolic
+# beam); their record 2 holds the orientation node and the cross sections
+BEAM_DESCRIPTORS = {11, 21, 22, 23, 24}
+
 def get_structure_2412(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
     out = """
@@ -60,8 +64,8 @@ def _write2412(fh, dset):
                     elem['color'],
                     elem['num_nodes'],
                 ))
-                if elem['fe_descriptor'] == 11:
-                # Rods have to be written in 3 lines - ad additional line here
+                if elem['fe_descriptor'] in BEAM_DESCRIPTORS:
+                    # Beam elements have an additional line before the nodes
                     fh.write('%10i%10i%10i\n' % (
                         elem['beam_orientation'],
                         elem['beam_foreend_cross'],
@@ -80,8 +84,6 @@ def _extract2412(block_data):
     dset = {'type': 2412}
     # Define dictionary of possible elements types for legacy interface
     elt_type_dict = {41: 'triangle', 44: 'quad'}
-    # Elements that are seen as rods and read as 3 lines
-    rods_dict = {11, 21, 22, 23, 24}
 
     # Read data
     try:
@@ -99,7 +101,7 @@ def _extract2412(block_data):
             dict_tmp['mat_table'] = int(line[3])
             dict_tmp['color'] = int(line[4])
             dict_tmp['num_nodes'] = int(line[5])
-            if dict_tmp['fe_descriptor'] in rods_dict:
+            if dict_tmp['fe_descriptor'] in BEAM_DESCRIPTORS:
                 # element is a rod and covers 3 lines
                 dict_tmp['beam_orientation'] = int(split_data[i+1][0])
                 dict_tmp['beam_foreend_cross'] = int(split_data[i + 1][1])
