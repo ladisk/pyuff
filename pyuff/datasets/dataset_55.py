@@ -515,12 +515,13 @@ def _split_values(lines, double):
     """Returns the values in record 10 lines as strings.
 
     Single precision values are in fields of 13 characters, which may touch
-    each other; double precision values are separated by spaces and may use
-    the Fortran exponent D.
+    each other; spaces that fill a line up to 80 characters are ignored.
+    Double precision values are separated by spaces and may use the Fortran
+    exponent D.
     """
     if double:
         return ' '.join(lines).replace('D', 'E').replace('d', 'e').split()
-    return [line[i:i + 13] for line in lines for i in range(0, len(line) - 12, 13)]
+    return [line[i:i + 13] for line in lines for i in range(0, len(line.rstrip()) - 12, 13)]
 
 
 def _read_node_values(lines, n_values, double):

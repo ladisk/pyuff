@@ -261,6 +261,14 @@ def test_read_55_one_value_per_node(tmp_path):
     assert 'r2' not in dset
 
 
+def test_read_55_lines_filled_to_80_characters(tmp_path):
+    # e.g. written by SDynPy: every line is filled with spaces up to 80 characters
+    text = _header_55(2, 2, 3) + '%-80s\n%-80s\n' % ('%10i' % 1, '%13.5e%13.5e%13.5e' % (1., 2., 3.)) + '    -1\n'
+    dset = pyuff.UFF(_write_text(tmp_path / 'filled.unv', text)).read_sets(0)
+
+    np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], [[1.], [2.], [3.]])
+
+
 def test_read_55_double_precision(tmp_path):
     # real, double precision (4E20.12, Fortran exponent D)
     text = (_header_55(2, 4, 3) + '%10i\n%s\n' % (7, '  1.234567890123D+00 -2.000000000000D-01  3.000000000000D+02')
