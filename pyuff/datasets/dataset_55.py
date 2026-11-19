@@ -388,17 +388,20 @@ def _write55(fh, dset):
         else:
             # unsupported analysis type
             raise ValueError('Error writing data-set #55: unsupported analysis type')
-        # Some additional checking
-        data_type = 2
-        #             if dset.has_key('r4') and dset.has_key('r5') and dset.has_key('r6'):
-        if ('r4' in dset) and ('r5' in dset) and ('r6' in dset):
-            n_data_per_node = 6
+        # Response arrays r1, r2, ... give the number of data values per node
+        responses = []
+        while dset.get('r%i' % (len(responses) + 1)) is not None:
+            responses.append(np.asarray(dset['r%i' % (len(responses) + 1)]))
+        if not responses:
+            raise KeyError('r1')
+        n_data_per_node = len(responses)
+        complex_data = any(np.iscomplexobj(r) for r in responses)
+        # Data type 4 or 6 selects double precision
+        double = dset.get('data_type') in (4, 6)
+        if complex_data:
+            data_type = 6 if double else 5
         else:
-            n_data_per_node = 3
-        if np.iscomplexobj(dset['r1']):
-            data_type = 5
-        else:
-            data_type = 2
+            data_type = 4 if double else 2
         # Write strings to the file
         fh.write('%6i\n%6i%74s\n' % (-1, 55, ' '))
         fh.write('%-80s\n' % _fit_string(dset['id1'], 80, 'id1', 55))
@@ -426,28 +429,22 @@ def _write55(fh, dset):
                 dset['modal_b'].real, dset['modal_b'].imag))
         else:
             raise ValueError('Unsupported analysis type')
-        # Records 14 and 15 of every node: node number, then its values
-        if data_type == 2:
-            # Real data
-            if n_data_per_node == 3:
-                rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'])
-                fh.write(''.join('%10i\n%13.5e%13.5e%13.5e\n' % row for row in rows))
-            else:
-                rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'], dset['r4'], dset['r5'], dset['r6'])
-                fh.write(''.join('%10i\n%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % row for row in rows))
-        elif data_type == 5:
-            # Complex data; n_data_per_node is assumed being 3
-            rows = zip(dset['node_nums'], dset['r1'], dset['r2'], dset['r3'])
-            fh.write(''.join('%10i\n%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' %
-                             (node, r1.real, r1.imag, r2.real, r2.imag, r3.real, r3.imag)
-                             for node, r1, r2, r3 in rows))
+        # Records 9 and 10 of every node: node number, then its values
+        # (for complex data the real and imaginary part of each value)
+        if complex_data:
+            columns = [part for r in responses for part in (r.real, r.imag)]
         else:
-            raise ValueError('Unsupported data type')
+            columns = responses
+        field, per_line = ('%20.11e', 4) if double else ('%13.5e', 6)
+        n_values = len(columns)
+        value_lines = [field * min(per_line, n_values - i) for i in range(0, n_values, per_line)]
+        fmt = '%10i\n' + '\n'.join(value_lines) + '\n'
+        fh.write(''.join(fmt % row for row in zip(dset['node_nums'], *columns)))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')
-    except:
-        raise Exception('Error writing data-set #55')
+    except Exception as msg:
+        raise Exception('Error writing data-set #55') from msg
 
 
 def _extract55(block_data):
@@ -496,43 +493,58 @@ def _extract55(block_data):
                                                 ['', '', 'load_case', 'freq_step_n', '', '', '', '']))
             dset.update(_parse_header_line(split_data[9], 1, [13, 13, 13, 13, 13, 13], [3, -1, -1, -1, -1, -1],
                                                 ['freq', '', '', '', '', '']))
-            # Body
-        split_data = ''.join(split_data[10:])
-        node_nums = np.asarray([int(str) for str in split_data.splitlines(True)[::2]])
-        # values are in fields of 13 characters, which may touch each other
-        value_lines = split_data.splitlines()[1::2]
-        node_vals = np.array([line[i:i + 13] for line in value_lines for i in range(0, len(line) - 12, 13)], 'd')
-        if dset['data_type'] == 2:
-            # real data
-            if dset['n_data_per_node'] == 3:
-                dset['node_nums'] = node_nums.copy()
-                dset['r1'] = node_vals[0::3].copy()
-                dset['r2'] = node_vals[1::3].copy()
-                dset['r3'] = node_vals[2::3].copy()
+        # Records 9 and 10 of every node: node number, then its values
+        if dset['data_type'] not in (2, 4, 5, 6):
+            raise ValueError('data type %i is not supported' % dset['data_type'])
+        complex_data = dset['data_type'] in (5, 6)
+        double = dset['data_type'] in (4, 6)
+        n_data_per_node = dset['n_data_per_node']
+        n_values = n_data_per_node * (2 if complex_data else 1)
+        dset['node_nums'], values = _read_node_values(''.join(split_data[10:]).splitlines(), n_values, double)
+        for i in range(n_data_per_node):
+            if complex_data:
+                dset['r%i' % (i + 1)] = values[:, 2 * i] + 1.j * values[:, 2 * i + 1]
             else:
-                dset['node_nums'] = node_nums.copy()
-                dset['r1'] = node_vals[0::6].copy()
-                dset['r2'] = node_vals[1::6].copy()
-                dset['r3'] = node_vals[2::6].copy()
-                dset['r4'] = node_vals[3::6].copy()
-                dset['r5'] = node_vals[4::6].copy()
-                dset['r6'] = node_vals[5::6].copy()
-        elif dset['data_type'] == 5:
-            # complex data
-            if dset['n_data_per_node'] == 3:
-                dset['node_nums'] = node_nums.copy()
-                dset['r1'] = node_vals[0::6].copy() + 1.j * node_vals[1::6].copy()
-                dset['r2'] = node_vals[2::6].copy() + 1.j * node_vals[3::6].copy()
-                dset['r3'] = node_vals[4::6].copy() + 1.j * node_vals[5::6].copy()
-            else:
-                raise Exception('Cannot handle 6 points per node and complex data when reading data-set #55')
-        else:
-            raise Exception('Error reading data-set #55')
-    except:
-        raise Exception('Error reading data-set #55')
-    del node_nums
-    del node_vals
+                dset['r%i' % (i + 1)] = values[:, i].copy()
+    except Exception as msg:
+        raise Exception('Error reading data-set #55') from msg
     return dset
+
+
+def _split_values(lines, double):
+    """Returns the values in record 10 lines as strings.
+
+    Single precision values are in fields of 13 characters, which may touch
+    each other; double precision values are separated by spaces and may use
+    the Fortran exponent D.
+    """
+    if double:
+        return ' '.join(lines).replace('D', 'E').replace('d', 'e').split()
+    return [line[i:i + 13] for line in lines for i in range(0, len(line) - 12, 13)]
+
+
+def _read_node_values(lines, n_values, double):
+    """Returns the node numbers and an array with n_values values of each node.
+
+    Every node has a line with its number (record 9), followed by as many
+    lines of values (record 10) as are needed for n_values values.
+    """
+    if n_values < 1:
+        raise ValueError('number of data values per node must be at least 1')
+    # Lines of one node: its number and the value lines that follow it
+    lines_per_node = 1
+    n_found = 0
+    while n_found < n_values and lines_per_node < len(lines):
+        n_found += len(_split_values([lines[lines_per_node]], double))
+        lines_per_node += 1
+    node_nums = np.array([int(line) for line in lines[::lines_per_node]], dtype=int)
+    value_lines = lines.copy()
+    del value_lines[::lines_per_node]
+    values = np.array(_split_values(value_lines, double), 'd')
+    if len(lines) % lines_per_node or values.size != len(node_nums) * n_values:
+        raise ValueError('expected %i values at each of the %i nodes, found %i values in total'
+                         % (n_values, len(node_nums), values.size))
+    return node_nums, values.reshape(len(node_nums), n_values)
 
 
 def prepare_55(
@@ -580,8 +592,10 @@ def prepare_55(
     :param analysis_type: R6 F2, Analysis type; currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported
     :param data_ch: R6 F3, Data characteristic number
     :param spec_data_type: R6 F4, Specific data type
-    :param data_type: R6 F5,  Data type, ignored
-    :param n_data_per_node: R6 F6, Number of data values per node, ignored
+    :param data_type: R6 F5, Data type; real (2 or 4) or complex (5 or 6) follows from the
+        response arrays; 4 or 6 writes the values in double precision, otherwise in single precision
+    :param n_data_per_node: R6 F6, Number of data values per node, ignored; it is the number of
+        response arrays given (r1; r1 to r3; r1 to r6)
 
     R7 and R8 are analysis type specific:
 
@@ -665,8 +679,8 @@ def prepare_55(
         raise ValueError('data_ch can be: 0,1,2,4,5')
     if spec_data_type not in np.arange(19) and spec_data_type != None:
         raise ValueError('spec_data_type must be integer between 0 and 18')
-    if data_type not in (2, 5, None):
-        raise ValueError('data_type can be 2:Real or 5:Complex')
+    if data_type not in (2, 4, 5, 6, None):
+        raise ValueError('data_type can be 2:Real, 4:Real double precision, 5:Complex or 6:Complex double precision')
     if np.array(n_data_per_node).dtype != int and n_data_per_node != None:
         raise TypeError('n_data_per_node must be integers')
     if not np.issubdtype(np.array(r1).dtype, np.number) and r1 != None:
