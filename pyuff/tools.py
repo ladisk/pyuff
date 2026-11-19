@@ -3,17 +3,18 @@ import numpy as np
 import warnings
 
 def _opt_fields(dict, fields_dict):
-    """Sets the optional fields of the dict dictionary. 
-    
-    Optionally fields are given in fields_dict dictionary.
-    
+    """Sets the optional fields of the dict dictionary.
+
+    Optionally fields are given in fields_dict dictionary. A field that is
+    missing or None (e.g. from a prepare function with return_full_dict=True)
+    gets its default value.
+
     :param dict: dictionary to be updated
     :param fields_dict: dictionary with default values
     """
 
     for key in fields_dict:
-        #             if not dict.has_key(key):
-        if not key in dict:
+        if dict.get(key) is None:
             dict.update({key: fields_dict[key]})
     return dict
 
