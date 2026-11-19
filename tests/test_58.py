@@ -1,3 +1,6 @@
+import gc
+import warnings
+
 import numpy as np
 import pytest
 import sys, os
@@ -503,3 +506,19 @@ if __name__ == '__main__':
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()
+
+@pytest.mark.parametrize('abscissa_spacing', [0, 1])
+def test_write_58b_closes_the_file(tmp_path, abscissa_spacing):
+    dset = pyuff.prepare_58(binary=1, func_type=4, rsp_node=1, rsp_dir=1, ref_node=1, ref_dir=1,
+                            data=np.ones(10) + 0j, x=np.arange(10.), id1='id1', rsp_ent_name='n', ref_ent_name='n',
+                            abscissa_spacing=abscissa_spacing, abscissa_spec_data_type=18,
+                            ordinate_spec_data_type=12, orddenom_spec_data_type=13)
+    path = tmp_path / 'b.uff'
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter('always', ResourceWarning)
+        pyuff.UFF(path).write_sets([dset, dset], 'overwrite')
+        gc.collect()
+    assert not [w for w in caught if issubclass(w.category, ResourceWarning)]
+    with open(path, 'rb') as fh:
+        assert fh.read().endswith(b'    -1\n')
+    assert len(pyuff.UFF(path).read_sets()) == 2
