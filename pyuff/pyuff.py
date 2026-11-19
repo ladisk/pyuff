@@ -278,7 +278,7 @@ class UFF:
             if hasattr(msg, 'value'):
                 raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
             else:
-                raise Exception('Error when reading data-set(s).')
+                raise Exception('Error when reading data-set(s).') from msg
         if len(dset) == 1:
             dset = dset[0]
         return dset
