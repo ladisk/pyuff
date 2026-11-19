@@ -609,6 +609,10 @@ def prepare_55(
     :param spec_data_type: R6 F4, Specific data type
     :param data_type: R6 F5, Data type; real (2 or 4) or complex (5 or 6) follows from the
         response arrays; 4 or 6 writes the values in double precision, otherwise in single precision
+        (6E13.5). Double precision is not part of the data-set 55 specification, which knows only data
+        types 2 and 5; the values are written as 4E20.12, as in data-set 58, and some readers (e.g.
+        SDynPy) do not read them. A data-set read from a double precision file keeps data type 4 or 6
+        and is therefore written in double precision.
     :param n_data_per_node: R6 F6, Number of data values per node, ignored; it is the number of
         response arrays given (r1; r1 to r3; r1 to r6)
 
