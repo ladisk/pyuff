@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
@@ -498,9 +500,21 @@ def _extract55(block_data):
             raise ValueError('data type %i is not supported' % dset['data_type'])
         complex_data = dset['data_type'] in (5, 6)
         double = dset['data_type'] in (4, 6)
+        lines = ''.join(split_data[10:]).splitlines()
         n_data_per_node = dset['n_data_per_node']
-        n_values = n_data_per_node * (2 if complex_data else 1)
-        dset['node_nums'], values = _read_node_values(''.join(split_data[10:]).splitlines(), n_values, double)
+        try:
+            dset['node_nums'], values = _read_node_values(lines, n_data_per_node * (2 if complex_data else 1), double)
+        except ValueError:
+            # Some writers give a wrong number of values per node in record 6;
+            # the data characteristic implies the number (note 7 of the specification)
+            n_implied = {1: 1, 2: 3, 3: 6, 4: 6, 5: 9}.get(dset['data_ch'])
+            if n_implied in (None, n_data_per_node):
+                raise
+            dset['node_nums'], values = _read_node_values(lines, n_implied * (2 if complex_data else 1), double)
+            warnings.warn('Data-set 55: record 6 gives %i values per node, but the data has %i values per node, '
+                          'as implied by the data characteristic %i; %i values are read.'
+                          % (n_data_per_node, n_implied, dset['data_ch'], n_implied), stacklevel=4)
+            n_data_per_node = dset['n_data_per_node'] = n_implied
         for i in range(n_data_per_node):
             if complex_data:
                 dset['r%i' % (i + 1)] = values[:, 2 * i] + 1.j * values[:, 2 * i + 1]

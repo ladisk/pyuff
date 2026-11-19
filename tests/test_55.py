@@ -269,6 +269,17 @@ def test_read_55_lines_filled_to_80_characters(tmp_path):
     np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], [[1.], [2.], [3.]])
 
 
+def test_read_55_count_from_data_characteristic(tmp_path):
+    # e.g. written by SDynPy: 3 complex values per node, but record 6 gives 1 value per node
+    values = np.arange(1, 7) / 4
+    text = _header_55(2, 5, 1) + '%10i\n' % 1 + '%13.5e' * 6 % tuple(values) + '\n' + '    -1\n'
+    with pytest.warns(UserWarning, match='record 6 gives 1 values per node'):
+        dset = pyuff.UFF(_write_text(tmp_path / 'count.unv', text)).read_sets(0)
+
+    assert dset['n_data_per_node'] == 3
+    np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], (values[0::2] + 1j * values[1::2])[:, None])
+
+
 def test_read_55_double_precision(tmp_path):
     # real, double precision (4E20.12, Fortran exponent D)
     text = (_header_55(2, 4, 3) + '%10i\n%s\n' % (7, '  1.234567890123D+00 -2.000000000000D-01  3.000000000000D+02')
