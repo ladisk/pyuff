@@ -824,7 +824,7 @@ that takes on a binary format in the future.
     else:
         print(out)   
 
-def _write58(fh, dset, mode='add', _filename=None, force_double=True):
+def _write58(fh, dset, mode='add', force_double=True):
     """Writes function at nodal DOF - data-set 58 - to an open file fh."""
     try:
         # function types 0-27 of the format; the record layout does not depend on the type
@@ -973,9 +973,8 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
                 data[1:-1:3] = dset['data'].real
                 data[2::3] = dset['data'].imag
         if dset['binary']:
-            fh.close()
-            # the header was just written to the file: append in both modes
-            fh = open(_filename, 'ab')
+            # the binary data follow the text header in the same file
+            fh.flush()
             # write data in the precision given by the ordinate data type
             if is_double:
                 value_format = 'd'
@@ -986,16 +985,14 @@ def _write58(fh, dset, mode='add', _filename=None, force_double=True):
             else:
                 byte_order = '>'
             if is_even:
-                fh.write(data.astype(byte_order + value_format).tobytes())
+                fh.buffer.write(data.astype(byte_order + value_format).tobytes())
             else:
                 # uneven spacing: the abscissa is always real single precision
                 rows = np.zeros(num_pts, [('x', byte_order + 'f'),
                                           ('y', byte_order + value_format, (n_ord_values,))])
                 rows['x'] = dset['x']
                 rows['y'] = data.reshape(num_pts, -1)[:, 1:]
-                fh.write(rows.tobytes())
-            fh.close()
-            fh = open(_filename, 'at', encoding='utf-8')
+                fh.buffer.write(rows.tobytes())
         else:
             if is_double: # write double precision
                 n4_blocks = len(data) // 4

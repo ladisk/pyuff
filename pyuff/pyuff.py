@@ -462,7 +462,7 @@ class UFF:
             elif set_type == 55:
                 _write55(fh, dset)
             elif set_type == 58:
-                _write58(fh, dset, mode, _filename=self._filename, force_double=force_double)
+                _write58(fh, dset, mode, force_double=force_double)
             elif set_type == 82:
                 _write82(fh, dset)
             elif set_type == 151:
