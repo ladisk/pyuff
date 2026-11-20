@@ -48,19 +48,17 @@ the response degree of freedom, ``ref_node`` and ``ref_dir`` the reference (exci
 
 .. code-block:: python
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
     for frf in frfs:
         label = f"response {frf['rsp_node']}, reference {frf['ref_node']}"
-        ax1.semilogy(frf['x'], np.abs(frf['data']), label=label)
-        ax2.plot(frf['x'], np.angle(frf['data'], deg=True))
-    ax1.set_ylabel('|FRF|')
-    ax2.set_ylabel('Phase [°]')
-    ax2.set_xlabel('Frequency [Hz]')
-    ax1.legend()
+        plt.semilogy(frf['x'], np.abs(frf['data']), label=label)
+    plt.xlim(0, 2000)
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('|FRF|')
+    plt.legend()
     plt.show()
 
 .. image:: images/beam_frfs.png
-    :alt: Magnitude and phase of the three FRFs in beam.uff
+    :alt: Magnitude of the three FRFs in beam.uff, up to 2000 Hz
 
 To read only the description of large data-sets 58, without their values, use
 ``read_sets(header_only=True)``.

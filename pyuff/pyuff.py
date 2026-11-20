@@ -68,7 +68,7 @@ class UFF:
     """
     A universal file (UFF/UNV), for reading and writing its data-sets.
 
-    A universal file is a text file of data-sets, each between two lines ``    -1``. Each
+    A universal file is a text file of data-sets, each between two lines with ``-1``. Each
     data-set is read into a dictionary: its ``type`` key is the data-set number (e.g. 58)
     and the other keys are the fields of the data-set. Numerical data are NumPy arrays.
 

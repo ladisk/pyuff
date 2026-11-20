@@ -36,7 +36,7 @@ Contents
 --------
 
 .. toctree::
-    :maxdepth: 2
+    :hidden:
 
     showcase
     conventions
