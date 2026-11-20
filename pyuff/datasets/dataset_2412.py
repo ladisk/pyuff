@@ -161,39 +161,90 @@ def prepare_2412(
         beam_foreend_cross=None,
         beam_aftend_cross=None,
         return_full_dict=False):
-    """Name: Elements
+    """Prepare one element of data-set 2412 (elements) for writing.
 
-    R-Record, F-Field
+    Data-set 2412 holds the finite elements of a model; in modal testing it is used to draw the
+    mesh that connects the nodes of data-set 2411 (lines and surfaces between the measurement
+    points). Each element has a label, an FE descriptor id (the element type), property and
+    material table numbers, a color and the labels of its nodes.
 
-    :param element_nums: R1 F1, List of n element numbers
-    :param fe_descriptor: R1 F2, Fe descriptor id
-    :param phys_table: R1 F3, Physical property table number
-    :param mat_table: R1 F4, Material property table number
-    :param color: R1 F5, Color, optional
-    :param num_nodes: R1 F6, Number of nodes on element
-    :param nodes_nums: R2 F1 (R3 FOR RODS), Node labels defining element
-    :param beam_orientation: R2 F1 FOR RODS ONLY, beam orientation node number
-    :param beam_foreend_cross: R2 F2 FOR RODS ONLY, beam fore-end cross section number
-    :param beam_aftend_cross: R2 F3 FOR RODS ONLY, beam aft-end cross section number
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    This function prepares a single element. The data-set to write is a dictionary with the key
+    ``'type'`` set to 2412 and, for each FE descriptor id in the model, an integer key with the
+    list of the elements of that type, e.g. ``{'type': 2412, 21: [beam], 44: [quad1, quad2]}``.
+    :meth:`pyuff.UFF.read_sets` returns data-set 2412 in the same form; it additionally gives the
+    elements with descriptors 41 and 44 under the keys ``'triangle'`` and ``'quad'``, which are
+    ignored when writing.
 
-    **Test prepare_2412**
-    
-    >>> save_to_file = 'test_pyuff'
-    >>> data = pyuff.prepare_2412(
-    >>>     element_nums=np.array([69552, 98919, 69304]),
-    >>>     fe_descriptor=np.array([94, 94, 94]),
-    >>>     phys_table=np.array([2, 2, 2]),
-    >>>     mat_table=np.array([1, 1, 1]),
-    >>>     color=np.array([2, 2, 2]),
-    >>>     nodes_nums=np.array([[   29,  2218,  2219,30],[81619, 83403,  2218,    29],[   30,  2219,  2119,    31],[  31, 2119, 1659,   32]]))
-    >>> dataset = {'type':2412, 'quad':data}
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite.write_sets(dataset, mode='add')
-    >>> dataset
+    Beam elements (FE descriptor ids 11, 21, 22, 23 and 24) have an additional record with the
+    beam orientation node and the cross section numbers at the two ends of the beam
+    (``beam_orientation``, ``beam_foreend_cross`` and ``beam_aftend_cross``); they are required
+    for beam elements and ignored for the other elements. The node labels are written 8 per line.
+
+    Parameters
+    ----------
+    element_nums : int
+        Element label (record 1, field 1).
+    fe_descriptor : int
+        FE descriptor id, the element type (record 1, field 2). Common ids: 11 rod, 21 linear
+        beam, 22 tapered beam, 23 curved beam, 24 parabolic beam, 41 plane stress linear
+        triangle, 42 plane stress parabolic triangle, 44 plane stress linear quadrilateral,
+        45 plane stress parabolic quadrilateral, 91 thin shell linear triangle, 92 thin shell
+        parabolic triangle, 94 thin shell linear quadrilateral, 95 thin shell parabolic
+        quadrilateral, 111 solid linear tetrahedron, 112 solid linear wedge, 115 solid linear
+        brick, 116 solid parabolic brick, 118 solid parabolic tetrahedron, 122 rigid element,
+        136 node-to-node translational spring, 161 lumped mass. The full list is in the
+        specification at https://www.ceas3.uc.edu/sdrluff/.
+    phys_table : int
+        Physical property table number, e.g. of the cross section or thickness; 0 if not used
+        (record 1, field 3).
+    mat_table : int
+        Material property table number; 0 if not used (record 1, field 4).
+    color : int
+        Color number, used by pre- and post-processors only (record 1, field 5).
+    num_nodes : int
+        Number of nodes of the element; must equal the length of ``nodes_nums``, it is not
+        computed when writing (record 1, field 6).
+    nodes_nums : array_like of int
+        Labels of the nodes that define the element, in the order of the element type, length
+        ``num_nodes`` (record 2 for non-beam elements, record 3 for beam elements; 8 labels per
+        line).
+    beam_orientation : int, optional
+        Beam orientation node number, the node that defines the orientation of the cross
+        section; 0 if not used (record 2, field 1). Required for beam elements.
+    beam_foreend_cross : int, optional
+        Cross section number at the fore end (end A, first node) of the beam (record 2,
+        field 2). Required for beam elements.
+    beam_aftend_cross : int, optional
+        Cross section number at the aft end (end B, last node) of the beam (record 2, field 3).
+        Required for beam elements.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        One element. Put it in the list under its FE descriptor id in the data-set dictionary
+        (see above), which is written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    A beam and two quadrilateral shell elements:
+
+    >>> import pyuff
+    >>> beam = pyuff.prepare_2412(
+    ...     element_nums=1, fe_descriptor=21, phys_table=1, mat_table=1, color=8,
+    ...     num_nodes=2, nodes_nums=[1, 2],
+    ...     beam_orientation=0, beam_foreend_cross=1, beam_aftend_cross=1)
+    >>> quads = [
+    ...     pyuff.prepare_2412(
+    ...         element_nums=2, fe_descriptor=94, phys_table=2, mat_table=1, color=8,
+    ...         num_nodes=4, nodes_nums=[1, 2, 5, 4]),
+    ...     pyuff.prepare_2412(
+    ...         element_nums=3, fe_descriptor=94, phys_table=2, mat_table=1, color=8,
+    ...         num_nodes=4, nodes_nums=[2, 3, 6, 5])]
+    >>> elements = {'type': 2412, 21: [beam], 94: quads}
+    >>> pyuff.UFF('elements.uff').write_sets(elements, mode='overwrite')
     """
     if np.array(element_nums).dtype != int and element_nums != None:
         raise TypeError('element_nums must be integer')

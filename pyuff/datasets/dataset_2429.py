@@ -187,24 +187,65 @@ def prepare_group(
         active_temperature_set_no_for_group = 0,
         active_contact_set_no_for_group = 0,
         return_full_dict = False):
-    """Name: Permanent Groups
+    """Prepare one group of data-set 2429 (permanent groups) for writing.
 
-    R-Record, F-Field
-    
-    :param group_number: R1 F1, group number
-    :param group_name: R2 F1, group name
-    :param entity_type_code: R3-N, entity type code
-    :param entity_tag: R3-N, entity tag
-    :param active_constraint_set_no_for_group: R1 F2, active constraint set no. for group
-    :param active_restraint_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_load_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_dof_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_temperature_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_contact_set_no_for_group: R1 F3, active restraint set no. for group
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
+    A group is a named set of entities of the model, e.g. the nodes of the measurement points on
+    one part of a structure or the elements of a substructure. Each entity is given by an entity
+    type code and an entity tag (the label of the node, element, ...); the number of entities is
+    taken from the length of ``entity_type_code`` when writing. The groups are collected in a
+    list and passed to :func:`pyuff.prepare_2429`.
 
-    Records 1 and 2 are repeated for each permanent group in the model.
-    Record 3 is repeated multiple times for each group
+    Entity type codes (from the specification; the full list is printed by
+    ``pyuff.datasets.dataset_2429.get_structure_2429()``): 7 nodes, 8 finite elements,
+    9 DOF sets, 12 restraint sets (nodal displacements), 14 load sets (nodal forces),
+    27 trace lines, 30 data surfaces, 31 data curves, 54-61 geometric grouping entities.
+
+    Parameters
+    ----------
+    group_number : int
+        Group number, a non-negative Python ``int`` (record 1, field 1).
+    group_name : str
+        Group name, not empty, up to 40 characters (record 2, field 1).
+    entity_type_code : array_like of int
+        Entity type code of each entity, see above (records 3 to N, fields 1, 3, 5 and 7).
+    entity_tag : array_like of int
+        Entity tag (label) of each entity, same length as ``entity_type_code`` (records 3 to N,
+        fields 2, 4, 6 and 8).
+    active_constraint_set_no_for_group : int, optional
+        Number of the active constraint set of the group; 0 for none (record 1, field 2).
+        Default: 0.
+    active_restraint_set_no_for_group : int, optional
+        Number of the active restraint set of the group; 0 for none (record 1, field 3).
+        Default: 0.
+    active_load_set_no_for_group : int, optional
+        Number of the active load set of the group; 0 for none (record 1, field 4). Default: 0.
+    active_dof_set_no_for_group : int, optional
+        Number of the active DOF set of the group; 0 for none (record 1, field 5). Default: 0.
+    active_temperature_set_no_for_group : int, optional
+        Number of the active temperature set of the group; 0 for none (record 1, field 6).
+        Default: 0.
+    active_contact_set_no_for_group : int, optional
+        Number of the active contact set of the group; 0 for none (record 1, field 7).
+        Default: 0.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        One group, to be put in the list of groups passed to :func:`pyuff.prepare_2429`.
+
+    Examples
+    --------
+    >>> import pyuff
+    >>> sensors = pyuff.prepare_group(
+    ...     group_number=1,
+    ...     group_name='Sensors',
+    ...     entity_type_code=[7, 7, 7],
+    ...     entity_tag=[1, 2, 3])
+    >>> groups = pyuff.prepare_2429([sensors])
+    >>> pyuff.UFF('sensor_group.uff').write_sets(groups, mode='overwrite')
     """
 
     if type(group_number) != int:
@@ -267,10 +308,46 @@ def prepare_group(
 def prepare_2429(
         groups,
         return_full_dict = False):
-    """Name: Permanent Groups
-    
-    :param groups: a list of permanent groups
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
+    """Prepare data-set 2429 (permanent groups) for writing.
+
+    The data-set holds named groups of entities of the model, e.g. the nodes of the measurement
+    points on one part of a structure or the elements of a substructure. Each group is a
+    dictionary, prepared with :func:`pyuff.prepare_group` or returned by
+    :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
+    ``'entity_type_code'``, ``'entity_tag'`` and the six ``'active_..._set_no_for_group'`` keys
+    (see :func:`pyuff.prepare_group`). The entities of a group are written as pairs of entity
+    type code and entity tag (the label of the node, element, ...), 4 pairs per line.
+
+    Entity type codes (from the specification; the full list is printed by
+    ``pyuff.datasets.dataset_2429.get_structure_2429()``): 7 nodes, 8 finite elements,
+    9 DOF sets, 12 restraint sets (nodal displacements), 14 load sets (nodal forces),
+    27 trace lines, 30 data surfaces, 31 data curves, 54-61 geometric grouping entities.
+
+    Parameters
+    ----------
+    groups : list of dict
+        The permanent groups, also a single group must be in a list (records 1 to N, repeated
+        for each group).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    A group of nodes and a group of elements:
+
+    >>> import pyuff
+    >>> sensors = pyuff.prepare_group(
+    ...     group_number=1, group_name='Sensors', entity_type_code=[7, 7, 7], entity_tag=[1, 2, 3])
+    >>> plate = pyuff.prepare_group(
+    ...     group_number=2, group_name='Plate', entity_type_code=[8, 8], entity_tag=[2, 3])
+    >>> groups = pyuff.prepare_2429([sensors, plate])
+    >>> pyuff.UFF('groups.uff').write_sets(groups, mode='overwrite')
     """
     # **Test prepare_2429**
     #>>> save_to_file = 'test_pyuff'

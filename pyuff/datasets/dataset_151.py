@@ -116,50 +116,64 @@ def prepare_151(
         time_db_written=None,
         return_full_dict=False):
 
-    """Name: Header
+    """Prepare data-set 151 (header) for writing.
 
-    R-Record, F-Field
+    The header describes the model and the programs that created the database and
+    the universal file. It is usually the first data-set of a file.
 
-    :param model_name: R1 F1, Model file name
-    :param description: R2 F1, Model file description
-    :param db_app: R3 F1, Name of the application that created database
-    :param date_db_created: R4 F1, Date database created, optional
-    :param time_db_created: R4 F2, Time database created, optional
-    :param version_db1: R4 F3, Version string 1 of the database, optional
-    :param version_db2: R4 F4, Version string 2 of the database, optional
-    :param file_type: R4 F5, File type. 0:Universal, 1:Archive, 2:Other, optional
-    :param date_db_saved: R5 F1, Date database last saved, optional
-    :param time_db_saved: R5 F2, Time database last saved, optional
-    :param program: R6 F1, Program which created universal file
-    :param date_db_written: R7 F1, Date universal file was written, optional
-    :param time_db_written: R7 F2 Time universal file was written, optional
+    Parameters
+    ----------
+    model_name : str
+        Model file name, up to 80 characters (record 1, field 1).
+    description : str
+        Model file description, up to 80 characters (record 2, field 1).
+    db_app : str
+        Name of the application that created the database, up to 80 characters
+        (record 3, field 1).
+    date_db_created : str, optional
+        Date the database was created, e.g. ``'27-Jan-16'``, up to 10 characters
+        (record 4, field 1). Default: the current date.
+    time_db_created : str, optional
+        Time the database was created, e.g. ``'14:38:15'``, up to 10 characters
+        (record 4, field 2). Default: the current time.
+    version_db1 : int, optional
+        Version string 1 of the database (record 4, field 3). Default: 0.
+    version_db2 : int, optional
+        Version string 2 of the database (record 4, field 4). Default: 0.
+    file_type : {0, 1, 2}, optional
+        File type (record 4, field 5): 0 universal, 1 archive, 2 other.
+        Default: 0.
+    date_db_saved : str, optional
+        Date the database was last saved (record 5, field 1). Default: the
+        current date.
+    time_db_saved : str, optional
+        Time the database was last saved (record 5, field 2). Default: the
+        current time.
+    program : str
+        Program that wrote the universal file, up to 80 characters (record 6,
+        field 1).
+    date_db_written : str, optional
+        Date the universal file was written (record 7, field 1).
+    time_db_written : str, optional
+        Time the universal file was written (record 7, field 2).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
-    
-    **Test prepare_151**
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_151(
-    >>>     model_name='Model file name',
-    >>>     description='Model file description',
-    >>>     db_app='Program which created DB',
-    >>>     date_db_created='27-Jan-16',
-    >>>     time_db_created='14:38:15',
-    >>>     version_db1=1,
-    >>>     version_db2=2,
-    >>>     file_type=0,
-    >>>     date_db_saved='28-Jan-16',
-    >>>     time_db_saved='14:38:16',
-    >>>     program='OpenModal',
-    >>>     date_db_written='29-Jan-16',
-    >>>     time_db_written='14:38:17')
-    >>> dataset
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    Examples
+    --------
+    >>> import pyuff
+    >>> header = pyuff.prepare_151(
+    ...     model_name='Beam',
+    ...     description='Free-free steel beam',
+    ...     db_app='pyuff',
+    ...     program='pyuff')
+    >>> pyuff.UFF('beam_model.uff').write_sets(header, mode='overwrite')
     """
     if type(model_name) != str and model_name != None:
         raise TypeError('model_name must be string')

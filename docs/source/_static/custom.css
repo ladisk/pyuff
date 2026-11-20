@@ -1,0 +1,3 @@
+/* Wide tables of codes: smaller text, no forced wrapping of the first column */
+table.docutils td, table.docutils th { vertical-align: top; }
+table.codes td:first-child { white-space: nowrap; }

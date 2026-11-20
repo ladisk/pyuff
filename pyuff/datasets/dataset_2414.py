@@ -891,113 +891,222 @@ def prepare_2414(
         y=None,
         z=None,
         return_full_dict=False):
-    """Name: Analysis Data
+    """Prepare data-set 2414 (analysis data) for writing.
 
-    R-Record, F-Field
+    Data-set 2414 holds results of an analysis, typically a finite element analysis:
+    values at nodes, on elements or at nodes on elements, e.g. displacements,
+    stresses or temperatures of one load case, mode, time step or frequency. Each
+    such result is a separate data-set. The nodes and elements are given in
+    data-sets 2411 and 2412.
 
-    :param analysis_dataset_label: R1 F1, Analysis dataset label
-    :param analysis_dataset_name: R2 F1, Analysis dataset name 
-    :param dataset_location: R3 F1, Dataset location, 1:Data at nodes, 2:Data on elements, 3:Data at nodes on elements, 5:Data at points
+    With this function, pyuff writes data at nodes (``dataset_location=1``) of a
+    frequency response analysis (``analysis_type=5``): the parameters of records 10
+    to 13 are written by name, and the complex values at the nodes are given by
+    ``x``, ``y`` and ``z``. For other analysis types, the named parameters of
+    records 10 to 13 are ignored and written as 0 (the dictionary keys
+    ``'record10_field1'`` to ``'record13_field6'`` set them), and the data is not
+    taken from ``x``, ``y``, ``z`` or ``d``: add the key ``'data_at_node'`` (a list
+    with an array of real values for each node) to the returned dictionary, as
+    returned by :meth:`pyuff.UFF.read_sets`. Data on elements and at nodes on
+    elements are written only from a dictionary read from a file.
 
-    :param id1: R4 F1, ID line 1
-    :param id2: R5 F1, ID line 2
-    :param id3: R6 F1, ID line 3
-    :param id4: R7 F1, ID line 4
-    :param id5: R8 F1, ID line 5
-    :param model_type: R9 F1, Model type
-    :param analysis_type: R9 F2, Analysis type 
-    :param data_characteristic: R9 F3, Data characteristic
-    :param result_type: R9 F4, Result type
-    :param data_type: R9 F5, Data type
-    :param number_of_data_values_for_the_data_component: R9 F6,  Number of data values for the data component (NVALDC)
-    
-    **Integer analysis type specific data**
-    
-    :param design_set_id: R10 F1, 
-    :param iteration_number: R10 F1,
-    :param solution_set_id: R10 F1,
-    :param boundary_condition: R10 F1,
-    :param load_set: R10 F1,
-    :param mode_number: R10 F1,
-    :param time_step_number: R10 F1,
-    :param frequency_number: R10 F1,
-    
-    :param creation_option: R11 F1,
-    :param number_retained: R11 F1,
+    Parameters
+    ----------
+    analysis_dataset_label : int
+        Analysis data-set label, e.g. the load case number (record 1, field 1).
+    analysis_dataset_name : str
+        Analysis data-set name, up to 80 characters (record 2, field 1).
+    dataset_location : {1, 2, 3, 5}
+        Data-set location (record 3, field 1): 1 data at nodes, 2 data on elements,
+        3 data at nodes on elements, 5 data at points. pyuff does not write data at
+        points (5).
+    id1 : str
+        ID line 1, e.g. the model identification, up to 80 characters (record 4,
+        field 1). Use ``'NONE'`` if there is no information.
+    id2 : str
+        ID line 2, e.g. the run identification, up to 80 characters (record 5,
+        field 1).
+    id3 : str
+        ID line 3, e.g. the run date and time, up to 80 characters (record 6,
+        field 1).
+    id4 : str
+        ID line 4, e.g. the load case name, up to 80 characters (record 7, field 1).
+    id5 : str
+        ID line 5, up to 80 characters (record 8, field 1).
+    model_type : {0, 1, 2, 3}
+        Model type (record 9, field 1): 0 unknown, 1 structural, 2 heat transfer,
+        3 fluid flow.
+    analysis_type : {0, 1, 2, 3, 4, 5, 6, 7, 9}
+        Analysis type (record 9, field 2): 0 unknown, 1 static, 2 normal mode,
+        3 complex eigenvalue first order, 4 transient, 5 frequency response,
+        6 buckling, 7 complex eigenvalue second order, 9 static non-linear.
+    data_characteristic : {0, 1, 2, 3, 4, 6}
+        Data characteristic (record 9, field 3), which implies the number of values
+        of the data component: 0 unknown, 1 scalar (1), 2 3-DOF global translation
+        vector (3: X, Y, Z), 3 6-DOF global translation and rotation vector
+        (6: X, Y, Z, RX, RY, RZ), 4 symmetric global tensor (6: SXX, SXY, SYY, SXZ,
+        SYZ, SZZ), 6 stress resultants (8: FX, FY, FXY, MX, MY, MXY, VX, VY).
+    result_type : int
+        Result type (record 9, field 4), e.g. 2 stress, 3 strain, 4 element force,
+        5 temperature, 6 heat flux, 7 strain energy, 8 displacement, 9 reaction
+        force, 10 kinetic energy, 11 velocity, 12 acceleration, 15 hydro-static
+        pressure, 31 mass, 93 unknown, 94 unknown scalar, 95 unknown 3-DOF vector,
+        96 unknown 6-DOF vector, 97 unknown symmetric tensor, 301 sound pressure;
+        above 1000 user defined. See :func:`pyuff.get_structure_2414` for the full
+        list.
+    data_type : {1, 2, 4, 5, 6}
+        Data type (record 9, field 5): 1 integer, 2 single precision real, 4 double
+        precision real, 5 single precision complex, 6 double precision complex.
+        Written as given; pyuff does not derive it from the data. The values
+        themselves are always written in single precision (6E13.5). For analysis
+        type 5, ``x``, ``y`` and ``z`` are always written as complex values, and
+        pyuff reads them back only with data type 5.
+    number_of_data_values_for_the_data_component : int
+        Number of data values of the data component, NVALDC (record 9, field 6),
+        e.g. 3 for a 3-DOF translation vector. For analysis type 5 it selects the
+        arrays written at each node: 1 ``x``; 2 ``x``, ``y``; 3 ``x``, ``y``,
+        ``z``; for any other number no values are written.
+    design_set_id : int
+        Design set ID (record 10, field 1). Required for analysis type 5, ignored
+        otherwise.
+    iteration_number : int
+        Iteration number (record 10, field 2). Required for analysis type 5,
+        ignored otherwise.
+    solution_set_id : int
+        Solution set ID (record 10, field 3). Required for analysis type 5, ignored
+        otherwise.
+    boundary_condition : int
+        Boundary condition (record 10, field 4). Required for analysis type 5,
+        ignored otherwise.
+    load_set : int
+        Load set (record 10, field 5). Required for analysis type 5, ignored
+        otherwise.
+    mode_number : int
+        Mode number (record 10, field 6). Required for analysis type 5 (use 0),
+        ignored otherwise.
+    time_step_number : int
+        Time step number (record 10, field 7). Required for analysis type 5 (use 0),
+        ignored otherwise.
+    frequency_number : int
+        Frequency number (record 10, field 8). Required for analysis type 5, ignored
+        otherwise.
+    creation_option : int
+        Creation option (record 11, field 1). Required for analysis type 5, ignored
+        otherwise.
+    number_retained : int
+        Number retained; 0 unless the result is created by sorting for extremes
+        (record 11, field 2). Required for analysis type 5, ignored otherwise.
+    time : float
+        Time in seconds (record 12, field 1). Required for analysis type 5 (use
+        0.0), ignored otherwise.
+    frequency : float
+        Frequency in Hz (record 12, field 2). Required for analysis type 5, ignored
+        otherwise.
+    eigenvalue : float
+        Eigenvalue (record 12, field 3). Required for analysis type 5 (use 0.0),
+        ignored otherwise.
+    modal_mass : float
+        Modal mass (record 12, field 4). Required for analysis type 5 (use 0.0),
+        ignored otherwise.
+    viscous_damping : float
+        Viscous damping ratio (record 12, field 5). Required for analysis type 5 (use
+        0.0), ignored otherwise.
+    hysteretic_damping : float
+        Hysteretic damping ratio (record 12, field 6). Required for analysis type 5
+        (use 0.0), ignored otherwise.
+    real_part_eigenvalue : float
+        Real part of the eigenvalue (record 13, field 1). Required for analysis
+        type 5 (use 0.0), ignored otherwise.
+    imaginary_part_eigenvalue : float
+        Imaginary part of the eigenvalue (record 13, field 2). Required for analysis
+        type 5 (use 0.0), ignored otherwise.
+    real_part_of_modal_A_or_modal_mass : float
+        Real part of modal A or of the modal mass (record 13, field 3). Required for
+        analysis type 5 (use 0.0), ignored otherwise.
+    imaginary_part_of_modal_A_or_modal_mass : float
+        Imaginary part of modal A or of the modal mass (record 13, field 4).
+        Required for analysis type 5 (use 0.0), ignored otherwise.
+    real_part_of_modal_B_or_modal_mass : float
+        Real part of modal B or of the modal stiffness (record 13, field 5).
+        Required for analysis type 5 (use 0.0), ignored otherwise.
+    imaginary_part_of_modal_B_or_modal_mass : float
+        Imaginary part of modal B or of the modal stiffness (record 13, field 6).
+        Required for analysis type 5 (use 0.0), ignored otherwise.
+    d : array_like of float, optional
+        Data at the nodes. Ignored when writing; for analysis types other than 5
+        give the data with the key ``'data_at_node'`` (see above).
+    node_nums : array_like of int
+        Node numbers (record 14, field 1). For analysis type 5, a NumPy array with
+        one node number for each value in ``x``.
+    x : array_like of complex
+        First value at each node, e.g. the X component of a 3-DOF translation
+        (record 15). Required for analysis type 5, ignored otherwise.
+    y : array_like of complex
+        Second value at each node, e.g. the Y component (record 15). Required for
+        analysis type 5 if ``number_of_data_values_for_the_data_component`` is 2 or
+        3, ignored otherwise.
+    z : array_like of complex
+        Third value at each node, e.g. the Z component (record 15). Required for
+        analysis type 5 if ``number_of_data_values_for_the_data_component`` is 3,
+        ignored otherwise.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    **Real analysis type specific data**
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
-    :param time: R12 F1,
-    :param frequency: R12 F1,
-    :param eigenvalue: R12 F1,
-    :param modal_mass: R12 F1,
-    :param viscous_damping: R12 F1,
-    :param hysteretic_damping: R12 F1,
-    
-    :param real_part_eigenvalue: R13 F1,
-    :param imaginary_part_eigenvalue: R13 F1,
-    :param real_part_of_modal_A_or_modal_mass: R13 F1,
-    :param imaginary_part_of_modal_A_or_modal_mass: R13 F1,
-    :param real_part_of_modal_B_or_modal_mass,: R13 F1,
-    :param imaginary_part_of_modal_B_or_modal_mass: R13 F1,
-    :param node_nums: R14 F1, Node number
-    :param d: R15 F1, Data at this node (NDVAL real or complex values)
-    :param x: R15 F1,
-    :param y: R15 F1,
-    :param z: R15 F1,
+    Examples
+    --------
+    Write the displacements of three nodes at 100 Hz, from a frequency response
+    analysis:
 
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
-
-    **Test prepare_2414**
-
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_2414(
-    >>>     analysis_dataset_label=1,
-    >>>     analysis_dataset_name='Solid displacement at 1.00000e+02 Hz',
-    >>>     dataset_location=1,
-    >>>     id1='FEMTown to UNV output driver',
-    >>>     id2=' Analysis',
-    >>>     id3='Solid displacement at 1.00000e+02 Hz',
-    >>>     id4='LoadCase 1',
-    >>>     id5='none',
-    >>>     model_type=0,
-    >>>     analysis_type=5,
-    >>>     data_characteristic=2,
-    >>>     result_type=8,
-    >>>     data_type=5,
-    >>>     number_of_data_values_for_the_data_component=3,
-    >>>     design_set_id=1,
-    >>>     iteration_number=0,
-    >>>     solution_set_id=1,
-    >>>     boundary_condition=0,
-    >>>     load_set=1,
-    >>>     mode_number=0,
-    >>>     time_step_number=0,
-    >>>     frequency_number=0,
-    >>>     creation_option=1,
-    >>>     number_retained=1,
-    >>>     time=0.0,
-    >>>     frequency=100.0,
-    >>>     eigenvalue=100.0,
-    >>>     modal_mass=0.0,
-    >>>     viscous_damping=0.0,
-    >>>     hysteretic_damping=0.0,
-    >>>     real_part_eigenvalue=0.0,
-    >>>     imaginary_part_eigenvalue=0.0,
-    >>>     real_part_of_modal_A_or_modal_mass=0.0,
-    >>>     imaginary_part_of_modal_A_or_modal_mass=0.0,
-    >>>     real_part_of_modal_B_or_modal_mass=0.0,
-    >>>     imaginary_part_of_modal_B_or_modal_mass=0.0,
-    >>>     node_nums=np.array([29, 30, 31]),
-    >>>     x=np.array([2.84811e-09+1.73733e-09j, 3.11873e-09+1.19904e-09j, 3.28182e-09+6.12300e-10j]),
-    >>>     y=np.array([-7.13813e-10+6.53419e-10j, -4.95859e-10+8.07390e-10j, -2.52772e-10+9.05991e-10j]),
-    >>>     z=np.array([4.28828e-10+2.47563e-10j, 4.65334e-10+1.70107e-10j, 4.87383e-10+8.66597e-11j]))
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite.write_sets(dataset, mode='add')
-    >>> dataset
+    >>> import numpy as np
+    >>> import pyuff
+    >>> displacement = pyuff.prepare_2414(
+    ...     analysis_dataset_label=1,
+    ...     analysis_dataset_name='Displacement at 100 Hz',
+    ...     dataset_location=1,
+    ...     id1='Plate model',
+    ...     id2='Frequency response',
+    ...     id3='NONE',
+    ...     id4='Load case 1',
+    ...     id5='NONE',
+    ...     model_type=1,
+    ...     analysis_type=5,
+    ...     data_characteristic=2,
+    ...     result_type=8,
+    ...     data_type=5,
+    ...     number_of_data_values_for_the_data_component=3,
+    ...     design_set_id=1,
+    ...     iteration_number=0,
+    ...     solution_set_id=1,
+    ...     boundary_condition=0,
+    ...     load_set=1,
+    ...     mode_number=0,
+    ...     time_step_number=0,
+    ...     frequency_number=1,
+    ...     creation_option=1,
+    ...     number_retained=0,
+    ...     time=0.0,
+    ...     frequency=100.0,
+    ...     eigenvalue=0.0,
+    ...     modal_mass=0.0,
+    ...     viscous_damping=0.0,
+    ...     hysteretic_damping=0.0,
+    ...     real_part_eigenvalue=0.0,
+    ...     imaginary_part_eigenvalue=0.0,
+    ...     real_part_of_modal_A_or_modal_mass=0.0,
+    ...     imaginary_part_of_modal_A_or_modal_mass=0.0,
+    ...     real_part_of_modal_B_or_modal_mass=0.0,
+    ...     imaginary_part_of_modal_B_or_modal_mass=0.0,
+    ...     node_nums=np.array([1, 2, 3]),
+    ...     x=np.array([2.8e-9 + 1.7e-9j, 3.1e-9 + 1.2e-9j, 3.3e-9 + 6.1e-10j]),
+    ...     y=np.array([-7.1e-10 + 6.5e-10j, -5.0e-10 + 8.1e-10j, -2.5e-10 + 9.1e-10j]),
+    ...     z=np.array([4.3e-10 + 2.5e-10j, 4.7e-10 + 1.7e-10j, 4.9e-10 + 8.7e-11j]))
+    >>> pyuff.UFF('displacement.uff').write_sets(displacement, mode='overwrite')
     """
     if np.array(analysis_dataset_label).dtype != int and analysis_dataset_label != None:
         raise TypeError('analysis_dataset_label must be integer')

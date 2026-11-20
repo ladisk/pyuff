@@ -79,20 +79,62 @@ def prepare_2411(
         y=None,
         z=None,
         return_full_dict=False):
-    """Name: Nodes - Double Precision
+    """Prepare data-set 2411 (nodes, double precision) for writing.
 
-    R-Record, F-Field
-    
-    :param node_nums: R1 F1, Node label
-    :param def_cs: R1 F2, Export coordinate system number
-    :param disp_cs: R1 F3, Displacement coordinate system number
-    :param color: R1 F4, Color
-    :param x: R2 F1, Node coordinates in the part coordinate system
-    :param y: R2 F2, Node coordinates in the part coordinate system
-    :param z: R2 F3, Node coordinates in the part coordinate system
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included 
+    The data-set holds the nodes of a model: the label, the coordinate systems and the color of
+    each node and its coordinates, written in double precision. The nodes are the points at which
+    data-sets 55 and 58 give the response (e.g. the measurement points of a modal test); they are
+    connected into a mesh by the elements of data-set 2412. All arrays have one value per node,
+    shape ``(n,)``.
 
-    Records 1 and 2 are repeated for each node in the model.
+    Each node refers to two coordinate systems by their labels (as defined e.g. in data-set 2420):
+    the export coordinate system, in which the node coordinates are given, and the displacement
+    coordinate system, in which the directions of the degrees of freedom at the node are given.
+    Programs use 0 or 1 for the global Cartesian coordinate system.
+
+    Parameters
+    ----------
+    node_nums : array_like of int
+        Node labels (record 1, field 1).
+    def_cs : array_like of int
+        Export coordinate system number of each node, the coordinate system of ``x``, ``y`` and
+        ``z`` (record 1, field 2).
+    disp_cs : array_like of int
+        Displacement coordinate system number of each node, the coordinate system of the degrees
+        of freedom at the node (record 1, field 3).
+    color : array_like of int
+        Color number of each node, used by pre- and post-processors only, e.g. 8 (record 1,
+        field 4).
+    x : array_like of float
+        X coordinates of the nodes (record 2, field 1).
+    y : array_like of float
+        Y coordinates of the nodes (record 2, field 2).
+    z : array_like of float
+        Z coordinates of the nodes (record 2, field 3).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    Four nodes of a square plate, in the global coordinate system:
+
+    >>> import numpy as np
+    >>> import pyuff
+    >>> nodes = pyuff.prepare_2411(
+    ...     node_nums=np.array([1, 2, 3, 4]),
+    ...     def_cs=np.zeros(4, dtype=int),
+    ...     disp_cs=np.zeros(4, dtype=int),
+    ...     color=np.full(4, 8),
+    ...     x=np.array([0.0, 1.0, 1.0, 0.0]),
+    ...     y=np.array([0.0, 0.0, 1.0, 1.0]),
+    ...     z=np.zeros(4))
+    >>> pyuff.UFF('nodes.uff').write_sets(nodes, mode='overwrite')
     """
     # **Test prepare_2411**
     #>>> save_to_file = 'test_pyuff'

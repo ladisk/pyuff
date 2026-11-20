@@ -33,7 +33,7 @@ dev = [
     "wheel",
     "build",
     "pytest",
-    "sphinx-rtd-theme",
+    "furo",
     "sphinx-copybutton",
 ]
 

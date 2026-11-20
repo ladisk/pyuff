@@ -276,34 +276,127 @@ def prepare_1858(
         response_direction=None,
         reference_direction=None,
         return_full_dict=False):
-    """Name: Dataset 58 qualifiers
+    """Prepare data-set 1858 (data-set 58 qualifiers) for writing.
 
-    R-Record, F-Field
-    
-    :param record_num: R1 F1, Record number
-    :param octave_format: R1 F2, Octave format
-    :param measurement_run: R1 F3, Measurement run number
-    :param weighting_type: R2 F1, Weighting Type
-    :param window_type: R2 F2, Window Type
-    :param amplitude_units: R2 F3, Amplitude units
-    :param normalization_method: R2 F4, Normalization Method
-    :param abscissa_data_type_qualifier: R2 F5, Abscissa Data Type Qualifier
-    :param ordinate_numerator_data_type_qualifier: R2 F6, Ordinate Numerator Data Type Qualifier
-    :param ordinate_denominator_data_type_qualifier: R2 F7, Ordinate Denominator Data Type Qualifier
-    :param z_axis_data_type_qualifier: R2 F8, Z-axis Data Type Qualifier
-    :param sampling_type: R2 F9, Sampling Type
-    :param z_rpm_value: R3 F1, Z RPM value
-    :param z_time_value: R3 F2, Z Time value
-    :param z_order_value: R3 F3, Z Order value
-    :param num_of_samples: R3 F4, Number of samples
-    :param user_value_1: R4 F1, User value 1
-    :param user_value_2: R4 F2, User value 2
-    :param user_value_3: R4 F3, User value 3
-    :param user_value_4: R4 F4, User value 4
-    :param exponential_window_damping_factor: R F,
-    :param response_direction: R6 F1, Response direction
-    :param reference_direction: R6 F2, Reference direction
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Data-set 1858 adds information to the function of the data-set 58 that follows it:
+    how the function was acquired and processed, e.g. the window, the frequency
+    weighting, the amplitude scaling and normalization of a spectrum, octave bands and
+    the number of samples. It is written before the data-set 58 it qualifies and is
+    exported by some test data acquisition systems.
+
+    The writer has no default values: all parameters are required for writing (give 0
+    for the unused or unknown ones). The integer fields must be Python or NumPy
+    integers and the real fields floats; an ``int`` given for a real field raises
+    ``TypeError``.
+
+    Parameters
+    ----------
+    record_num : int
+        Set record number (record 1, field 1).
+    octave_format : int
+        Octave format (record 1, field 2): 0 not in octave format, 1 octave, 3 one-third
+        octave, n 1/n octave.
+    measurement_run : int
+        Measurement run number (record 1, field 3).
+    weighting_type : {0, 1, 2, 3, 4}
+        Frequency weighting (record 2, field 1): 0 no weighting or unknown, 1 A
+        weighting, 2 B weighting, 3 C weighting, 4 D weighting.
+    window_type : {0, 1, 2, 3, 4, 5, 6}
+        Window applied to the time data (record 2, field 2): 0 no window or unknown,
+        1 Hanning narrow, 2 Hanning broad, 3 flattop, 4 exponential, 5 impact, 6 impact
+        and exponential.
+    amplitude_units : {0, 1, 2, 3}
+        Amplitude scaling of the spectrum (record 2, field 3): 0 unknown, 1 half-peak,
+        2 peak, 3 RMS.
+    normalization_method : {0, 1, 2, 3}
+        Normalization of the spectrum (record 2, field 4): 0 unknown, 1 units squared,
+        2 units squared per Hz (PSD), 3 units squared seconds per Hz (ESD).
+    abscissa_data_type_qualifier : {0, 1, 2, 3}
+        Abscissa data type qualifier (record 2, field 5): 0 translation, 1 rotation,
+        2 translation squared, 3 rotation squared.
+    ordinate_numerator_data_type_qualifier : {0, 1, 2, 3}
+        Ordinate numerator data type qualifier, codes as for
+        ``abscissa_data_type_qualifier`` (record 2, field 6).
+    ordinate_denominator_data_type_qualifier : {0, 1, 2, 3}
+        Ordinate denominator data type qualifier, codes as for
+        ``abscissa_data_type_qualifier`` (record 2, field 7).
+    z_axis_data_type_qualifier : {0, 1, 2, 3}
+        Z-axis data type qualifier, codes as for ``abscissa_data_type_qualifier``
+        (record 2, field 8).
+    sampling_type : {0, 1, 2, 3}
+        Sampling type (record 2, field 9): 0 dynamic, 1 static, 2 rpm from tachometer,
+        3 frequency from tachometer.
+    z_rpm_value : float
+        Z-axis rotational speed value, in rpm (record 3, field 1).
+    z_time_value : float
+        Z-axis time value (record 3, field 2).
+    z_order_value : float
+        Z-axis order value (record 3, field 3).
+    num_of_samples : float
+        Number of samples (record 3, field 4).
+    user_value_1 : float
+        User value 1 (record 4, field 1).
+    user_value_2 : float
+        User value 2 (record 4, field 2).
+    user_value_3 : float
+        User value 3 (record 4, field 3).
+    user_value_4 : float
+        User value 4 (record 4, field 4).
+    exponential_window_damping_factor : float
+        Damping factor of the exponential window (record 4, field 5).
+    response_direction : str
+        Response direction as text, e.g. ``'X+'``, or ``'NONE'``, up to 4 characters
+        (record 6, field 1).
+    reference_direction : str
+        Reference direction as text, e.g. ``'X+'``, or ``'NONE'``, up to 4 characters
+        (record 6, field 2).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    Qualifiers of an impact-test FRF (impact and exponential window), followed by the
+    FRF itself:
+
+    >>> import numpy as np
+    >>> import pyuff
+    >>> qualifiers = pyuff.prepare_1858(
+    ...     record_num=1,
+    ...     octave_format=0,
+    ...     measurement_run=1,
+    ...     weighting_type=0,
+    ...     window_type=6,
+    ...     amplitude_units=0,
+    ...     normalization_method=0,
+    ...     abscissa_data_type_qualifier=0,
+    ...     ordinate_numerator_data_type_qualifier=0,
+    ...     ordinate_denominator_data_type_qualifier=0,
+    ...     z_axis_data_type_qualifier=0,
+    ...     sampling_type=0,
+    ...     z_rpm_value=0.0,
+    ...     z_time_value=0.0,
+    ...     z_order_value=0.0,
+    ...     num_of_samples=4096.0,
+    ...     user_value_1=0.0,
+    ...     user_value_2=0.0,
+    ...     user_value_3=0.0,
+    ...     user_value_4=0.0,
+    ...     exponential_window_damping_factor=0.05,
+    ...     response_direction='Z+',
+    ...     reference_direction='Z+')
+    >>> freq = np.arange(0, 501, 1.0)
+    >>> frf = pyuff.prepare_58(
+    ...     func_type=4, rsp_node=2, rsp_dir=3, ref_node=1, ref_dir=3,
+    ...     abscissa_spacing=1, abscissa_spec_data_type=18,
+    ...     ordinate_spec_data_type=12, orddenom_spec_data_type=13,
+    ...     data=np.ones(len(freq), dtype=complex), x=freq)
+    >>> pyuff.UFF('frf_1858.uff').write_sets([qualifiers, frf], mode='overwrite')
     """
 
     if np.array(record_num).dtype != int and record_num is not None:

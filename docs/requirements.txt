@@ -1,3 +1,4 @@
-pyuff
-sphinx-rtd-theme
+sphinx
+furo
 sphinx-copybutton
+numpy
