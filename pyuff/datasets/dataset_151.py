@@ -49,6 +49,11 @@ def _write151(fh, dset):
     try:
         ds = time.strftime('%d-%b-%y', time.localtime())
         ts = time.strftime('%H:%M:%S', time.localtime())
+        # the date and time the file was written are read as date_file_written and
+        # time_file_written; prepare_151 gives them as date_db_written and time_db_written
+        for key in ('date', 'time'):
+            if dset.get(key + '_file_written') is None and dset.get(key + '_db_written') is not None:
+                dset[key + '_file_written'] = dset[key + '_db_written']
         # handle optional fields
         dset = _opt_fields(dset, {'version_db1': '0',
                                         'version_db2': '0',
@@ -153,9 +158,11 @@ def prepare_151(
         Program that wrote the universal file, up to 80 characters (record 6,
         field 1).
     date_db_written : str, optional
-        Date the universal file was written (record 7, field 1).
+        Date the universal file was written (record 7, field 1); it is read back as
+        ``date_file_written``. Default: the current date.
     time_db_written : str, optional
-        Time the universal file was written (record 7, field 2).
+        Time the universal file was written (record 7, field 2); it is read back as
+        ``time_file_written``. Default: the current time.
     return_full_dict : bool, optional
         If True, the dictionary has all keys of the data-set, with ``None`` for
         the values not given; if False (default), only the given values.

@@ -143,3 +143,18 @@ if __name__ == '__main__':
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()
+
+def test_write_151_file_written(tmp_path):
+    # the date and time the file was written are written as given, and read back as
+    # date_file_written and time_file_written
+    dset = pyuff.prepare_151(model_name='m', description='d', db_app='a', program='p',
+                             date_db_written='29-Jan-16', time_db_written='14:38:17')
+    fn = tmp_path / 'header.uff'
+    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+    read = pyuff.UFF(fn).read_sets(0)
+    assert (read['date_file_written'], read['time_file_written']) == ('29-Jan-16', '14:38:17')
+
+    # a data-set read from a file is written with its own values
+    pyuff.UFF(fn).write_sets(read, mode='overwrite')
+    again = pyuff.UFF(fn).read_sets(0)
+    assert (again['date_file_written'], again['time_file_written']) == ('29-Jan-16', '14:38:17')
