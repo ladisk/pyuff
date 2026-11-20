@@ -182,3 +182,35 @@ def test_write_read_2467():
 
 if __name__ == '__main__':
     test_write_read_2467()
+
+def test_prepare_group_active_sets(tmp_path):
+    # each active set number is kept, written and read back
+    active = {'active_constraint_set_no_for_group': 1, 'active_restraint_set_no_for_group': 2,
+              'active_load_set_no_for_group': 3, 'active_dof_set_no_for_group': 4,
+              'active_temperature_set_no_for_group': 5, 'active_contact_set_no_for_group': 6}
+    group = pyuff.datasets.dataset_2467.prepare_group(1, 'g', [8, 8], [1, 2], [0, 0], [0, 0], **active)
+    for key, value in active.items():
+        assert group[key] == value
+
+    fn = tmp_path / 'groups.uff'
+    pyuff.UFF(fn).write_sets(pyuff.prepare_2467([group]), mode='overwrite')
+    read = pyuff.UFF(fn).read_sets(0)['groups'][0]
+    for key, value in active.items():
+        assert read[key] == value
+
+
+def test_write_2467_without_active_sets(tmp_path):
+    # the active set numbers are optional in each group and default to 0
+    group = {'group_number': 1, 'group_name': 'g', 'entity_type_code': [8], 'entity_tag': [1],
+             'entity_node_leaf_id': [0], 'entity_component_id': [0]}
+    fn = tmp_path / 'groups.uff'
+    pyuff.UFF(fn).write_sets(pyuff.prepare_2467([group]), mode='overwrite')
+    read = pyuff.UFF(fn).read_sets(0)['groups'][0]
+    assert read['active_temperature_set_no_for_group'] == 0
+    np.testing.assert_array_equal(read['entity_tag'], [1])
+
+
+def test_prepare_2467_read_groups():
+    # groups read from a file pass the checks of prepare_2467
+    groups = pyuff.UFF('./data/groups_test.uff').read_sets(4)['groups']
+    assert len(pyuff.prepare_2467(groups)['groups']) == 3

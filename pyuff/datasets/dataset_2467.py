@@ -61,10 +61,11 @@ def _write2467(fh, dset):
                 'active_temperature_set_no_for_group': 0,
                 'active_contact_set_no_for_group': 0}
 
-        dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i\n' % (-1, 2467))
 
         for group in dset['groups']:
+            # the active set numbers are optional in each group
+            group = _opt_fields(group, dict)
             # Record 1
             # Field 8 (last field) contains the number or entities in the group
             fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (group['group_number'],
@@ -287,8 +288,8 @@ def prepare_group(
         'active_restraint_set_no_for_group': active_restraint_set_no_for_group,
         'active_load_set_no_for_group': active_load_set_no_for_group,
         'active_dof_set_no_for_group': active_dof_set_no_for_group,
-        'active_temperature_set_no_for_group': active_dof_set_no_for_group,
-        'active_contact_set_no_for_group': active_dof_set_no_for_group,
+        'active_temperature_set_no_for_group': active_temperature_set_no_for_group,
+        'active_contact_set_no_for_group': active_contact_set_no_for_group,
     }
 
     if return_full_dict is False:
@@ -312,9 +313,9 @@ def prepare_2467(
     :func:`pyuff.datasets.dataset_2467.prepare_group` or returned by
     :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
     ``'entity_type_code'``, ``'entity_tag'``, ``'entity_node_leaf_id'``,
-    ``'entity_component_id'`` and the six ``'active_..._set_no_for_group'`` keys. All keys are
-    required when writing; groups from ``pyuff.prepare_group`` (data-set 2429) cannot be written
-    as data-set 2467.
+    ``'entity_component_id'`` and the six ``'active_..._set_no_for_group'`` keys. The active set
+    numbers are optional (default 0); groups from ``pyuff.prepare_group`` (data-set 2429) cannot
+    be written as data-set 2467, as they have no entity node leaf and component ids.
 
     Parameters
     ----------
@@ -363,17 +364,20 @@ def prepare_2467(
     if type(groups) != list:
          raise TypeError('groups must be in a list, also a single group')
     for item in groups:
+        # check the group; the active set numbers are optional (default 0)
         prepare_group(
-            item['group_number'],
-            item['group_name'],
-            item['entity_type_code'],
-            item['entity_tag'],
-            item['active_constraint_set_no_for_group'],
-            item['active_restraint_set_no_for_group'],
-            item['active_load_set_no_for_group'],
-            item['active_dof_set_no_for_group'],
-            item['active_temperature_set_no_for_group'],
-            item['active_contact_set_no_for_group'])
+            group_number=item['group_number'],
+            group_name=item['group_name'],
+            entity_type_code=item['entity_type_code'],
+            entity_tag=item['entity_tag'],
+            entity_node_leaf_id=item['entity_node_leaf_id'],
+            entity_component_id=item['entity_component_id'],
+            active_constraint_set_no_for_group=item.get('active_constraint_set_no_for_group', 0),
+            active_restraint_set_no_for_group=item.get('active_restraint_set_no_for_group', 0),
+            active_load_set_no_for_group=item.get('active_load_set_no_for_group', 0),
+            active_dof_set_no_for_group=item.get('active_dof_set_no_for_group', 0),
+            active_temperature_set_no_for_group=item.get('active_temperature_set_no_for_group', 0),
+            active_contact_set_no_for_group=item.get('active_contact_set_no_for_group', 0))
 
     dataset={
         'type': 2467,
