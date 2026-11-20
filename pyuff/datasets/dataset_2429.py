@@ -295,8 +295,8 @@ def prepare_group(
         'active_restraint_set_no_for_group':  active_restraint_set_no_for_group,
         'active_load_set_no_for_group': active_load_set_no_for_group,
         'active_dof_set_no_for_group': active_dof_set_no_for_group,
-        'active_temperature_set_no_for_group': active_dof_set_no_for_group,
-        'active_contact_set_no_for_group': active_dof_set_no_for_group,
+        'active_temperature_set_no_for_group': active_temperature_set_no_for_group,
+        'active_contact_set_no_for_group': active_contact_set_no_for_group,
         }
     
     if return_full_dict is False:
@@ -315,7 +315,7 @@ def prepare_2429(
     dictionary, prepared with :func:`pyuff.prepare_group` or returned by
     :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
     ``'entity_type_code'``, ``'entity_tag'`` and the six ``'active_..._set_no_for_group'`` keys
-    (see :func:`pyuff.prepare_group`). The entities of a group are written as pairs of entity
+    (see :func:`pyuff.prepare_group`); the active set numbers are optional (default 0). The entities of a group are written as pairs of entity
     type code and entity tag (the label of the node, element, ...), 4 pairs per line.
 
     Entity type codes (from the specification; the full list is printed by
@@ -369,17 +369,18 @@ def prepare_2429(
     if type(groups) != list:
          raise TypeError('groups must be in a list, also a single group')
     for item in groups:
+        # check the group; the active set numbers are optional (default 0)
         prepare_group(
-            item['group_number'],
-            item['group_name'],
-            item['entity_type_code'],
-            item['entity_tag'],
-            item['active_constraint_set_no_for_group'],
-            item['active_restraint_set_no_for_group'],
-            item['active_load_set_no_for_group'],
-            item['active_dof_set_no_for_group'],
-            item['active_temperature_set_no_for_group'],
-            item['active_contact_set_no_for_group'])
+            group_number=item['group_number'],
+            group_name=item['group_name'],
+            entity_type_code=item['entity_type_code'],
+            entity_tag=item['entity_tag'],
+            active_constraint_set_no_for_group=item.get('active_constraint_set_no_for_group', 0),
+            active_restraint_set_no_for_group=item.get('active_restraint_set_no_for_group', 0),
+            active_load_set_no_for_group=item.get('active_load_set_no_for_group', 0),
+            active_dof_set_no_for_group=item.get('active_dof_set_no_for_group', 0),
+            active_temperature_set_no_for_group=item.get('active_temperature_set_no_for_group', 0),
+            active_contact_set_no_for_group=item.get('active_contact_set_no_for_group', 0))
 
     dataset={
         'type': 2429,
