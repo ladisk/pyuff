@@ -9,7 +9,12 @@ def _58(**kwargs):
                             data=np.arange(10) * (1 + 1j), x=np.arange(10.), id1='id1',
                             rsp_ent_name='n', ref_ent_name='n', abscissa_spacing=1,
                             abscissa_spec_data_type=18, ordinate_spec_data_type=12,
-                            orddenom_spec_data_type=13, **kwargs)
+                            **{'orddenom_spec_data_type': 13, **kwargs})
+
+
+def _58_without_orddenom(**kwargs):
+    # orddenom_spec_data_type is optional and defaults to 0, as the other specific data types
+    return _58(orddenom_spec_data_type=None, **kwargs)
 
 
 def _55(**kwargs):
@@ -30,7 +35,7 @@ def _164(**kwargs):
     return pyuff.prepare_164(units_code=1, length=1., force=1., temp=1., temp_offset=273.15, **kwargs)
 
 
-@pytest.mark.parametrize('prepare', [_58, _55, _15, _82, _164])
+@pytest.mark.parametrize('prepare', [_58, _58_without_orddenom, _55, _15, _82, _164])
 def test_write_full_dict(tmp_path, prepare):
     # the optional fields of the full dictionary are None and get their default values
     full = prepare(return_full_dict=True)

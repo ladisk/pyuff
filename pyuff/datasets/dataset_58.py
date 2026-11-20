@@ -868,6 +868,7 @@ def _write58(fh, dset, mode='add', force_double=True):
                 'spec_data_type': 0,
                 'abscissa_spec_data_type': 0,
                 'ordinate_spec_data_type': 0,
+                'orddenom_spec_data_type': 0,
                 'z_axis_spec_data_type': 0,
                 'version_num': 0,
                 'abscissa_spacing': 0}
