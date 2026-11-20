@@ -100,34 +100,52 @@ def prepare_82(
         nodes=None,
         return_full_dict=False):
 
-    """Name: Tracelines
+    """Prepare data-set 82 (trace lines) for writing.
 
-    R-Record, F-Field
+    A trace line connects nodes (data-set 15 or 2411) with straight lines to
+    draw the wireframe of the measured structure, for example for animating
+    mode shapes. Each data-set 82 holds one trace line; write a list of
+    data-sets for several lines. ``pyuff.tools.convert_dataset_2412_to_82``
+    creates trace lines from the elements of data-set 2412.
 
-    :param trace_num: R1 F1, Trace line number
-    :param n_nodes: R1 F2, number of nodes defining trace line (maximum of 250), ignored
-    :param color: R1 F3, color, optional
-    :param id: R2 F1, identification line, optional
-    :param nodes: R3 F1, nodes defining trace line (0 move to node, >0 draw line to node)
-    
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
-    
-    **Test prepare_82**
+    Parameters
+    ----------
+    trace_num : int
+        Trace line number (record 1, field 1).
+    n_nodes : int, optional
+        Number of nodes defining the trace line (maximum 250) (record 1,
+        field 2). Ignored when writing: the writer computes it from ``nodes``.
+    color : int, optional
+        Color number, used only for display (record 1, field 3). Default: 0.
+    id : str, optional
+        Identification line, i.e. the name of the trace line, up to 80
+        characters; longer text is truncated with a warning. The specification
+        does not allow a blank line (record 2, field 1). Default: ``'NONE'``.
+    nodes : numpy.ndarray of int
+        Node labels along the line: a positive label draws a line to that
+        node, 0 starts a new segment (move to the next node without drawing);
+        a move to the first node is implied (record 3). Must be a NumPy array,
+        not a list.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_82(
-    >>>     trace_num=2,
-    >>>     n_nodes=7,
-    >>>     color=30,
-    >>>     id='Identification line',
-    >>>     nodes=np.array([0, 10, 13, 14, 15, 16, 17]))
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
+    Examples
+    --------
+    A rectangle through nodes 1 to 4 and a separate line from node 5 to 6:
+
+    >>> import numpy as np
+    >>> import pyuff
+    >>> line = pyuff.prepare_82(
+    ...     trace_num=1,
+    ...     id='Frame',
+    ...     nodes=np.array([1, 2, 3, 4, 1, 0, 5, 6]))
+    >>> pyuff.UFF('trace_lines.uff').write_sets(line, mode='overwrite')
     """
 
     if np.array(trace_num).dtype != int and trace_num != None:

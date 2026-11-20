@@ -126,42 +126,66 @@ def prepare_18(
         x_point=None,
         xz_point=None,
         return_full_dict=False):
-    """Name: Coordinate Systems
+    """Prepare data-set 18 (coordinate systems) for writing.
 
-    R-Record, F-Field
+    Data-set 18 defines local coordinate systems by three points given in a
+    reference coordinate system: the origin, a point on the +x axis and a point
+    in the +xz plane. Nodes (data-set 15 or 2411) refer to these systems by
+    number. Data-set 2420 is the newer alternative, which defines each system
+    by a transformation matrix. All parameters describe the same coordinate
+    systems; arrays must have one entry (or row) per system.
 
-    :param cs_num: R1 F1, Coordinate system number (array of int)
-    :param cs_type: R1 F2, Coordinate system type (array of int)
-    :param ref_cs_num: R1 F3, Reference coordinate system number (array of int)
-    :param color: R1 F4, Color (array of int)
-    :param method: R1 F5, Method of definition (array of int, 1=origin+x+xz)
-    :param cs_name: R2 F1, Coordinate system name (list of str)
-    :param ref_o: R3 F1-3, Origin of new system in reference system (Nx3 array)
-    :param x_point: R3 F4-6, Point on +x axis in reference system (Nx3 array)
-    :param xz_point: R3 F7-9, Point on +xz plane in reference system (Nx3 array)
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Parameters
+    ----------
+    cs_num : array_like of int
+        Coordinate system numbers (record 1, field 1).
+    cs_type : array_like of int, optional
+        Coordinate system type of each system: 0 Cartesian, 1 cylindrical,
+        2 spherical (the codes of data-set 2420) (record 1, field 2).
+        Default: 0 for all systems.
+    ref_cs_num : array_like of int
+        Number of the reference coordinate system in which the three points
+        are given; 0 is the global system (record 1, field 3).
+    color : array_like of int, optional
+        Color number of each system, used only for display (record 1,
+        field 4). Default: 0 for all systems.
+    method : array_like of int, optional
+        Method of definition; the specification defines only 1 (origin, +x
+        axis, +xz plane) (record 1, field 5). Default: 1 for all systems.
+    cs_name : list of str, optional
+        Coordinate system names, up to 40 characters; longer names are
+        truncated with a warning (record 2, field 1). Default: empty names.
+    ref_o : array_like of float, shape (n, 3)
+        Origin of each system, given in its reference system (record 3,
+        fields 1-3).
+    x_point : array_like of float, shape (n, 3)
+        Point on the +x axis of each system, given in its reference system
+        (record 3, fields 4-6).
+    xz_point : array_like of float, shape (n, 3)
+        Point in the +xz plane of each system, given in its reference system
+        (record 3, fields 7-9).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    **Test prepare_18**
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    A system at x = 1, rotated by 90 degrees about the global z axis:
 
     >>> import pyuff
-    >>> import os
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_18(
-    >>>     cs_num=[1, 2],
-    >>>     cs_type=[0, 0],
-    >>>     ref_cs_num=[0, 0],
-    >>>     color=[1, 1],
-    >>>     method=[1, 1],
-    >>>     cs_name=['CS1', 'CS2'],
-    >>>     ref_o=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]],
-    >>>     x_point=[[1.0, 0.0, 0.0], [2.0, 0.0, 0.0]],
-    >>>     xz_point=[[0.0, 0.0, 1.0], [1.0, 0.0, 1.0]])
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    >>> systems = pyuff.prepare_18(
+    ...     cs_num=[1],
+    ...     ref_cs_num=[0],
+    ...     cs_name=['Sensor 1'],
+    ...     ref_o=[[1.0, 0.0, 0.0]],
+    ...     x_point=[[1.0, 1.0, 0.0]],
+    ...     xz_point=[[1.0, 0.0, 1.0]])
+    >>> pyuff.UFF('coordinate_systems.uff').write_sets(systems, mode='overwrite')
     """
     dataset = {
         'type': 18,

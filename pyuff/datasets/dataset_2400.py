@@ -114,50 +114,70 @@ def prepare_2400(
         primary_parent_uid=None,
         optimization_switches=None,
         return_full_dict=False):
-    """Name: Model Header
+    """Prepare data-set 2400 (model header) for writing.
 
-    R-Record, F-Field
+    The model header identifies the model (finite element or test model) to
+    which the following data-sets belong: its unique identifier, name, part
+    number, creation date and parent entities in the data management system
+    of the program that wrote the file. Most fields matter only to that
+    program; all are optional when writing. For a general file header see
+    data-set 151.
 
-    :param model_uid: R1 F1, Model UID
-    :param entity_type: R1 F2, Entity type
-    :param entity_subtype: R1 F3, Entity subtype
-    :param version_number: R1 F4, Version number
-    :param entity_name: R2 F1, Entity name
-    :param part_number: R3 F1, Part number
-    :param status_mask: R4 F1, Status mask (list of 32 integers)
-    :param date: R5 F1, Date (DD-MMM-YY)
-    :param time: R5 F2, Time (HH:MM:SS)
-    :param idm_version_id: R5 F3, IDM version ID
-    :param idm_item_id: R5 F4, IDM item ID
-    :param primary_parent_uid: R5 F5, Primary parent UID
-    :param optimization_switches: R6 F1, Optimization switches
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Parameters
+    ----------
+    model_uid : int, optional
+        Model unique identifier (record 1, field 1). Default: 0.
+    entity_type : int, optional
+        Entity type (record 1, field 2). Default: 0.
+    entity_subtype : int, optional
+        Entity subtype (record 1, field 3). Default: 0.
+    version_number : int, optional
+        Version number (record 1, field 4). Default: 0.
+    entity_name : str, optional
+        Entity (model) name, up to 80 characters; longer text is truncated
+        with a warning (record 2, field 1). Default: empty.
+    part_number : str, optional
+        Part number, up to 80 characters; longer text is truncated with a
+        warning (record 3, field 1). Default: empty.
+    status_mask : list of int, optional
+        Status mask, a list of exactly 32 integers (record 4, field 1).
+        Default: 32 zeros.
+    date : str, optional
+        Date in the form ``'DD-MMM-YY'``, e.g. ``'27-FEB-26'``, up to 10
+        characters (record 5, field 1). Default: empty.
+    time : str, optional
+        Time in the form ``'HH:MM:SS'``, up to 10 characters (record 5,
+        field 2). Default: empty.
+    idm_version_id : int, optional
+        IDM (data management) version ID (record 5, field 3). Default: 0.
+    idm_item_id : int, optional
+        IDM item ID (record 5, field 4). Default: 0.
+    primary_parent_uid : int, optional
+        Unique identifier of the primary parent entity (record 5, field 5).
+        Default: 0.
+    optimization_switches : {0, 1, 2, 3}, optional
+        Optimization switches (record 6, field 1): 0 geometry off and
+        analysis off, 1 geometry on and analysis off, 2 geometry off and
+        analysis on, 3 geometry on and analysis on. Default: 0.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    **Test prepare_2400**
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
+    Examples
+    --------
     >>> import pyuff
-    >>> import os
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_2400(
-    >>>     model_uid=1,
-    >>>     entity_type=7,
-    >>>     entity_subtype=-1,
-    >>>     version_number=0,
-    >>>     entity_name='MyModel',
-    >>>     part_number='PART-001',
-    >>>     status_mask=[0]*32,
-    >>>     date='27-FEB-26',
-    >>>     time='12:00:00',
-    >>>     idm_version_id=0,
-    >>>     idm_item_id=0,
-    >>>     primary_parent_uid=0,
-    >>>     optimization_switches=0)
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    >>> header = pyuff.prepare_2400(
+    ...     model_uid=1,
+    ...     entity_name='Beam',
+    ...     part_number='PART-001',
+    ...     date='27-FEB-26',
+    ...     time='12:00:00')
+    >>> pyuff.UFF('model_header.uff').write_sets(header, mode='overwrite')
     """
     if np.array(model_uid).dtype != int and model_uid != None:
         raise TypeError('model_uid must be integer')

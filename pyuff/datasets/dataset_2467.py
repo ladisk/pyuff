@@ -162,26 +162,76 @@ def prepare_group(
         active_temperature_set_no_for_group=0,
         active_contact_set_no_for_group=0,
         return_full_dict=False):
-    """Name: Permanent Groups
+    """Prepare one group of data-set 2467 (permanent groups) for writing.
 
-    R-Record, F-Field
+    A group is a named set of entities of the model, e.g. the nodes of the measurement points on
+    one part of a structure or the elements of a substructure. Each entity is given by an entity
+    type code, an entity tag (the label of the node, element, ...), an entity node leaf id and an
+    entity component id; the four entity arrays have the same length, the number of entities,
+    which is taken from the length of ``entity_type_code`` when writing. The groups are
+    collected in a list and passed to :func:`pyuff.prepare_2467`.
 
-    :param group_number: R1 F1, group number
-    :param group_name: R2 F1, group name
-    :param entity_type_code: R3-N, entity type code
-    :param entity_tag: R3-N, entity tag
-    :param entity_node_leaf_id: R3-N, entity node leaf id.
-    :param entity_component_id: R3-N, entity component/ ham id.
-    :param active_constraint_set_no_for_group: R1 F2, active constraint set no. for group
-    :param active_restraint_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_load_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_dof_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_temperature_set_no_for_group: R1 F3, active restraint set no. for group
-    :param active_contact_set_no_for_group: R1 F3, active restraint set no. for group
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    This function is not available as ``pyuff.prepare_group``, which prepares a group of
+    data-set 2429 without the node leaf and component ids; import it from
+    ``pyuff.datasets.dataset_2467``.
 
-    Records 1 and 2 are repeated for each permanent group in the model.
-    Record 3 is repeated multiple times for each group
+    Entity type codes are those of data-set 2429 (printed by
+    ``pyuff.datasets.dataset_2429.get_structure_2429()``), e.g. 7 nodes, 8 finite elements.
+
+    Parameters
+    ----------
+    group_number : int
+        Group number, a non-negative Python ``int`` (record 1, field 1).
+    group_name : str
+        Group name, not empty, up to 40 characters (record 2, field 1).
+    entity_type_code : array_like of int
+        Entity type code of each entity, see above (records 3 to N, fields 1 and 5).
+    entity_tag : array_like of int
+        Entity tag (label) of each entity (records 3 to N, fields 2 and 6).
+    entity_node_leaf_id : array_like of int
+        Entity node leaf id of each entity; 0 for all entities except reference points,
+        reference point series and coordinate systems (records 3 to N, fields 3 and 7).
+    entity_component_id : array_like of int
+        Entity component (ham) id of each entity; 0 for all entities except reference points,
+        reference point series and coordinate systems (records 3 to N, fields 4 and 8).
+    active_constraint_set_no_for_group : int, optional
+        Number of the active constraint set of the group; 0 for none (record 1, field 2).
+        Default: 0.
+    active_restraint_set_no_for_group : int, optional
+        Number of the active restraint set of the group; 0 for none (record 1, field 3).
+        Default: 0.
+    active_load_set_no_for_group : int, optional
+        Number of the active load set of the group; 0 for none (record 1, field 4). Default: 0.
+    active_dof_set_no_for_group : int, optional
+        Number of the active DOF set of the group; 0 for none (record 1, field 5). Default: 0.
+    active_temperature_set_no_for_group : int, optional
+        Number of the active temperature set of the group; 0 for none (record 1, field 6).
+        Default: 0.
+    active_contact_set_no_for_group : int, optional
+        Number of the active contact set of the group; 0 for none (record 1, field 7).
+        Default: 0.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        One group, to be put in the list of groups passed to :func:`pyuff.prepare_2467`.
+
+    Examples
+    --------
+    >>> import pyuff
+    >>> from pyuff.datasets.dataset_2467 import prepare_group
+    >>> sensors = prepare_group(
+    ...     group_number=1,
+    ...     group_name='Sensors',
+    ...     entity_type_code=[7, 7, 7],
+    ...     entity_tag=[1, 2, 3],
+    ...     entity_node_leaf_id=[0, 0, 0],
+    ...     entity_component_id=[0, 0, 0])
+    >>> groups = pyuff.prepare_2467([sensors])
+    >>> pyuff.UFF('sensor_group_2467.uff').write_sets(groups, mode='overwrite')
     """
 
     if type(group_number) != int:
@@ -249,10 +299,49 @@ def prepare_group(
 def prepare_2467(
         groups,
         return_full_dict = False):
-    """Name: Permanent Groups
+    """Prepare data-set 2467 (permanent groups) for writing.
 
-    :param groups: a list of permanent groups
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    The data-set holds named groups of entities of the model, e.g. the nodes of the measurement
+    points on one part of a structure or the elements of a substructure. It is the newer form of
+    data-set 2429: each entity has, besides the entity type code and the entity tag (the label of
+    the node, element, ...), an entity node leaf id and an entity component id; they are written
+    2 entities per line. Entity type codes are those of data-set 2429, e.g. 7 nodes, 8 finite
+    elements.
+
+    Each group is a dictionary, prepared with
+    :func:`pyuff.datasets.dataset_2467.prepare_group` or returned by
+    :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
+    ``'entity_type_code'``, ``'entity_tag'``, ``'entity_node_leaf_id'``,
+    ``'entity_component_id'`` and the six ``'active_..._set_no_for_group'`` keys. All keys are
+    required when writing; groups from ``pyuff.prepare_group`` (data-set 2429) cannot be written
+    as data-set 2467.
+
+    Parameters
+    ----------
+    groups : list of dict
+        The permanent groups, also a single group must be in a list (records 1 to N, repeated
+        for each group).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    A group of three nodes:
+
+    >>> import pyuff
+    >>> from pyuff.datasets.dataset_2467 import prepare_group
+    >>> sensors = prepare_group(
+    ...     group_number=1, group_name='Sensors',
+    ...     entity_type_code=[7, 7, 7], entity_tag=[1, 2, 3],
+    ...     entity_node_leaf_id=[0, 0, 0], entity_component_id=[0, 0, 0])
+    >>> groups = pyuff.prepare_2467([sensors])
+    >>> pyuff.UFF('groups_2467.uff').write_sets(groups, mode='overwrite')
     """
     # **Test prepare_2467**
     #>>> save_to_file = 'test_pyuff'

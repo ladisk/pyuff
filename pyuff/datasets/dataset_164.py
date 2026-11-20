@@ -94,45 +94,73 @@ def prepare_164(
         temp=None,
         temp_offset=None,
         return_full_dict=False):
-    """Name: Units
+    """Prepare data-set 164 (units) for writing.
 
-    R-Record, F-Field
+    Data-set 164 states the unit system in which the values of the other
+    data-sets in the file are given (coordinates, responses, forces). Besides
+    the unit system code, it gives the factors for converting the file units
+    to SI: a value in SI units is the value in file units divided by the
+    factor. For SI units all three factors are 1.
 
-    :param units_code: R1 F1, Units code: 
-        1 - SI: Meter (newton),
-        2 - BG: Foot (pound f),
-        3 - MG: Meter (kilogram f),
-        4 - BA: Foot (poundal),
-        5 - MM: mm (milli newton),
-        6 - CM: cm (centi newton),
-        7 - IN: Inch (pound f),
-        8 - GM: mm (kilogram f),
-        9 - US: USER_DEFINED
-    :param units_description: R1 F2, Units cription, optional
-    :param temp_mode: R1 F3, Temperature mode (1-absolute, 2-relative), optional
-    :param length: R2 F1, Length
-    :param force: R2 F2, Force
-    :param temp: R2 F3, Temperature
-    :param temp_offset: R2 F4, Temperature offset
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Parameters
+    ----------
+    units_code : int
+        Unit system (record 1, field 1):
 
-    **Test prepare_164**
+        - 1 SI: meter (newton)
+        - 2 BG: foot (pound force)
+        - 3 MG: meter (kilogram force)
+        - 4 BA: foot (poundal)
+        - 5 MM: mm (millinewton)
+        - 6 CM: cm (centinewton)
+        - 7 IN: inch (pound force)
+        - 8 GM: mm (kilogram force)
+        - 9 US: user defined
+    units_description : str, optional
+        Description of the unit system, for documentation only, up to 20
+        characters; longer text is truncated with a warning (record 1,
+        field 2). Default: ``'User unit system'``.
+    temp_mode : {1, 2}, optional
+        Temperature mode: 1 absolute, 2 relative (record 1, field 3).
+        Default: 1.
+    length : float
+        Length conversion factor, e.g. 3.28083989501312 for feet (record 2,
+        field 1).
+    force : float
+        Force conversion factor, e.g. 0.224808943099710 for pound force
+        (record 2, field 2).
+    temp : float
+        Temperature conversion factor, e.g. 1.8 for degrees Fahrenheit
+        (record 2, field 3).
+    temp_offset : float
+        Temperature offset, e.g. 273.15 for Celsius or 459.67 for Fahrenheit
+        (record 2, field 4).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_164(
-    >>>     units_code=1,
-    >>>     units_description='SI units',
-    >>>     temp_mode=1,
-    >>>     length=3.28083989501312334,
-    >>>     force=2.24808943099710480e-01,
-    >>>     temp=1.8,
-    >>>     temp_offset=459.67)
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Notes
+    -----
+    ``length``, ``force``, ``temp`` and ``temp_offset`` must be Python
+    ``float`` values (``1.0``, not ``1``).
+
+    Examples
+    --------
+    >>> import pyuff
+    >>> units = pyuff.prepare_164(
+    ...     units_code=1,
+    ...     units_description='SI units',
+    ...     temp_mode=2,
+    ...     length=1.0,
+    ...     force=1.0,
+    ...     temp=1.0,
+    ...     temp_offset=273.15)
+    >>> pyuff.UFF('units.uff').write_sets(units, mode='overwrite')
     """
 
     if units_code not in np.arange(10) and units_code != None:

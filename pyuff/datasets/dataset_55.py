@@ -592,92 +592,144 @@ def prepare_55(
         freq_step_n=None,
         node_nums=None,
         return_full_dict=False):
-    """
-    Name:   Data at Nodes
+    """Prepare data-set 55 (data at nodes) for writing.
 
-    R-Record, F-Field
+    Data-set 55 holds one set of values at the nodes of a model: one or more real or
+    complex values per node, e.g. a mode shape (normal or complex mode) or the response
+    shape at one frequency of a frequency response analysis. Each mode or frequency is a
+    separate data-set. The node coordinates are given in data-set 15 or 2411.
 
-    :param id1: R1 F1, ID Line 1, optional
-    :param id2: R2 F1, ID Line 2, optional
-    :param id3: R3 F1, ID Line 3, optional
-    :param id4: R4 F1, ID Line 4, optional
-    :param id5: R5 F1, ID Line 5, optional
+    pyuff writes the analysis types 2 (normal mode), 3 and 7 (complex eigenvalue) and
+    5 (frequency response). The fields of records 7 and 8 depend on the analysis type;
+    the fields not used by the given analysis type are ignored.
 
-    :param model_type: R6 F1, Model type, optional
-    :param analysis_type: R6 F2, Analysis type; currently only only normal mode (2), complex eigenvalue first order (displacement) (3), frequency response and (5) and complex eigenvalue second order (velocity) (7) are supported
-    :param data_ch: R6 F3, Data characteristic number
-    :param spec_data_type: R6 F4, Specific data type
-    :param data_type: R6 F5, Data type; real (2 or 4) or complex (5 or 6) follows from the
-        response arrays; 4 or 6 writes the values in double precision, otherwise in single precision
-        (6E13.5). Double precision is not part of the data-set 55 specification, which knows only data
-        types 2 and 5; the values are written as 4E20.12, as in data-set 58, and some readers (e.g.
-        SDynPy) do not read them. A data-set read from a double precision file keeps data type 4 or 6
-        and is therefore written in double precision.
-    :param n_data_per_node: R6 F6, Number of data values per node, ignored; it is the number of
-        response arrays given (r1; r1 to r3; r1 to r6)
+    Parameters
+    ----------
+    id1 : str, optional
+        ID line 1, e.g. the model identification, up to 80 characters (record 1,
+        field 1). Default: ``'NONE'``.
+    id2 : str, optional
+        ID line 2, e.g. the run identification, up to 80 characters (record 2,
+        field 1). Default: ``'NONE'``.
+    id3 : str, optional
+        ID line 3, e.g. the run date and time, up to 80 characters (record 3,
+        field 1). Default: ``'NONE'``.
+    id4 : str, optional
+        ID line 4, e.g. the load case name, up to 80 characters (record 4,
+        field 1). Default: ``'NONE'``.
+    id5 : str, optional
+        ID line 5, e.g. the mode number and frequency, up to 80 characters (record 5,
+        field 1). Default: ``'NONE'``.
+    model_type : {0, 1, 2, 3}, optional
+        Model type (record 6, field 1): 0 unknown, 1 structural, 2 heat transfer,
+        3 fluid flow. Default: 1.
+    analysis_type : {2, 3, 5, 7}
+        Analysis type (record 6, field 2): 2 normal mode, 3 complex eigenvalue first
+        order, 5 frequency response, 7 complex eigenvalue second order. The
+        specification also defines 0 unknown, 1 static, 4 transient and 6 buckling,
+        which pyuff does not write.
+    data_ch : {0, 1, 2, 3, 4, 5}
+        Data characteristic (record 6, field 3), which implies the number of values
+        per node: 0 unknown, 1 scalar (1 value), 2 3-DOF global translation vector
+        (3 values: X, Y, Z), 3 6-DOF global translation and rotation vector
+        (6 values: X, Y, Z, RX, RY, RZ), 4 symmetric global tensor (6 values: SXX,
+        SXY, SYY, SXZ, SYZ, SZZ), 5 general global tensor (9 values). pyuff does not
+        check that it agrees with the number of response arrays ``r1``, ``r2``, ...
+    spec_data_type : int
+        Specific data type, 0 to 18 (record 6, field 4): 0 unknown, 1 general,
+        2 stress, 3 strain, 4 element force, 5 temperature, 6 heat flux, 7 strain
+        energy, 8 displacement, 9 reaction force, 10 kinetic energy, 11 velocity,
+        12 acceleration, 13 strain energy density, 14 kinetic energy density,
+        15 hydro-static pressure, 16 heat gradient, 17 code checking value,
+        18 coefficient of pressure. For data from I-DEAS Test, 13 is excitation force,
+        15 pressure, 16 mass, 17 time and 18 frequency.
+    data_type : {2, 4, 5, 6}, optional
+        Data type (record 6, field 5): 2 real single precision, 4 real double
+        precision, 5 complex single precision, 6 complex double precision. Whether
+        the data is real or complex is set by pyuff from the response arrays (complex
+        if any of them is complex); this parameter only selects the precision: 4 or 6
+        writes the values in double precision, any other value or none in single
+        precision (6E13.5). Double precision is not part of the data-set 55
+        specification, which knows only data types 2 and 5; the values are written as
+        4E20.12, as in data-set 58, and some readers (e.g. SDynPy) do not read them. A
+        data-set read from a double precision file keeps data type 4 or 6 and is
+        therefore written in double precision. Default: single precision.
+    n_data_per_node : int, optional
+        Number of data values per node (record 6, field 6). Ignored when writing:
+        pyuff writes the number of response arrays given (``r1``, ``r2``, ... up to
+        the first one that is missing or None).
+    r1, r2, r3, r4, r5, r6 : array_like of float or complex
+        Response values at the nodes, one array per value at a node, each with the
+        same length as ``node_nums`` (record 10). The order follows ``data_ch``: for a
+        scalar give ``r1``; for a 3-DOF translation ``r1``, ``r2``, ``r3`` are the X,
+        Y and Z components; for a 6-DOF vector ``r4``, ``r5``, ``r6`` are the
+        rotations RX, RY, RZ; for a symmetric tensor ``r1`` to ``r6`` are SXX, SXY,
+        SYY, SXZ, SYZ, SZZ. ``r1`` is required; the number of arrays given sets the
+        number of values per node. For a general tensor (9 values) add the keys
+        ``'r7'``, ``'r8'`` and ``'r9'`` to the returned dictionary. If any array is
+        complex, all values are written as complex (real and imaginary part).
+    load_case : int
+        Load case number (record 7, field 3). Required for all analysis types.
+    mode_n : int
+        Mode number (record 7, field 4). Required for analysis types 2, 3 and 7.
+    freq : float
+        Frequency in Hz (record 8, field 1). Required for analysis types 2 (natural
+        frequency) and 5 (frequency of the response).
+    modal_m : float, optional
+        Modal mass (record 8, field 2). Used for analysis type 2. Default: 0.
+    modal_damp_vis : float, optional
+        Modal viscous damping ratio (record 8, field 3). Used for analysis type 2.
+        Default: 0.
+    modal_damp_his : float, optional
+        Modal hysteretic damping ratio (record 8, field 4). Used for analysis
+        type 2. Default: 0.
+    eig : complex
+        Eigenvalue; its real and imaginary part are written (record 8, fields 1 and
+        2). Required for analysis types 3 and 7.
+    modal_a : complex, optional
+        Modal A; its real and imaginary part are written (record 8, fields 3 and 4).
+        Used for analysis types 3 and 7. Default: 0.
+    modal_b : complex, optional
+        Modal B; its real and imaginary part are written (record 8, fields 5 and 6).
+        Used for analysis types 3 and 7. Default: 0.
+    freq_step_n : int
+        Frequency step number (record 7, field 4). Required for analysis type 5.
+    node_nums : array_like of int
+        Node numbers, one for each value in ``r1``, ``r2``, ... (record 9, field 1).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    R7 and R8 are analysis type specific:
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
-    :param r1: Response array for DOF 1,
-    :param r2: Response array for DOF 2,
-    :param r3: Response array for DOF 3,
-    :param r4: Response array for DOF 4,
-    :param r5: Response array for DOF 5,
-    :param r6: Response array for DOF 6,
-    :param load_case: R7 F3, Load case number 
-    :param mode_n: R7 F4, Mode number
-    :param freq: R8 F1, Frequency (Hertz) 
-    :param modal_m: R8 F2, Modal mass, optional
-    :param modal_damp_vis: R8 F3, Modal viscous damping ratio, optional
-    :param modal_damp_his: R8 F4, Modal hysteric damping ratio, optional
-    :param eig: R8 F1: Real part Eigenvalue, R8 F2: Imaginary part Eigenvalue
-    :param modal_a: R8 F3: Real part of Modal A, R8 F4: Imaginary part of Modal A, optional
-    :param modal_b: R8 F5: Real part of Modal B, R8 F6: Imaginary part of Modal B, optional
-    :param freq_step_n: R7 F4, Frequency step number
-    :param node_nums: R9 F1 Node number
+    Examples
+    --------
+    Write the first two mode shapes of a model with four nodes, as 3-DOF translations:
 
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
-
-    **Test prepare_55**
-
-    >>> save_to_file = 'test_pyuff'
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>> uff_datasets = []
-    >>> modes = [1, 2, 3]
-    >>> node_nums = [1, 2, 3, 4]
-    >>> freqs = [10.0, 12.0, 13.0]
-    >>> for i, b in enumerate(modes):
-    >>>     mode_shape = np.random.normal(size=len(node_nums))
-    >>>     name = 'TestCase'
-    >>>     data = pyuff.prepare_55(
-    >>>         model_type=1,
-    >>>         id1='NONE',
-    >>>         id2='NONE',
-    >>>         id3='NONE',
-    >>>         id4='NONE',
-    >>>         id5='NONE',
-    >>>         analysis_type=2,
-    >>>         data_ch=2,
-    >>>         spec_data_type=8,
-    >>>         data_type=2,
-    >>>         r1=mode_shape,
-    >>>         r2=mode_shape,
-    >>>         r3=mode_shape,
-    >>>         n_data_per_node=3,
-    >>>         node_nums=[1, 2, 3, 4],
-    >>>         load_case=1,
-    >>>         mode_n=i + 1,
-    >>>         modal_m=0,
-    >>>         freq=freqs[i],
-    >>>         modal_damp_vis=0.,
-    >>>         modal_damp_his=0.)
-    >>>     uff_datasets.append(data.copy())
-    >>>     if save_to_file:
-    >>>         uffwrite = pyuff.UFF(save_to_file)
-    >>>         uffwrite._write_set(data, 'add')
-    >>> uff_datasets
+    >>> import numpy as np
+    >>> import pyuff
+    >>> node_nums = np.array([1, 2, 3, 4])
+    >>> freqs = [10.0, 25.0]
+    >>> phi = np.random.default_rng(0).normal(size=(2, 3, len(node_nums)))
+    >>> mode_shapes = [
+    ...     pyuff.prepare_55(
+    ...         id1='Beam mode shapes',
+    ...         analysis_type=2,
+    ...         data_ch=2,
+    ...         spec_data_type=8,
+    ...         load_case=1,
+    ...         mode_n=i + 1,
+    ...         freq=freqs[i],
+    ...         modal_damp_vis=0.01,
+    ...         node_nums=node_nums,
+    ...         r1=phi[i, 0],
+    ...         r2=phi[i, 1],
+    ...         r3=phi[i, 2])
+    ...     for i in range(len(freqs))]
+    >>> pyuff.UFF('mode_shapes.uff').write_sets(mode_shapes, mode='overwrite')
     """
 
     if type(id1) != str and id1 != None:

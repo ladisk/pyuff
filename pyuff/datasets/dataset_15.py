@@ -87,37 +87,58 @@ def prepare_15(
         z=None,
         return_full_dict=False
         ):
-    """Name: Nodes
-    
-    R-Record, F-Field
+    """Prepare data-set 15 (nodes) for writing.
 
-    :param node_nums: R1 F1, node label
-    :param def_cs: R1 F2, deformation coordinate system numbers, optional
-    :param disp_cs: R1 F3, displacement coordinate system numbers, optional
-    :param color: R1 F4, color, optional
-    :param x: R1 F5, Dimensional coordinate of node in the definition system
-    :param y: R1 F6, Dimensional coordinate of node in the definition system
-    :param z: R1 F7, Dimensional coordinate of node in the definition system
-    
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Data-set 15 holds the node labels and their coordinates in single
+    precision; it is the older, simpler alternative to data-set 2411, which
+    stores the coordinates in double precision. The nodes are the points of
+    the geometry to which, for example, the response degrees of freedom of
+    data-set 58 refer and between which trace lines (data-set 82) are drawn.
+    All arrays describe the same nodes and must have the same length.
 
-    **Test prepare_15**
+    Parameters
+    ----------
+    node_nums : array_like of int
+        Node labels (record 1, field 1).
+    def_cs : array_like of int, optional
+        Definition coordinate system number of each node, i.e. the coordinate
+        system (data-set 18 or 2420) in which ``x``, ``y`` and ``z`` are given;
+        0 is the global system. Same length as ``node_nums`` (record 1,
+        field 2). Default: 0 for all nodes.
+    disp_cs : array_like of int, optional
+        Displacement coordinate system number of each node, i.e. the coordinate
+        system in which the displacements (responses) at the node are expressed;
+        0 is the global system. Same length as ``node_nums`` (record 1,
+        field 3). Default: 0 for all nodes.
+    color : array_like of int, optional
+        Color number of each node, used only for display. Same length as
+        ``node_nums`` (record 1, field 4). Default: 0 for all nodes.
+    x : array_like of float
+        x coordinate of each node in its definition coordinate system. Same
+        length as ``node_nums`` (record 1, field 5).
+    y : array_like of float
+        y coordinate of each node (record 1, field 6).
+    z : array_like of float
+        z coordinate of each node (record 1, field 7).
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    >>> save_to_file = 'test_pyuff'
-    >>> dataset = pyuff.prepare_15(
-    >>>     node_nums=[16, 17, 18, 19, 20],
-    >>>     def_cs=[11, 11, 11, 12, 12],
-    >>>     disp_cs=[16, 16, 17, 18, 19],
-    >>>     color=[1, 3, 4, 5, 6],  # I10,
-    >>>     x=[0.0, 1.53, 0.0, 1.53, 0.0],
-    >>>     y=[0.0, 0.0, 3.84, 3.84, 0.0],
-    >>>     z=[0.0, 0.0, 0.0, 0.0, 1.83])
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>>     uffwrite = pyuff.UFF(save_to_file)
-    >>>     uffwrite._write_set(dataset, 'add')
-    >>> dataset
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pyuff
+    >>> nodes = pyuff.prepare_15(
+    ...     node_nums=np.array([1, 2, 3, 4]),
+    ...     x=np.array([0.0, 0.5, 1.0, 1.5]),
+    ...     y=np.zeros(4),
+    ...     z=np.zeros(4))
+    >>> pyuff.UFF('beam_nodes.uff').write_sets(nodes, mode='overwrite')
     """
 
     if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:

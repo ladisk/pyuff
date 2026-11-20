@@ -7,7 +7,7 @@ This module defines an UFF class to manipulate with the
 UFF (Universal File Format) files, i.e., to read from and write
 to UFF files. Among the variety of UFF formats, only some of the
 formats (data-set types) frequently used in structural dynamics
-are supported: **15, 55, 58, 58b, 82, 151, 164, 1858, 2400, 2411, 2412, 2414, 2420, 2429, 2467** 
+are supported: **15, 18, 55, 58, 58b, 82, 151, 164, 1858, 2400, 2411, 2412, 2414, 2420, 2429, 2467** 
 Data-set **58b** is actually a hybrid format [1]_ where the signal is written in the
 binary form, while the header-part is slightly different from 58 but still in the
 ascii format.
@@ -31,12 +31,12 @@ Acknowledgement:
     * The package is maintained by Janko Slavič <janko.slavic@fs.uni-lj.si>
 
 Notes:
-    * by default 58 data-set is written in double precision (see option `force_double=True`),
-      even if it is read in single precision ().
-      
-    Example:
+    * by default 58 data-set is written in double precision (see option ``force_double=True``),
+      even if it is read in single precision.
+
+Example:
     >>> import pyuff
-    >>> uff_file = pyuff.UFF('beam.uff')
+    >>> uff_file = pyuff.UFF('data/beam.uff')
     >>> uff_file.file_exists()
     True
 """
@@ -66,36 +66,37 @@ _SUPPORTED_SETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2
 
 class UFF:
     """
-    Manages data reading and writing from/to the UFF file.
-    
-    The UFF class instance requires exactly 1 parameter - a file name of a
-    universal file. If the file does not exist, no basic file info will be
-    extracted and the status will be False - indicating that the file is not
-    refreshed. Hovewer, when one tries to read one or more data-sets, the file
-    must exist or the Exception will be raised.
-    
-    The file, given as a parameter to the UFF instance, is open only when
-    reading from or writing to the file. The UFF instance refreshes the file
-    automatically - use ``UFF.get_status()`` to see the refresh status); note
-    that this works fine if the file is being changed only through the UFF
-    instance and not by other functions or even by other means, e.g.,
-    externally. If the file is changed externally, the ``UFF.refresh()`` should
-    be invoked before any reading or writing.
-    
-    All array-type data are read/written using numpy's ``np.array`` module.
+    A universal file (UFF/UNV), for reading and writing its data-sets.
+
+    A universal file is a text file of data-sets, each between two lines ``    -1``. Each
+    data-set is read into a dictionary: its ``type`` key is the data-set number (e.g. 58)
+    and the other keys are the fields of the data-set. Numerical data are NumPy arrays.
+
+    The file is opened only while reading or writing. When the object is created, the file
+    (if it exists) is indexed: the number, types and formats of its data-sets are found.
+    The index is updated after writing through this object; if the file is changed by
+    other means, call :meth:`refresh` before reading.
+
+    Parameters
+    ----------
+    filename : str or path-like
+        Name of the file. It does not need to exist for writing.
+    fileName : str, optional
+        Deprecated alias of ``filename``.
+
+    Examples
+    --------
+    >>> import pyuff
+    >>> uff_file = pyuff.UFF('data/beam.uff')
+    >>> uff_file.get_n_sets()
+    7
+    >>> data = uff_file.read_sets()
+    >>> data[0]['type']
+    151
     """
 
     def __init__(self, filename=None, fileName=None):
-        """
-        Initializes the uff object and extract the basic info: 
-        the number of sets, types of the sets and format of the sets (ascii
-        or binary). To manually refresh this info, call the refresh method
-        manually.
-        
-        Whenever some data is written to a file, a read-only flag 
-        indicates that the file needs to be refreshed - before any reading,
-        the file is refreshed automatically (when needed).
-        """
+        """Index the file, if it exists (see :meth:`refresh`)."""
         # Some "private" members
         if filename != None:
             self._filename = filename
@@ -116,57 +117,94 @@ class UFF:
         self.refresh()
 
     def get_supported_sets(self):
-        """Returns a list of data-sets supported for reading and writing."""
+        """
+        Return the data-set types that can be read and written.
+
+        Returns
+        -------
+        list of str
+            Data-set types, e.g. ``'58'``; ``'58b'`` is the binary form of data-set 58.
+        """
         return _SUPPORTED_SETS
 
     def get_n_sets(self):
         """
-        Returns the number of valid sets found in the file."""
+        Return the number of data-sets in the file.
+
+        Returns
+        -------
+        int
+            Number of data-sets, including those of types that are not supported.
+        """
         if not self._refreshed:
             self.refresh()
         return self._n_sets
 
     def get_set_types(self):
         """
-        Returns an array of data-set types. All valid data-sets are returned,
-        even those that are not supported, i.e., whose contents will not be
-        read.
+        Return the type of each data-set in the file.
+
+        Returns
+        -------
+        numpy.ndarray
+            Data-set types (e.g. 151, 164, 58), in the order of the data-sets in the file,
+            including the types that are not supported.
         """
         if not self._refreshed:
             self.refresh()
         return self._set_types
 
     def get_set_formats(self):
-        """Returns an array of data-set formats: 0=ascii, 1=binary."""
+        """
+        Return the format of each data-set in the file.
+
+        Returns
+        -------
+        numpy.ndarray
+            0 for an ASCII data-set and 1 for a binary data-set (58b), in the order of the
+            data-sets in the file.
+        """
         if not self._refreshed:
             self.refresh()
         return self._set_formats
 
     def get_file_name(self):
-        """Returns the file name (as a string) associated with the uff object."""
+        """Return the name of the file, as given when the object was created."""
         return self._filename
 
     def file_exists(self):
         """
-        Returns true if the file exists and False otherwise. If the file does
-        not exist, invoking one of the read methods would raise the Exception
-        exception.
+        Return whether the file exists.
+
+        Returns
+        -------
+        bool
+            True if the file exists; reading a file that does not exist raises an exception.
         """
         return os.path.exists(self._filename)
 
     def get_status(self):
         """
-        Returns the file status, i.e., True if the file is refreshed and
-        False otherwise.
+        Return whether the index of the file is up to date.
+
+        Returns
+        -------
+        bool
+            True if the file has been indexed since it was last written through this
+            object.
         """
         return self._refreshed
 
     def refresh(self):
         """
-        Extract/refreshes the info of all the sets from UFF file (if the file
-        exists). The file must exist and must be accessable otherwise, an
-        error is raised. If the file cannot be refreshed, False is returned and
-        True otherwise.
+        Index the file again: find the number, types and formats of its data-sets.
+
+        Call this method when the file was changed by other means than through this object.
+
+        Returns
+        -------
+        bool
+            True if the file was indexed, False if it does not exist.
         """
         self._refreshed = False
         if not self.file_exists():
@@ -245,18 +283,31 @@ class UFF:
 
     def read_sets(self, setn=None, header_only=False):
         """
-        Reads sets.
-        
-        The method returns a list of dset dictionaries - as many dictionaries as there are sets. 
-        Unknown data-sets are returned empty.
-        User must be sure that, since the last reading/writing/refreshing,
-        the data has not changed by some other means than through the
-        UFF object.
-        
-        :param setn: None(default), all sets are read in None (default). 
-                     If a number is given, then only a particular set is read. 
-        :param header_only: False (default), if True header is read, only
-                     This usefull for large files.         
+        Read data-sets from the file.
+
+        Parameters
+        ----------
+        setn : int or list of int, optional
+            Index of the data-set to read (0 for the first one), or a list of indices.
+            If None (default), all data-sets are read.
+        header_only : bool, optional
+            If True, data-sets 58 are read without their data values (``x`` and
+            ``data``), which is faster for large files. Default: False.
+
+        Returns
+        -------
+        dict or list of dict
+            One dictionary for each data-set read; a single dictionary if one data-set
+            is read. Data-sets of unsupported types give only ``{'type': N}``.
+
+        Examples
+        --------
+        >>> import pyuff
+        >>> uff_file = pyuff.UFF('data/beam.uff')
+        >>> header = uff_file.read_sets(0)
+        >>> frfs = uff_file.read_sets([4, 5, 6])
+        >>> len(frfs)
+        3
         """
         dset = []
         if not self.file_exists():
@@ -285,29 +336,37 @@ class UFF:
 
     def write_sets(self, dsets, mode='add', force_double=True):
         """
-        Writes several UFF data-sets to the file.  The mode can be
-        either 'add' (default) or 'overwrite'. The dsets is a
-        list of dictionaries, each representing one data-set. Unsupported
-        data-sets will be ignored. When only 1 data-set is to be written, no
-        lists are necessary, i.e., only one dictionary is required.
+        Write data-sets to the file.
 
-        For each data-set, there are some optional and some required fields at
-        dset dictionary. Also, in general, the sum of the required
-        and the optional fields together can be less then the number of fields
-        read from the same type of data-set; the reason is that for some
-        data-sets some fields are set automatically. Optional fields are
-        calculated automatically and the dset is updated - as dset is actually
-        an alias (aka pointer), this is reflected at the caller too.
+        The data-sets are dictionaries, as returned by the ``prepare_*`` functions (e.g.
+        :func:`pyuff.prepare_58`) or by :meth:`read_sets`. Optional fields that are missing
+        or None get their default values; the dictionaries are updated with them.
 
-        NaN and infinite values in ``data`` are written as 0 and as the
-        largest finite float, respectively, with a warning.
+        Text longer than its field is truncated, with a warning. NaN and infinite values
+        in ``data`` are written as 0 and as the largest finite float, with a warning.
 
-        Parameters:
+        Parameters
+        ----------
+        dsets : dict or list of dict
+            The data-sets to write.
+        mode : {'add', 'overwrite'}, optional
+            ``'add'`` (default) appends the data-sets to the file; ``'overwrite'`` starts a
+            new file.
+        force_double : bool, optional
+            If True (default), data-set 58 is written in double precision, also if it was
+            read in single precision. If False, the precision is given by
+            ``ord_data_type`` of each data-set (2 and 5 single, 4 and 6 double).
 
-        - ``dsets``: a dictionary, or a list of dictionaries, one per data-set
-        - ``mode``: ``'add'`` (default) or ``'overwrite'``
-        - ``force_double``: ``True`` (default) or ``False``; single precision should be
-          avoided, therefore by default data is saved with double precision.
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pyuff
+        >>> frf = pyuff.prepare_58(
+        ...     func_type=4, rsp_node=1, rsp_dir=3, ref_node=1, ref_dir=3,
+        ...     data=np.ones(5, dtype=complex), x=np.arange(5.0), abscissa_spacing=1,
+        ...     abscissa_spec_data_type=18, ordinate_spec_data_type=12,
+        ...     orddenom_spec_data_type=13)
+        >>> pyuff.UFF('frf.uff').write_sets([frf], mode='overwrite')
         """
         if (not type(dsets).__name__ == 'list'):
             dsets = [dsets]

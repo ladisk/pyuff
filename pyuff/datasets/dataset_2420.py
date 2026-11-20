@@ -119,18 +119,58 @@ def prepare_2420(
         CS_names=None,
         CS_matrices=None,
         return_full_dict=False):
-    """Name: Coordinate Systems
+    """Prepare data-set 2420 (coordinate systems) for writing.
 
-    R-Record, F-Field
+    The data-set holds the coordinate systems of a part. Nodes of data-set 2411 refer to them by
+    their labels, e.g. to give the measurement directions of tilted sensors. Each coordinate
+    system has a label, a type, a color, a name and a transformation matrix. All lists have one
+    item per coordinate system; ``CS_types`` and ``CS_colors`` may be omitted only when there is a
+    single coordinate system.
 
-    :param Part_UID: R1 F1, Part UID
-    :param Part_Name: R2 F1, Part Name
-    :param CS_sys_labels: R3 F1, Coordinate System Label
-    :param CS_types: R3 F2, Coordinate System Type (0-Cartesian, 1-Cylindrical, 2-Spherical)
-    :param CS_colors: R3 F3, Coordinate System Color
-    :param CS_names: R4 F1, Coordinate System Name
-    :param CS_matrices: R5-8 F1-3, Transformation Matrix
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
+    Parameters
+    ----------
+    Part_UID : int, optional
+        Part UID, the unique identifier of the part (record 1, field 1). Default: 1.
+    Part_Name : str, optional
+        Part name, up to 80 characters (record 2, field 1). Default: ``'None'``.
+    CS_sys_labels : array_like of int
+        Coordinate system labels (record 3, field 1).
+    CS_types : array_like of int, optional
+        Coordinate system types (record 3, field 2): 0 Cartesian, 1 cylindrical, 2 spherical.
+        Default: ``[0]``.
+    CS_colors : array_like of int, optional
+        Coordinate system colors, used by pre- and post-processors only (record 3, field 3).
+        Default: ``[8]``.
+    CS_names : list of str
+        Coordinate system names, up to 80 characters each (record 4, field 1).
+    CS_matrices : list of numpy.ndarray
+        Transformation matrices, each of shape ``(4, 3)`` (records 5 to 8, fields 1-3): rows 1
+        to 3 are the rotation matrix and row 4 is the origin of the coordinate system.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
+
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+
+    Examples
+    --------
+    The global Cartesian system and a cylindrical system shifted along z:
+
+    >>> import numpy as np
+    >>> import pyuff
+    >>> coordinate_systems = pyuff.prepare_2420(
+    ...     Part_UID=1,
+    ...     Part_Name='Plate',
+    ...     CS_sys_labels=[1, 2],
+    ...     CS_types=[0, 1],
+    ...     CS_colors=[8, 8],
+    ...     CS_names=['Global', 'Cylindrical'],
+    ...     CS_matrices=[np.vstack([np.eye(3), [0.0, 0.0, 0.0]]),
+    ...                  np.vstack([np.eye(3), [0.0, 0.0, 0.5]])])
+    >>> pyuff.UFF('coordinate_systems.uff').write_sets(coordinate_systems, mode='overwrite')
     """
     # **Test prepare_2420**
     #save_to_file = 'test_pyuff'

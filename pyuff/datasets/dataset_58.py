@@ -1244,127 +1244,286 @@ def prepare_58(
         n_bytes=None,
         return_full_dict=False):
 
-    """Name:   Function at Nodal DOF
+    """Prepare data-set 58 (function at nodal DOF) for writing.
 
-    R-Record, F-Field
+    Data-set 58 holds one measured or computed function of a single variable, e.g. a
+    frequency response function (FRF), a time history, an auto or cross spectrum or a
+    coherence, together with the degree of freedom (DOF) it belongs to: the response
+    (measured) node and direction and, for functions such as FRFs, the reference
+    (excitation) node and direction. Each function is a separate data-set; a set of FRFs
+    of a modal test is written as a list of data-sets. With ``binary=1`` the function is
+    written as data-set 58b: the same text header followed by the values in binary form,
+    which is more compact and faster to read and write.
 
-    :param binary: 1 for binary, 0 for ascii, optional
-    :param id1: R1 F1, ID Line 1, optional
-    :param id2: R2 F1, ID Line 2, optional
-    :param id3: R3 F1, ID Line 3, optional
-    :param id4: R4 F1, ID Line 4, optional
-    :param id5: R5 F1, ID Line 5, optional
+    Values are written in double precision by default; ``write_sets(...,
+    force_double=False)`` writes the precision given by ``ord_data_type``. The function
+    identification number (record 6, field 2) and the axis labels (field 5 of records 8 to
+    11) are not parameters of this function; they can be added to the returned dictionary
+    as ``func_id``, ``abscissa_axis_lab``, ``ordinate_axis_lab``, ``orddenom_axis_lab`` and
+    ``z_axis_axis_lab`` (defaults 0 and ``'NONE'``).
 
-    **DOF identification**
+    Parameters
+    ----------
+    binary : {0, 1}, optional
+        0 writes data-set 58 (text), 1 writes data-set 58b (binary values after the text
+        header). Default: 0.
+    id1 : str, optional
+        ID line 1, generally the function description, up to 80 characters (record 1,
+        field 1). Default: ``'NONE'``.
+    id2 : str, optional
+        ID line 2, e.g. the run identification, up to 80 characters (record 2, field 1).
+        Default: ``'NONE'``.
+    id3 : str, optional
+        ID line 3, generally the date and time the function was created, e.g.
+        ``'27-Jan-16 14:38:15'``, up to 80 characters (record 3, field 1). Default:
+        ``'NONE'``.
+    id4 : str, optional
+        ID line 4, e.g. the load case name, up to 80 characters (record 4, field 1).
+        Default: ``'NONE'``.
+    id5 : str, optional
+        ID line 5, up to 80 characters (record 5, field 1). Default: ``'NONE'``.
+    func_type : int
+        Function type, 0 to 27 (record 6, field 1):
 
-    :param func_type: R6 F1, Function type
-    :param ver_num: R6 F3, Version number, optional
-    :param load_case_id: R6 F4, Load case identification number, optional
-    :param rsp_ent_name: R6 F5, Response entity name, optional
-    :param rsp_node: R6 F6, Response node
-    :param rsp_dir: R6 F7, Responde direction
-    :param ref_ent_name: R6 F8, Reference entity name, optional
-    :param ref_node: R6 F9, Reference node
-    :param ref_dir: R6 F10, Reference direction
+        - 0 general or unknown
+        - 1 time response
+        - 2 auto spectrum
+        - 3 cross spectrum
+        - 4 frequency response function
+        - 5 transmissibility
+        - 6 coherence
+        - 7 auto correlation
+        - 8 cross correlation
+        - 9 power spectral density (PSD)
+        - 10 energy spectral density (ESD)
+        - 11 probability density function
+        - 12 spectrum
+        - 13 cumulative frequency distribution
+        - 14 peaks valley
+        - 15 stress/cycles
+        - 16 strain/cycles
+        - 17 orbit
+        - 18 mode indicator function
+        - 19 force pattern
+        - 20 partial power
+        - 21 partial coherence
+        - 22 eigenvalue
+        - 23 eigenvector
+        - 24 shock response spectrum
+        - 25 finite impulse response filter
+        - 26 multiple coherence
+        - 27 order function
+    ver_num : int, optional
+        Version number or sequence number of the function (record 6, field 3). Default: 0.
+    load_case_id : int, optional
+        Load case identification number; 0 means single point excitation, and only then
+        are the reference fields (``ref_ent_name``, ``ref_node``, ``ref_dir``) relevant
+        (record 6, field 4). Default: 0.
+    rsp_ent_name : str, optional
+        Response entity name, up to 10 characters (record 6, field 5). Default:
+        ``'NONE'``.
+    rsp_node : int
+        Response node, the node where the response is measured (record 6, field 6).
+    rsp_dir : int
+        Response direction, -6 to 6 (record 6, field 7):
 
-    **Data form**
+        - 0 scalar
+        - 1, -1 +X, -X translation
+        - 2, -2 +Y, -Y translation
+        - 3, -3 +Z, -Z translation
+        - 4, -4 +X, -X rotation
+        - 5, -5 +Y, -Y rotation
+        - 6, -6 +Z, -Z rotation
+    ref_ent_name : str, optional
+        Reference entity name, up to 10 characters (record 6, field 8). Default:
+        ``'NONE'``.
+    ref_node : int
+        Reference node, the node where the structure is excited, e.g. the force input
+        point of an FRF; 0 for functions without a reference, such as a time response
+        (record 6, field 9).
+    ref_dir : int
+        Reference direction, codes as for ``rsp_dir``; 0 for functions without a
+        reference (record 6, field 10).
+    ord_data_type : {2, 4, 5, 6}, optional
+        Ordinate data type (record 7, field 1): 2 real single precision, 4 real double
+        precision, 5 complex single precision, 6 complex double precision. With the
+        default ``write_sets(..., force_double=True)`` any given value is ignored and set
+        from ``data``: 4 for real and 6 for complex data. With ``force_double=False`` it
+        is required and selects the precision; it must match ``data`` (2 or 4 for real,
+        5 or 6 for complex data), which is not checked.
+    num_pts : int, optional
+        Number of data values (record 7, field 2). Computed as ``len(data)`` when
+        writing; any given value is ignored.
+    abscissa_spacing : {0, 1}, optional
+        Abscissa spacing (record 7, field 3). 0 uneven: every abscissa value is written
+        next to its ordinate value, in single precision. 1 even: only the abscissa
+        minimum ``x[0]`` and the increment ``x[1] - x[0]`` are written, both with 6
+        significant digits; pyuff does not check that ``x`` is evenly spaced. A function
+        with a single point is always written as even, with increment 1. Default: 0.
+    abscissa_min : float, optional
+        Abscissa minimum (record 7, field 4). Computed from ``x`` when writing:
+        ``x[0]`` for even spacing and 0.0 for uneven spacing; any given value is ignored.
+    abscissa_inc : float, optional
+        Abscissa increment (record 7, field 5). Computed from ``x`` when writing:
+        ``x[1] - x[0]`` for even spacing and 0.0 for uneven spacing; any given value is
+        ignored.
+    z_axis_value : float, optional
+        Z-axis value, the value of a third variable the function belongs to, e.g. the
+        rotational speed or time of one spectrum in a waterfall; 0.0 if unused (record 7,
+        field 6). Default: 0.0.
+    abscissa_spec_data_type : int, optional
+        Specific data type of the abscissa, i.e. the physical quantity on the x axis
+        (record 8, field 1):
 
-    :param ord_data_type: R7 F1, Ordinate data type, ignored
-    :param num_pts: R7 F2, number of data pairs for uneven abscissa or number of data values for even abscissa, ignored
-    :param abscissa_spacing: R7 F3, Abscissa spacing (0- uneven, 1-even), ignored
-    :param abscissa_min: R7 F4, Abscissa minimum (0.0 if spacing uneven), ignored
-    :param abscissa_inc: R7 F5, Abscissa increment (0.0 if spacing uneven), ignored
-    :param z_axis_value: R7 F6, Z-axis value (0.0 if unused), optional
+        - 0 unknown
+        - 1 general
+        - 2 stress
+        - 3 strain
+        - 5 temperature
+        - 6 heat flux
+        - 8 displacement
+        - 9 reaction force
+        - 11 velocity
+        - 12 acceleration
+        - 13 excitation force
+        - 15 pressure
+        - 16 mass
+        - 17 time
+        - 18 frequency
+        - 19 rpm
+        - 20 order
 
-    **Abscissa data characteristics**
+        Default: 0.
+    abscissa_len_unit_exp : int, optional
+        Length units exponent of the abscissa (record 8, field 2). The units exponents
+        are the exponents of length, force and temperature in the unit of the quantity
+        (e.g. length 1, force 1, temperature 0 for energy, force times length); they are
+        used for units conversion and are relevant only when the specific data type is
+        general (1) or, for the ordinate, the direction is scalar. For the other data
+        types the exponents follow from the data type. Default: 0.
+    abscissa_force_unit_exp : int, optional
+        Force units exponent of the abscissa, see ``abscissa_len_unit_exp`` (record 8,
+        field 3). Default: 0.
+    abscissa_temp_unit_exp : int, optional
+        Temperature units exponent of the abscissa, see ``abscissa_len_unit_exp``
+        (record 8, field 4). Default: 0.
+    abscissa_axis_units_lab : str, optional
+        Abscissa units label, e.g. ``'Hz'`` or ``'s'``, up to 20 characters; when given,
+        it is shown instead of the units generated from the data type (record 8,
+        field 6). Default: ``'NONE'``.
+    ordinate_spec_data_type : int, optional
+        Specific data type of the ordinate, or of the ordinate numerator for a ratio
+        such as an FRF; e.g. 12 acceleration for an accelerance FRF (acceleration over
+        force). Codes as for ``abscissa_spec_data_type`` (record 9, field 1). Default: 0.
+    ordinate_len_unit_exp : int, optional
+        Length units exponent of the ordinate (numerator), see
+        ``abscissa_len_unit_exp`` (record 9, field 2). Default: 0.
+    ordinate_force_unit_exp : int, optional
+        Force units exponent of the ordinate (numerator), see
+        ``abscissa_len_unit_exp`` (record 9, field 3). Default: 0.
+    ordinate_temp_unit_exp : int, optional
+        Temperature units exponent of the ordinate (numerator), see
+        ``abscissa_len_unit_exp`` (record 9, field 4). Default: 0.
+    ordinate_axis_units_lab : str, optional
+        Ordinate (numerator) units label, e.g. ``'m/s^2'``, up to 20 characters
+        (record 9, field 6). Default: ``'NONE'``.
+    orddenom_spec_data_type : int, optional
+        Specific data type of the ordinate denominator, used when the function is a
+        ratio: for an FRF H = a/F it is 13 excitation force (with
+        ``ordinate_spec_data_type`` 12 acceleration); 0 when the function is not a
+        ratio, e.g. a time response. Codes as for ``abscissa_spec_data_type``
+        (record 10, field 1). Default: 0.
+    orddenom_len_unit_exp : int, optional
+        Length units exponent of the ordinate denominator, see
+        ``abscissa_len_unit_exp`` (record 10, field 2). Default: 0.
+    orddenom_force_unit_exp : int, optional
+        Force units exponent of the ordinate denominator, see
+        ``abscissa_len_unit_exp`` (record 10, field 3). Default: 0.
+    orddenom_temp_unit_exp : int, optional
+        Temperature units exponent of the ordinate denominator, see
+        ``abscissa_len_unit_exp`` (record 10, field 4). Default: 0.
+    orddenom_axis_units_lab : str, optional
+        Ordinate denominator units label, e.g. ``'N'``, up to 20 characters (record 10,
+        field 6). Default: ``'NONE'``.
+    z_axis_spec_data_type : int, optional
+        Specific data type of the z axis (see ``z_axis_value``), e.g. 19 rpm; 0 if
+        unused. Codes as for ``abscissa_spec_data_type`` (record 11, field 1).
+        Default: 0.
+    z_axis_len_unit_exp : int, optional
+        Length units exponent of the z axis, see ``abscissa_len_unit_exp`` (record 11,
+        field 2). Default: 0.
+    z_axis_force_unit_exp : int, optional
+        Force units exponent of the z axis, see ``abscissa_len_unit_exp`` (record 11,
+        field 3). Default: 0.
+    z_axis_temp_unit_exp : int, optional
+        Temperature units exponent of the z axis, see ``abscissa_len_unit_exp``
+        (record 11, field 4). Default: 0.
+    z_axis_axis_units_lab : str, optional
+        Z-axis units label, up to 20 characters (record 11, field 6). Default:
+        ``'NONE'``.
+    data : numpy.ndarray
+        Ordinate values, a real or complex 1-D array of floats (record 12). Complex
+        values are written as real and imaginary parts.
+    x : numpy.ndarray
+        Abscissa values, e.g. frequencies or times, a 1-D array of the same length as
+        ``data``. For even spacing only ``x[0]`` and ``x[1] - x[0]`` are written (see
+        ``abscissa_spacing``).
+    spec_data_type : int, optional
+        Not part of the format: it is neither written nor read and is kept only in the
+        returned dictionary.
+    byte_ordering : {1, 2}, optional
+        Byte ordering of the binary values of data-set 58b: 1 little endian, 2 big
+        endian (58b header, field 3). Set from the byte order of the computer when
+        writing; any given value is ignored.
+    fp_format : {1, 2, 3}, optional
+        Floating-point format of the binary values of data-set 58b: 1 DEC VMS, 2 IEEE
+        754, 3 IBM 5/370 (58b header, field 4). Always written as 2; any given value is
+        ignored.
+    n_ascii_lines : int, optional
+        Number of text lines of the data-set 58b header (58b header, field 5). Always
+        written as 11; any given value is ignored.
+    n_bytes : int, optional
+        Number of bytes of the binary values of data-set 58b (58b header, field 6).
+        Computed from ``data``, ``x`` and the precision when writing; any given value is
+        ignored.
+    return_full_dict : bool, optional
+        If True, the dictionary has all keys of the data-set, with ``None`` for
+        the values not given; if False (default), only the given values.
 
-    :param abscissa_spec_data_type: R8 F1, Abscissa specific data type, optional
-    :param abscissa_len_unit_exp: R8 F2, Abscissa length units exponent, optional
-    :param abscissa_force_unit_exp: R8 F3, Abscissa force units exponent, optional
-    :param abscissa_temp_unit_exp: R8 F4, Abscissa temperature units exponent, optional
-    
-    :param abscissa_axis_units_lab: R8 F6, Abscissa units label, optional
+    Returns
+    -------
+    dict
+        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
 
-    **Ordinate (or ordinate numerator) data characteristics**
+    Examples
+    --------
+    An accelerance FRF (acceleration over force) of a single-DOF oscillator, written
+    with an evenly spaced frequency axis:
 
-    :param ordinate_spec_data_type: R9 F1, Ordinate specific data type, optional
-    :param ordinate_len_unit_exp: R9 F2, Ordinate length units exponent, optional
-    :param ordinate_force_unit_exp: R9 F3, Ordinate force units exponent, optional
-    :param ordinate_temp_unit_exp: R9 F4, Ordinate temperature units exponent, optional
-    
-    :param ordinate_axis_units_lab: R9 F6, Ordinate units label, optional
-
-    **Ordinate denominator data characteristics**
-
-    :param orddenom_spec_data_type: R10 F1, Ordinate Denominator specific data type, optional
-    :param orddenom_len_unit_exp: R10 F2, Ordinate Denominator length units exponent, optional
-    :param orddenom_force_unit_exp: R10 F3, Ordinate Denominator force units exponent, optional
-    :param orddenom_temp_unit_exp: R10 F4, Ordinate Denominator temperature units exponent, optional
-    
-    :param orddenom_axis_units_lab: R10 F6, Ordinate Denominator units label, optional
-
-    **Z-axis data characteristics**
-
-    :param z_axis_spec_data_type:  R11 F1, Z-axis specific data type, optional
-    :param z_axis_len_unit_exp: R11 F2, Z-axis length units exponent, optional
-    :param z_axis_force_unit_exp: R11 F3, Z-axis force units exponent, optional
-    :param z_axis_temp_unit_exp: R11 F4, Z-axis temperature units exponent, optional
-    
-    :param z_axis_axis_units_lab: R11 F6, Z-axis units label, optional
-
-    **Data values**
-
-    :param data: R12 F1, Data values
-
-    :param x: Abscissa array
-    :param spec_data_type: Specific data type, optional
-    :param byte_ordering: R1 F3, Byte ordering (only for binary), ignored
-    :param fp_format: R1 F4 Floating-point format (only for binary), ignored
-    :param n_ascii_lines: R1 F5, Number of ascii lines (only for binary), ignored
-    :param n_bytes: R1 F6, Number of bytes (only for binary), ignored
-
-    :param return_full_dict: If True full dict with all keys is returned, else only specified arguments are included
-
-    **Test prepare_58**
-
-    >>> save_to_file = 'test_pyuff'
-    >>> if save_to_file:
-    >>>     if os.path.exists(save_to_file):
-    >>>         os.remove(save_to_file)
-    >>> uff_datasets = []
-    >>> binary = [0, 1, 0]  # ascii of binary
-    >>> frequency = np.arange(10)
-    >>> np.random.seed(0)
-    >>> for i, b in enumerate(binary):
-    >>>     print('Adding point {}'.format(i + 1))
-    >>>     response_node = 1
-    >>>     response_direction = 1
-    >>>     reference_node = i + 1
-    >>>     reference_direction = 1
-    >>>     # this is an artificial 'frf'
-    >>>     acceleration_complex = np.random.normal(size=len(frequency)) + 1j * np.random.normal(size=len(frequency))
-    >>>     name = 'TestCase'
-    >>>     data = pyuff.prepare_58(
-    >>>         binary=binary[i],
-    >>>         func_type=4,
-    >>>         rsp_node=response_node,
-    >>>         rsp_dir=response_direction,
-    >>>         ref_dir=reference_direction,
-    >>>         ref_node=reference_node,
-    >>>         data=acceleration_complex,
-    >>>         x=frequency,
-    >>>         id1='id1',
-    >>>         rsp_ent_name=name,
-    >>>         ref_ent_name=name,
-    >>>         abscissa_spacing=1,
-    >>>         abscissa_spec_data_type=18,
-    >>>         ordinate_spec_data_type=12,
-    >>>         orddenom_spec_data_type=13)
-    >>>     uff_datasets.append(data.copy())
-    >>>     if save_to_file:
-    >>>         uffwrite = pyuff.UFF(save_to_file)
-    >>>         uffwrite._write_set(data, 'add')
-    >>> uff_datasets
+    >>> import numpy as np
+    >>> import pyuff
+    >>> freq = np.arange(0, 501, 1.0)
+    >>> omega = 2 * np.pi * freq
+    >>> h = -omega**2 / (1e6 - omega**2 + 20j * omega)
+    >>> frf = pyuff.prepare_58(
+    ...     id1='Accelerance 2+Z/1+Z',
+    ...     func_type=4,
+    ...     rsp_node=2,
+    ...     rsp_dir=3,
+    ...     ref_node=1,
+    ...     ref_dir=3,
+    ...     abscissa_spacing=1,
+    ...     abscissa_spec_data_type=18,
+    ...     abscissa_axis_units_lab='Hz',
+    ...     ordinate_spec_data_type=12,
+    ...     ordinate_axis_units_lab='m/s^2',
+    ...     orddenom_spec_data_type=13,
+    ...     orddenom_axis_units_lab='N',
+    ...     data=h,
+    ...     x=freq)
+    >>> pyuff.UFF('frf.uff').write_sets(frf, mode='overwrite')
+    >>> pyuff.UFF('frf.uff').read_sets()['func_type']
+    4
     """
 
     if binary not in (0, 1, None):
