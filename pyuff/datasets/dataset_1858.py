@@ -112,7 +112,7 @@ def _write1858(fh, dset):
         dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i%74s\n' % (-1, 1858, ' '))
 
-        fh.write('%10i%10i%10i%10i%10i%10i\n' % (
+        fh.write('%12i%12i%12i%12i%12i%12i\n' % (
             dset['record_num'],
             dset['octave_format'],
             dset['measurement_run'],

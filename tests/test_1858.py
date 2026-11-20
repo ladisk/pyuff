@@ -89,3 +89,16 @@ def test_write_1858():
 
 if __name__ == '__main__':
     test_write_1858()
+
+
+def test_write_1858_record_1(tmp_path):
+    # record 1 is written in 12-character fields (6I12), as read
+    dset = pyuff.UFF('./data/1858.uff').read_sets(0)
+    dset.update({'record_num': 1, 'octave_format': 3, 'measurement_run': 1234567890})
+    fn = tmp_path / 'record_1.uff'
+    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+
+    with open(fn) as f:
+        assert f.read().splitlines()[2] == '%12i%12i%12i%12i%12i%12i' % (1, 3, 1234567890, 0, 0, 0)
+    read = pyuff.UFF(fn).read_sets(0)
+    assert (read['record_num'], read['octave_format'], read['measurement_run']) == (1, 3, 1234567890)
