@@ -124,7 +124,6 @@ def _extract2467(block_data):
     lineIndex = 0
     while lineIndex < len(split_data):
         group = {}
-        print(f"<{split_data[lineIndex]}>")
         group.update(
             _parse_header_line(split_data[lineIndex], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
                                ['group_number', 'active_constraint_set_no_for_group',
@@ -141,8 +140,6 @@ def _extract2467(block_data):
         group['entity_tag'] = np.array(values[1::4].copy(), dtype=int)
         group['entity_node_leaf_id'] = np.array(values[2::4].copy(), dtype=int)
         group['entity_component_id'] = np.array(values[3::4].copy(), dtype=int)
-        print(group)
-        print("\n\n")
         dset['groups'].append(group)  # dset is a dictionary, but 'groups' is a list
 
         lineIndex = indexLastLineForGroup
