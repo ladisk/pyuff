@@ -116,3 +116,18 @@ def test_prepare_82():
 
 if __name__ == '__mains__':
     np.testing.run_module_suite()
+
+def test_write_82_nodes_list(tmp_path):
+    # nodes given as a list are written; record 1 gives the number of written nodes
+    nodes = [1, 2, 2, 3, 0, 4, 5, 6, 7, 8, 9]
+    dset = pyuff.prepare_82(trace_num=1, color=1, id='trace', nodes=nodes)
+    fn = tmp_path / 'trace.uff'
+    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+
+    read = pyuff.UFF(fn).read_sets(0)
+    assert read['n_nodes'] == len(nodes)
+    np.testing.assert_array_equal(read['nodes'], nodes)
+    with open(fn) as f:
+        lines = f.read().splitlines()
+    assert lines[4] == ''.join('%10i' % n for n in nodes[:8])
+    assert lines[5] == ''.join('%10i' % n for n in nodes[8:])

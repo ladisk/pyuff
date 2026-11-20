@@ -49,26 +49,18 @@ def _write82(fh, dset):
         # handle optional fields
         dset = _opt_fields(dset, {'id': 'NONE',
                                         'color': 0})
-        # write strings to the file
-        # removed jul 2017: unique_nodes = set(dset['nodes'])
-        # removed jul 2017:if 0 in unique_nodes: unique_nodes.remove(0)
-        # number of changes of node need to
-        # n_nodes = len(dset['nodes'])
-        n_nodes = np.sum((dset['nodes'][1:] - dset['nodes'][:-1]) != 0) + 1
+        # the number of nodes is computed from the nodes, which can be any sequence; zeros
+        # at the end fill the last line (as in files of other programs, which are read with
+        # them) and count as one node, the final move
+        nodes = np.asarray(dset['nodes'])
+        nonzero = np.flatnonzero(nodes)
+        n_nodes = min(len(nodes), nonzero[-1] + 2) if len(nonzero) else len(nodes)
         fh.write('%6i\n%6i%74s\n' % (-1, 82, ' '))
         fh.write('%10i%10i%10i\n' % (dset['trace_num'], n_nodes, dset['color']))
         fh.write('%-80s\n' % _fit_string(dset['id'], 80, 'id', 82))
-        sl = 0
-        n8_blocks = n_nodes // 8
-        rem_lines = n_nodes % 8
-        if n8_blocks:
-            for ii in range(0, n8_blocks):
-                #                 fh.write( string.join(['%10i'%line_n for line_n in dset['lines'][sl:sl+8]],'')+'\n' )
-                fh.write(''.join(['%10i' % line_n for line_n in dset['nodes'][sl:sl + 8]]) + '\n')
-                sl += 8
-        if rem_lines > 0:
-            fh.write(''.join(['%10i' % line_n for line_n in dset['nodes'][sl:]]) + '\n')
-        #                 fh.write( string.join(['%10i'%line_n for line_n in dset['lines'][sl:]],'')+'\n' )
+        # 8 nodes per line
+        for i in range(0, n_nodes, 8):
+            fh.write(''.join(['%10i' % node for node in nodes[i:i + 8]]) + '\n')
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
@@ -114,18 +106,18 @@ def prepare_82(
         Trace line number (record 1, field 1).
     n_nodes : int, optional
         Number of nodes defining the trace line (maximum 250) (record 1,
-        field 2). Ignored when writing: the writer computes it from ``nodes``.
+        field 2). Ignored when writing: it is the number of ``nodes``, where zeros at
+        the end (filling the last line) count as one node.
     color : int, optional
         Color number, used only for display (record 1, field 3). Default: 0.
     id : str, optional
         Identification line, i.e. the name of the trace line, up to 80
         characters; longer text is truncated with a warning. The specification
         does not allow a blank line (record 2, field 1). Default: ``'NONE'``.
-    nodes : numpy.ndarray of int
+    nodes : array_like of int
         Node labels along the line: a positive label draws a line to that
         node, 0 starts a new segment (move to the next node without drawing);
-        a move to the first node is implied (record 3). Must be a NumPy array,
-        not a list.
+        a move to the first node is implied (record 3). Written 8 per line.
     return_full_dict : bool, optional
         If True, the dictionary has all keys of the data-set, with ``None`` for
         the values not given; if False (default), only the given values.
