@@ -185,3 +185,19 @@ if __name__ == '__main__':
     test_read_2414_general()
     test_write_2414_general()
     test_write_2414_data_at_node()
+
+
+def test_write_read_2414_negative_values(tmp_path):
+    # negative values in records 12 and 13 keep the 13-character fields
+    dset = pyuff.UFF('./data/DS2414_disp_file.uff').read_sets(3)
+    assert dset['analysis_type'] == 5
+    values = {'eigenvalue': -5.0, 'modal_mass': -1.5, 'viscous_damping': -0.25,
+              'real_part_eigenvalue': -12.5, 'imaginary_part_of_modal_A_or_modal_mass': -3.0}
+    dset.update(values)
+    fn = tmp_path / 'negative.uff'
+    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+
+    read = pyuff.UFF(fn).read_sets(0)
+    for key, value in values.items():
+        assert read[key] == value
+    np.testing.assert_array_equal(read['x'], dset['x'])
