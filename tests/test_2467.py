@@ -127,6 +127,10 @@ def test_read_2467():
     np.testing.assert_array_equal(a['groups'][0]['entity_tag'], np.array([110, 117, 122, 135]))
     np.testing.assert_array_equal(a['groups'][1]['entity_tag'], np.array([168, 190, 191, 192]))
 
+def test_read_2467_prints_nothing(capsys):
+    pyuff.UFF('./data/groups_test.uff').read_sets(4)
+    assert capsys.readouterr().out == ''
+
 def test_write_read_2467():
     groups = [
                     {
