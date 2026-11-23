@@ -19,14 +19,21 @@ column. If a value does not fit its field width, all rows are formatted by Pytho
 result is always that of ``fmt % row`` for every row.
 
 Parsing: :func:`parse_fixed_width` converts fixed-width fields of equal-length lines to
-float with NumPy's bytes-to-float conversion, with the same values (and rejecting the same
-fields) as Python's ``float()``.
+float, with the same values (and rejecting the same fields) as Python's ``float()``: with
+the optional compiled module ``pyuff._fastparse`` (Cython, Clinger's fast path, see
+``_fastparse.pyx``) if it is built, else with NumPy's bytes-to-float conversion.
 """
 import re
 
 import numpy as np
 
 __all__ = ['format_rows', 'parse_fixed_width']
+
+try:
+    # optional compiled parser, built with: python setup_fastparse.py
+    from . import _fastparse
+except ImportError:
+    _fastparse = None
 
 # '00', '01', ..., '99' as 2-byte (uint16) values
 _DIGIT_PAIRS = np.frombuffer(b''.join(b'%02d' % i for i in range(100)), dtype=np.uint16)
@@ -261,10 +268,15 @@ def parse_fixed_width(body, fields):
     if any(offset + width > line_length for offset, width in layout):
         return None
     try:
-        values = np.empty((n_full, len(layout)), dtype=np.float64)
-        for j, (offset, width) in enumerate(layout):
-            column = np.ascontiguousarray(lines[:, offset:offset + width])
-            values[:, j] = column.view('S%d' % width).ravel().astype(np.float64)
+        if _fastparse is not None:
+            # compiled parser (Clinger's fast path, else CPython's float parser)
+            values = _fastparse.parse_fields(lines, np.array([f[0] for f in layout], dtype=np.intp),
+                                             np.array([f[1] for f in layout], dtype=np.intp))
+        else:
+            values = np.empty((n_full, len(layout)), dtype=np.float64)
+            for j, (offset, width) in enumerate(layout):
+                column = np.ascontiguousarray(lines[:, offset:offset + width])
+                values[:, j] = column.view('S%d' % width).ravel().astype(np.float64)
     except ValueError:
         return None
     rest = body[n_full * line_length:].decode('ascii')
