@@ -50,10 +50,13 @@ def _write151(fh, dset):
         ds = time.strftime('%d-%b-%y', time.localtime())
         ts = time.strftime('%H:%M:%S', time.localtime())
         # the date and time the file was written are read as date_file_written and
-        # time_file_written; prepare_151 gives them as date_db_written and time_db_written
+        # time_file_written; prepare_151 gives them as date_db_written and time_db_written,
+        # which take precedence (they are not copied to the dictionary, so a later change
+        # of date_db_written or time_db_written is written too)
+        file_written = {}
         for key in ('date', 'time'):
-            if dset.get(key + '_file_written') is None and dset.get(key + '_db_written') is not None:
-                dset[key + '_file_written'] = dset[key + '_db_written']
+            if dset.get(key + '_db_written') is not None:
+                file_written[key] = dset[key + '_db_written']
         # handle optional fields
         dset = _opt_fields(dset, {'version_db1': '0',
                                         'version_db2': '0',
@@ -76,8 +79,10 @@ def _write151(fh, dset):
         fh.write('%-10s%-10s\n' % (_fit_string(dset['date_db_saved'], 10, 'date_db_saved', 151),
                                      _fit_string(dset['time_db_saved'], 10, 'time_db_saved', 151)))
         fh.write('%-80s\n' % _fit_string(dset['program'], 80, 'program', 151))
-        fh.write('%-10s%-10s\n' % (_fit_string(dset['date_file_written'], 10, 'date_file_written', 151),
-                                     _fit_string(dset['time_file_written'], 10, 'time_file_written', 151)))
+        fh.write('%-10s%-10s\n' % (_fit_string(file_written.get('date', dset['date_file_written']), 10,
+                                                 'date_file_written', 151),
+                                     _fit_string(file_written.get('time', dset['time_file_written']), 10,
+                                                 'time_file_written', 151)))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #151')

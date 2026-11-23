@@ -50,17 +50,17 @@ def _write82(fh, dset):
         dset = _opt_fields(dset, {'id': 'NONE',
                                         'color': 0})
         # the number of nodes is computed from the nodes, which can be any sequence; zeros
-        # at the end fill the last line (as in files of other programs, which are read with
-        # them) and count as one node, the final move
+        # at the end (in files of other programs they fill the last line, and are read with
+        # it) count as one node, the final move
         nodes = np.asarray(dset['nodes'])
         nonzero = np.flatnonzero(nodes)
         n_nodes = min(len(nodes), nonzero[-1] + 2) if len(nonzero) else len(nodes)
         fh.write('%6i\n%6i%74s\n' % (-1, 82, ' '))
         fh.write('%10i%10i%10i\n' % (dset['trace_num'], n_nodes, dset['color']))
         fh.write('%-80s\n' % _fit_string(dset['id'], 80, 'id', 82))
-        # 8 nodes per line
+        # 8 nodes per line; exactly the n_nodes of record 1 are written
         for i in range(0, n_nodes, 8):
-            fh.write(''.join(['%10i' % node for node in nodes[i:i + 8]]) + '\n')
+            fh.write(''.join(['%10i' % node for node in nodes[i:min(i + 8, n_nodes)]]) + '\n')
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
@@ -79,6 +79,11 @@ def _extract82(block_data):
         split_data = ''.join(split_data[4:])
         split_data = split_data.split()
         dset['nodes'] = np.asarray([float(str) for str in split_data])
+        # zeros after the n_nodes of record 1 only fill the last line (files of other
+        # programs); they are not nodes. Other values after n_nodes are kept.
+        n_nodes = dset['n_nodes']
+        if 0 <= n_nodes < len(dset['nodes']) and not dset['nodes'][n_nodes:].any():
+            dset['nodes'] = dset['nodes'][:n_nodes]
     except:
         raise Exception('Error reading data-set #82')
     return dset

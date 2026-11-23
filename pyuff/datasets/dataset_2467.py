@@ -79,8 +79,7 @@ def _write2467(fh, dset):
             # Record 2
             fh.write('%-40s\n' % (_fit_string(group['group_name'], 40, 'group_name', 2467)))
 
-            # Record 3-N
-            # Write the full lines (which have 4 pairs)
+            # Record 3-N: 2 entities (8 values) in a full line
             end = len(group['entity_type_code'])
             for i in range(0, end, 2):
                 if end-i > 1:
@@ -107,21 +106,6 @@ def _extract2467(block_data):
     dset = {'type': 2467, 'groups': []}
     split_data = block_data.splitlines(True)[2:]
 
-    group_ids = []
-    constraint_sets = []
-    restraint_sets = []
-    load_sets = []
-    dof_sets = []
-    temp_sets = []
-    contact_sets = []
-    num_entities = []
-    group_names = []
-
-    ent_types = []
-    ent_tags = []
-    ent_node_ids = []
-    ent_comp_ids = []
-
     lineIndex = 0
     while lineIndex < len(split_data):
         group = {}
@@ -145,8 +129,12 @@ def _extract2467(block_data):
 
         lineIndex = indexLastLineForGroup
 
-    dset.update({'group_ids': group_ids, 'active_constraint_set_no_for_group': constraint_sets, 'active_restraint_set_no_for_group': restraint_sets, 'active_load_set_no_for_group': load_sets, 'active_dof_set_no_for_group': dof_sets, 'active_temperature_set_no_for_group': temp_sets, 'active_contact_set_no_for_group': contact_sets, 'num_of_entities_in_group': num_entities, 'group_name': group_names, 'entity_type_code': ent_types, 'entity_tag': ent_tags, 'entity_node_leaf_id': ent_node_ids, 'entity_component_id': ent_comp_ids})
     return dset
+
+
+def _default_0(value):
+    """An optional active set number: None (missing) is the default 0, as when writing."""
+    return 0 if value is None else value
 
 
 def prepare_group(
@@ -247,6 +235,10 @@ def prepare_group(
         raise TypeError('entity_node_leaf_id must all be positive integers')
     if np.array(entity_component_id).dtype != int:
         raise TypeError('entity_component_id must all be positive integers')
+    if not (np.size(entity_tag) == np.size(entity_node_leaf_id) == np.size(entity_component_id)
+            == np.size(entity_type_code)):
+        raise ValueError('entity_tag, entity_node_leaf_id and entity_component_id must have the '
+                         'same length as entity_type_code')
     if type(active_constraint_set_no_for_group) != int:
         raise TypeError('active_constraint_set_no_for_group must be integer')
     if type(active_restraint_set_no_for_group) != int:
@@ -372,12 +364,12 @@ def prepare_2467(
             entity_tag=item['entity_tag'],
             entity_node_leaf_id=item['entity_node_leaf_id'],
             entity_component_id=item['entity_component_id'],
-            active_constraint_set_no_for_group=item.get('active_constraint_set_no_for_group', 0),
-            active_restraint_set_no_for_group=item.get('active_restraint_set_no_for_group', 0),
-            active_load_set_no_for_group=item.get('active_load_set_no_for_group', 0),
-            active_dof_set_no_for_group=item.get('active_dof_set_no_for_group', 0),
-            active_temperature_set_no_for_group=item.get('active_temperature_set_no_for_group', 0),
-            active_contact_set_no_for_group=item.get('active_contact_set_no_for_group', 0))
+            active_constraint_set_no_for_group=_default_0(item.get('active_constraint_set_no_for_group')),
+            active_restraint_set_no_for_group=_default_0(item.get('active_restraint_set_no_for_group')),
+            active_load_set_no_for_group=_default_0(item.get('active_load_set_no_for_group')),
+            active_dof_set_no_for_group=_default_0(item.get('active_dof_set_no_for_group')),
+            active_temperature_set_no_for_group=_default_0(item.get('active_temperature_set_no_for_group')),
+            active_contact_set_no_for_group=_default_0(item.get('active_contact_set_no_for_group')))
 
     dataset={
         'type': 2467,

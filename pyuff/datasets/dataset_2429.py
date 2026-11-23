@@ -138,6 +138,10 @@ def _write_group(fh, group):
     fh.write('%-40s\n' % (_fit_string(group['group_name'], 40, 'group_name', 2429)))
 
     # Record 3-N: pairs of entity type code and tag, at most 4 pairs in a line
+    if len(group['entity_tag']) != len(group['entity_type_code']):
+        # record 1 gives the number of entities; the pairs must match it
+        raise ValueError('entity_tag and entity_type_code of group %s differ in length'
+                         % group['group_number'])
     pairs = [value for pair in zip(group['entity_type_code'], group['entity_tag']) for value in pair]
     for i in range(0, len(pairs), 8):
         fh.write('%10i' * len(pairs[i:i + 8]) % tuple(pairs[i:i + 8]) + '\n')
@@ -151,7 +155,8 @@ def _extract2429(block_data):
         
         # there can be multiple groups in the data-set, therefore need to loop.
         lineIndex = 2
-        while lineIndex < len(split_data) - 2:
+        # a group has at least records 1 and 2 (a group without entities has no more)
+        while lineIndex + 1 < len(split_data) and split_data[lineIndex].strip():
             group = {}
             group.update(_parse_header_line(split_data[lineIndex], 8, [10, 10, 10, 10, 10, 10, 10, 10], [2, 2, 2, 2, 2, 2, 2, 2],
                                             ['group_number', 'active_constraint_set_no_for_group', 'active_restraint_set_no_for_group', 'active_load_set_no_for_group',
@@ -173,6 +178,11 @@ def _extract2429(block_data):
     except:
         raise Exception('Error reading data-set #2429')
     return dset
+
+
+def _default_0(value):
+    """An optional active set number: None (missing) is the default 0, as when writing."""
+    return 0 if value is None else value
 
 
 def prepare_group(
@@ -256,6 +266,8 @@ def prepare_group(
         raise TypeError('entity_type_code must all be positive integers')
     if np.array(entity_tag).dtype != int:
         raise TypeError('entity_tag must all be positive integers')
+    if np.size(entity_tag) != np.size(entity_type_code):
+        raise ValueError('entity_tag must have the same length as entity_type_code')
     if type(active_constraint_set_no_for_group) != int:
          raise TypeError('active_constraint_set_no_for_group must be integer')
     if type(active_restraint_set_no_for_group) != int:
@@ -375,12 +387,12 @@ def prepare_2429(
             group_name=item['group_name'],
             entity_type_code=item['entity_type_code'],
             entity_tag=item['entity_tag'],
-            active_constraint_set_no_for_group=item.get('active_constraint_set_no_for_group', 0),
-            active_restraint_set_no_for_group=item.get('active_restraint_set_no_for_group', 0),
-            active_load_set_no_for_group=item.get('active_load_set_no_for_group', 0),
-            active_dof_set_no_for_group=item.get('active_dof_set_no_for_group', 0),
-            active_temperature_set_no_for_group=item.get('active_temperature_set_no_for_group', 0),
-            active_contact_set_no_for_group=item.get('active_contact_set_no_for_group', 0))
+            active_constraint_set_no_for_group=_default_0(item.get('active_constraint_set_no_for_group')),
+            active_restraint_set_no_for_group=_default_0(item.get('active_restraint_set_no_for_group')),
+            active_load_set_no_for_group=_default_0(item.get('active_load_set_no_for_group')),
+            active_dof_set_no_for_group=_default_0(item.get('active_dof_set_no_for_group')),
+            active_temperature_set_no_for_group=_default_0(item.get('active_temperature_set_no_for_group')),
+            active_contact_set_no_for_group=_default_0(item.get('active_contact_set_no_for_group')))
 
     dataset={
         'type': 2429,
