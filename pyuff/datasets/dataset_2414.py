@@ -1,7 +1,8 @@
 import numpy as np
 import math as math
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string, _column_arrays
+from .._vector_text import format_rows
 
 def get_structure_2414(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -608,27 +609,19 @@ def _write2414(fh, dset):
                                             dset['imaginary_part_of_modal_A_or_modal_mass'],
                                             dset['real_part_of_modal_B_or_modal_mass'], 
                                             dset['imaginary_part_of_modal_B_or_modal_mass']))                            
-            for index in range(dset['node_nums'].shape[0]):
-                fh.write('%10i\n' % (int(dset['node_nums'][index])))
-                if dset['number_of_data_values_for_the_data_component'] == 3 : 
-                    fh.write('%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % (
-                                                np.real(dset['x'][index]),
-                                                np.imag(dset['x'][index]),
-                                                np.real(dset['y'][index]),
-                                                np.imag(dset['y'][index]),
-                                                np.real(dset['z'][index]),
-                                                np.imag(dset['z'][index])))
-                elif dset['number_of_data_values_for_the_data_component'] == 2 : 
-                    fh.write('%13.5e%13.5e%13.5e%13.5e\n' % (
-                                                np.real(dset['x'][index]),
-                                                np.imag(dset['x'][index]),
-                                                np.real(dset['y'][index]),
-                                                np.imag(dset['y'][index]),))
-                elif dset['number_of_data_values_for_the_data_component'] == 1 : 
-                    fh.write('%13.5e%13.5e\n' % (
-                                                np.real(dset['x'][index]),
-                                                np.imag(dset['x'][index]),))
-                
+            # for each node: record 14 (node number) and record 15 (real and imaginary
+            # part of each data value), formatted at once
+            n = dset['node_nums'].shape[0]
+            components = {3: ('x', 'y', 'z'), 2: ('x', 'y'), 1: ('x',)}.get(
+                dset['number_of_data_values_for_the_data_component'], ())
+            parts = []
+            for key in components:
+                parts += [np.real(np.asarray(dset[key])), np.imag(np.asarray(dset[key]))]
+            columns = _column_arrays(n, dset['node_nums'], *parts)
+            if columns[0].dtype.kind not in 'biuf':
+                columns[0] = [int(node) for node in columns[0]]
+            fh.write(format_rows([('%10i', columns[0]), '\n'] + [('%13.5e', c) for c in columns[1:]]
+                                 + (['\n'] if parts else []), n))
             fh.write('%6i\n' % (-1))
         # Dictionairy keys have a general name.
         # The meaning of these records and fields depends on the software which writes/reads these.
@@ -750,7 +743,7 @@ def _extract2414(block_data):
             n_skip = dset['number_of_data_values_for_the_data_component'] * 2 + 1 # x2 real/imag
             
             if dset['data_type'] == 5 :
-                values = np.asarray([float(str) for str in split_data], 'd')
+                values = np.array(split_data, 'd')
                 dset['node_nums'] = np.array(values[::n_skip].copy(), dtype=int)
                 
                 dset['x'] = values[1::n_skip].copy()+values[2::n_skip].copy()*1j

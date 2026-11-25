@@ -36,53 +36,45 @@ def _parse_header_line(line, min_values, widths, types, names):
     :param types: field types 1=string, 2=int, 3=float, -1=ignore the field
     :param names: a list of key (field) names
     """
-    fields = {}
-    n_fields_req = len(names)
-    fields_from_line = []
-    fields_out = {}
-
-    # Extend the line if shorter than 80 chars
-    ll = len(line)
-    if ll < 80:
-        line = line + ' ' * (80 - ll)
-    # Parse the line for fields
-    si = 0
-    for n in range(0, len(widths)):
-        fields_from_line.append(line[si:si + widths[n]].strip())
-        si += widths[n]
+    n_fields = len(widths)
     # Check for the number of fields,...
-    n_fields = len(fields_from_line)
-    if (n_fields_req < n_fields) or (min_values > n_fields):
-        raise Exception('Error parsing header section; too many or to less' + \
-                            'fields found')
-    # Mandatory fields
-    for key, n in zip(names[:min_values], range(0, min_values)):
-        if types[n] == -1:
-            pass
-        elif types[n] == 1:
-            fields_out.update({key: fields_from_line[n]})
-        elif types[n] == 2:
-            fields_out.update({key: int(fields_from_line[n])})
+    if (len(names) < n_fields) or (min_values > n_fields):
+        raise Exception('Error parsing header section; too many or to less' +                             'fields found')
+    # Extend the line if shorter than 80 chars
+    if len(line) < 80:
+        line = line.ljust(80)
+    fields_out = {}
+    si = 0
+    for n in range(n_fields):
+        width = widths[n]
+        field_type = types[n]
+        if field_type == -1:
+            si += width
+            continue
+        field = line[si:si + width].strip()
+        si += width
+        if n < min_values:
+            # Mandatory field
+            if field_type == 1:
+                fields_out[names[n]] = field
+            elif field_type == 2:
+                fields_out[names[n]] = int(field)
+            else:
+                fields_out[names[n]] = float(field)
         else:
-            fields_out.update({key: float(fields_from_line[n])})
-    # Optional fields
-    for key, n in zip(names[min_values:n_fields], range(min_values, n_fields)):
-        try:
-            if types[n] == -1:
-                pass
-            elif types[n] == 1:
-                fields_out.update({key: fields_from_line[n]})
-            elif types[n] == 2:
-                fields_out.update({key: int(fields_from_line[n])})
-            else:
-                fields_out.update({key: float(fields_from_line[n])})
-        except ValueError:
-            if types[n] == 1:
-                fields_out.update({key: ''})
-            elif types[n] == 2:
-                fields_out.update({key: 0})
-            else:
-                fields_out.update({key: 0.0})
+            # Optional field
+            try:
+                if field_type == 1:
+                    fields_out[names[n]] = field
+                elif field_type == 2:
+                    fields_out[names[n]] = int(field)
+                else:
+                    fields_out[names[n]] = float(field)
+            except ValueError:
+                if field_type == 2:
+                    fields_out[names[n]] = 0
+                else:
+                    fields_out[names[n]] = 0.0
     return fields_out
 
 def _write_record(fh, values, formats, multiline=False, fstring=True):
@@ -137,6 +129,35 @@ def _fit_string(value, width, field, set_type):
                       % (set_type, field, width, value[:width]), stacklevel=5)
         value = value[:width]
     return value
+
+def _columns_as_lists(n, *columns):
+    """Returns the columns as lists of (Python) values, for fast formatting of rows.
+
+    Raises IndexError if a column has less than n values (the rows are written up
+    to n; longer columns are cut to n values).
+    """
+    out = []
+    for column in columns:
+        values = column.tolist() if hasattr(column, 'tolist') else list(column)
+        if not isinstance(values, list) or len(values) < n:
+            raise IndexError('a column of the data-set has less values than nodes')
+        out.append(values[:n])
+    return out
+
+
+def _column_arrays(n, *columns):
+    """Returns the first n values of each column as an array (for pyuff._vector_text).
+
+    Raises IndexError if a column has less than n values (as indexing them did).
+    """
+    out = []
+    for column in columns:
+        values = np.asarray(column)
+        if values.ndim != 1 or len(values) < n:
+            raise IndexError('a column of the data-set has less values than nodes')
+        out.append(values[:n])
+    return out
+
 
 def check_dict_for_none(dataset):
     dataset1 = {}

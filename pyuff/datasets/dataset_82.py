@@ -59,8 +59,9 @@ def _write82(fh, dset):
         fh.write('%10i%10i%10i\n' % (dset['trace_num'], n_nodes, dset['color']))
         fh.write('%-80s\n' % _fit_string(dset['id'], 80, 'id', 82))
         # 8 nodes per line; exactly the n_nodes of record 1 are written
-        for i in range(0, n_nodes, 8):
-            fh.write(''.join(['%10i' % node for node in nodes[i:min(i + 8, n_nodes)]]) + '\n')
+        node_list = nodes[:n_nodes].tolist()
+        fh.write(''.join([('%10i' * len(node_list[i:i + 8]) + '\n') % tuple(node_list[i:i + 8])
+                          for i in range(0, n_nodes, 8)]))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #82')
@@ -78,7 +79,7 @@ def _extract82(block_data):
         dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['id']))
         split_data = ''.join(split_data[4:])
         split_data = split_data.split()
-        dset['nodes'] = np.asarray([float(str) for str in split_data])
+        dset['nodes'] = np.array(split_data, dtype=float)
         # zeros after the n_nodes of record 1 only fill the last line (files of other
         # programs); they are not nodes. Other values after n_nodes are kept.
         n_nodes = dset['n_nodes']

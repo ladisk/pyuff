@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string, _columns_as_lists
 
 def get_structure_2467(raw=False):
     """(source: https://github.com/victorsndvg/FEconv/blob/master/source/unv/module_dataset_2467.f90)"""
@@ -79,23 +79,14 @@ def _write2467(fh, dset):
             # Record 2
             fh.write('%-40s\n' % (_fit_string(group['group_name'], 40, 'group_name', 2467)))
 
-            # Record 3-N: 2 entities (8 values) in a full line
-            end = len(group['entity_type_code'])
-            for i in range(0, end, 2):
-                if end-i > 1:
-                    fh.write('%10i%10i%10i%10i%10i%10i%10i%10i\n' % (group['entity_type_code'][i],
-                                                                     group['entity_tag'][i],
-                                                                     group['entity_node_leaf_id'][i],
-                                                                     group['entity_component_id'][i],
-                                                                     group['entity_type_code'][i+1],
-                                                                     group['entity_tag'][i+1],
-                                                                     group['entity_node_leaf_id'][i+1],
-                                                                     group['entity_component_id'][i+1]))
-                else:
-                    fh.write('%10i%10i%10i%10i\n' % (group['entity_type_code'][i],
-                                                     group['entity_tag'][i],
-                                                     group['entity_node_leaf_id'][i],
-                                                     group['entity_component_id'][i]))
+            # Record 3-N: 2 entities in a line, each given by 4 values (entity type code,
+            # tag, node leaf id and component id)
+            columns = _columns_as_lists(len(group['entity_type_code']), group['entity_type_code'],
+                                        group['entity_tag'], group['entity_node_leaf_id'],
+                                        group['entity_component_id'])
+            values = [value for entity in zip(*columns) for value in entity]
+            fh.write(''.join([('%10i' * len(values[i:i + 8]) + '\n') % tuple(values[i:i + 8])
+                              for i in range(0, len(values), 8)]))
         fh.write('%6i\n' % -1)
 
     except:

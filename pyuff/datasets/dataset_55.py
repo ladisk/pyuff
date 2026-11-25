@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
+from .._vector_text import format_rows
 
 def get_structure_55(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -439,9 +440,12 @@ def _write55(fh, dset):
             columns = responses
         field, per_line = ('%20.11e', 4) if double else ('%13.5e', 6)
         n_values = len(columns)
-        value_lines = [field * min(per_line, n_values - i) for i in range(0, n_values, per_line)]
-        fmt = '%10i\n' + '\n'.join(value_lines) + '\n'
-        fh.write(''.join(fmt % row for row in zip(dset['node_nums'], *columns)))
+        # record 9 (node number) and record 10 (per_line values in a line) of every node,
+        # formatted at once (pyuff._vector_text; rows as with zip)
+        items = [('%10i', dset['node_nums']), '\n']
+        for i in range(0, n_values, per_line):
+            items += [(field, column) for column in columns[i:i + per_line]] + ['\n']
+        fh.write(format_rows(items))
         fh.write('%6i\n' % -1)
     except KeyError as msg:
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #55')

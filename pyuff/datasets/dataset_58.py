@@ -3,6 +3,8 @@ import struct
 import sys
 import os
 
+from .._vector_text import format_rows, parse_fixed_width
+
 from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _fit_string
 
 def get_structure_58(raw=False):
@@ -999,36 +1001,15 @@ def _write58(fh, dset, mode='add', force_double=True):
                 fh.buffer.write(rows.tobytes())
         else:
             if is_double: # write double precision
-                n4_blocks = len(data) // 4
-                rem_vals = len(data) % 4
-                if is_r:
-                    if is_even:
-                        fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                        if rem_vals > 0:
-                            fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
-                    else:
-                        fh.write(n4_blocks * '%13.5e%20.11e%13.5e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                        if rem_vals > 0:
-                            fmt = ['%13.5e', '%20.11e', '%13.5e', '%20.11e']
-                            fh.write((''.join(fmt[:rem_vals]) + '\n') % tuple(data[4 * n4_blocks:]))
+                if is_even:
+                    fields = ['%20.11e'] * 4                    # 4E20.12
+                elif is_r:
+                    fields = ['%13.5e', '%20.11e'] * 2          # 2(E13.5,E20.12)
                 else:
-                    if is_even:
-                        fh.write(n4_blocks * '%20.11e%20.11e%20.11e%20.11e\n' % tuple(data[:4 * n4_blocks]))
-                        if rem_vals > 0:
-                            fh.write((rem_vals * '%20.11e' + '\n') % tuple(data[4 * n4_blocks:]))
-                    else:
-                        n3_blocks = len(data) // 3
-                        rem_vals = len(data) % 3
-                        fh.write(n3_blocks * '%13.5e%20.11e%20.11e\n' % tuple(data[:3 * n3_blocks]))
-                        if rem_vals != 0: # There should be no rem
-                            print('Warning: Something went wrong when savning the uff file.')
-
+                    fields = ['%13.5e', '%20.11e', '%20.11e']   # E13.5,2E20.12
             else: # single precision
-                n6_blocks = len(data) // 6
-                rem_vals = len(data) % 6
-                fh.write(n6_blocks * '%13.5e%13.5e%13.5e%13.5e%13.5e%13.5e\n' % tuple(data[:6 * n6_blocks]))
-                if rem_vals > 0:
-                    fh.write((rem_vals * '%13.5e' + '\n') % tuple(data[6 * n6_blocks:]))
+                fields = ['%13.5e'] * 6                         # 6E13.5
+            _write_ascii_lines(fh, data, fields)
 
         fh.write('%6i\n' % -1)
         del data
@@ -1036,6 +1017,134 @@ def _write58(fh, dset, mode='add', force_double=True):
         raise Exception('The required key \'' + msg.args[0] + '\' not present when writing data-set #58')
     except:
         raise Exception('Error writing data-set #58')
+
+
+def _write_ascii_lines(fh, data, fields):
+    """Writes the values of data in lines of the given fields (the last line can be shorter).
+
+    The full lines are formatted at once (pyuff._vector_text, the same text as the %
+    operator); the last, shorter line by the % operator.
+    """
+    n_fields = len(fields)
+    n_lines = len(data) // n_fields
+    if n_lines:
+        lines = np.asarray(data[:n_lines * n_fields]).reshape(n_lines, n_fields)
+        fh.write(format_rows([(f, lines[:, j]) for j, f in enumerate(fields)] + ['\n']))
+    rem_vals = len(data) - n_lines * n_fields
+    if rem_vals > 0:
+        fh.write((''.join(fields[:rem_vals]) + '\n') % tuple(data[n_lines * n_fields:]))
+
+
+def _ascii_field_layout(ord_data_type, abscissa_spacing):
+    """Returns a function of the line length L giving the (offset, width) of the fields
+    of a data line, as read by _python_ascii_values; None for an unknown case."""
+    if ord_data_type in (2, 5):
+        return lambda L: [(13 * i, 13) for i in range(L // 13)]                    # 6E13.5
+    if ord_data_type in (4, 6) and abscissa_spacing == 1:
+        return lambda L: [(20 * i, 20) for i in range(L // 20)]                    # 4E20.12
+    if ord_data_type == 4 and abscissa_spacing == 0:
+        return lambda L: [f for i in range(L // 33) for f in ((33 * i, 13), (33 * i + 13, 20))]
+    if ord_data_type == 6 and abscissa_spacing == 0:
+        return lambda L: [(0, 13), (13, 20), (33, 20)]                             # E13.5,2E20.12
+    return None
+
+
+def _ascii_values(data_bytes, ord_data_type, abscissa_spacing):
+    """Values of the ASCII data lines of data-set 58 (bytes after the header).
+
+    The lines of equal length are parsed at once (pyuff._vector_text.parse_fixed_width,
+    fixed-width fields as below); the rest (usually the shorter last line), and lines
+    that cannot be parsed at once, by _python_ascii_values. The values are the same.
+    """
+    layout = _ascii_field_layout(ord_data_type, abscissa_spacing)
+    parsed = parse_fixed_width(data_bytes, layout) if layout is not None else None
+    if parsed is not None:
+        head, rest = parsed
+        if not rest:
+            # (a blank field, which is skipped in the last line of single precision data,
+            # is not parsed at once: then parse_fixed_width returns None)
+            return head
+        return np.concatenate((head, _python_ascii_values(rest.splitlines(True), ord_data_type,
+                                                          abscissa_spacing)))
+    return _python_ascii_values(data_bytes.decode('utf-8', errors='replace').splitlines(True),
+                                ord_data_type, abscissa_spacing)
+
+
+def _python_ascii_values(split_data, ord_data_type, abscissa_spacing):
+    """Values of the ASCII data lines (str, with line ends), parsed line by line."""
+    values = []
+    fast_values = _fast_ascii_values(split_data, ord_data_type, abscissa_spacing)
+    if fast_values is not None:
+        return fast_values
+    if (ord_data_type == 2) or (ord_data_type == 5):
+        for line in split_data[:-1]:  # '6E13.5'
+            values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
+        line = split_data[-1]
+        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)
+                       if line[13 * i:13 * (i + 1)] != '             '])
+    elif ((ord_data_type == 4) or (ord_data_type == 6)) and (abscissa_spacing == 1):
+        for line in split_data:  # '4E20.12'
+            values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
+    elif (ord_data_type == 4) and (abscissa_spacing == 0):
+        for line in split_data:  # 2(E13.5,E20.12)
+            values.extend([float(line[33 * i + 13 * j:33 * i + 13 + 20 * j]) for i in range(len(line) // 33)
+                           for j in [0, 1]])
+    elif (ord_data_type == 6) and (abscissa_spacing == 0):
+        for line in split_data:  # 1E13.5,2E20.12
+            values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
+    else:
+        raise Exception('Error reading data-set #58b; not proper data case.')
+    return np.asarray(values)
+
+
+def _header_end(block_data, n_lines):
+    """Returns the offset just after the first n_lines lines of block_data (bytes).
+
+    Equal to ``len(b''.join(block_data.splitlines(True)[:n_lines]))``, but only the
+    beginning of the block is split into lines (the block can hold megabytes of data).
+    """
+    head = block_data[:max(8192, 100 * n_lines)]
+    lines = head.splitlines(True)
+    if len(lines) <= n_lines:
+        # the header is longer than head (or the block has no data): split it all
+        lines = block_data.splitlines(True)
+    return sum(len(line) for line in lines[:n_lines])
+
+
+def _fast_ascii_values(split_data, ord_data_type, abscissa_spacing):
+    """Parses the ASCII data lines of data-set 58 at once, or returns None.
+
+    The values are separated by white space and parsed at once. This gives the
+    same values as the fixed-width parsing (below in _extract58) when the number
+    of values found equals the number of fixed-width fields: then every field
+    holds exactly one value. Otherwise (e.g. values that touch each other), None
+    is returned and the fixed-width parsing is used.
+    """
+    if not split_data:
+        return None
+    if ord_data_type in (2, 5):
+        # '6E13.5'; in the last line, blank fields are skipped
+        n_fields = sum([len(line) // 13 for line in split_data[:-1]])
+        last = split_data[-1]
+        n_fields += sum(1 for i in range(len(last) // 13) if last[13 * i:13 * (i + 1)] != '             ')
+    elif ord_data_type in (4, 6) and abscissa_spacing == 1:
+        # '4E20.12'
+        n_fields = sum([len(line) // 20 for line in split_data])
+    elif ord_data_type == 4 and abscissa_spacing == 0:
+        # 2(E13.5,E20.12)
+        n_fields = 2 * sum([len(line) // 33 for line in split_data])
+    elif ord_data_type == 6 and abscissa_spacing == 0:
+        # 1E13.5,2E20.12
+        n_fields = 3 * len(split_data)
+    else:
+        return None
+    tokens = ''.join(split_data).split()
+    if len(tokens) != n_fields:
+        return None
+    try:
+        return np.array(tokens, dtype=float)
+    except ValueError:
+        return None
 
 
 def _extract58(block_data, header_only=False):
@@ -1053,7 +1162,8 @@ def _extract58(block_data, header_only=False):
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
-        split_header = b''.join(block_data.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
+        header_end = _header_end(block_data, 13)
+        split_header = block_data[:header_end].decode('utf-8',  errors='replace').splitlines(True)
         if len(split_header[1]) >= 7:
             if split_header[1][6].lower() == 'b':
                 # Read some addititional fields from the header section
@@ -1101,7 +1211,7 @@ def _extract58(block_data, header_only=False):
         else:
             if binary:
                 try:     
-                    split_data = b''.join(block_data.splitlines(True)[13:])
+                    split_data = memoryview(block_data)[header_end:]
                     if dset['byte_ordering'] == 1:
                         bo = '<'
                     else:
@@ -1109,7 +1219,7 @@ def _extract58(block_data, header_only=False):
                     if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                         # single precision - 4 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 4
-                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data[:(len(split_data) // 4)*4]), 'd')
+                        values = np.frombuffer(split_data[:(len(split_data) // 4)*4], bo + 'f').astype('d')
                     elif (dset['abscissa_spacing'] == 0) and \
                             (len(split_data) < dset['num_pts'] * (8 + 8 * (1 if dset['ord_data_type'] == 4 else 2))):
                         # double precision, uneven abscissa: the abscissa is real single precision
@@ -1122,34 +1232,12 @@ def _extract58(block_data, header_only=False):
                     else:
                         # double precision - 8 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 8
-                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data[:(len(split_data) // 8)*8]), 'd')
+                        values = np.frombuffer(split_data[:(len(split_data) // 8)*8], bo + 'd').astype('d')
                 except:
                     raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
             else:
-                values = []
-                split_data = block_data.decode('utf-8', errors='replace').splitlines(True)[13:]
-                if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
-                    for line in split_data[:-1]:  # '6E13.5'
-                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13)])
-                    else:
-                        line = split_data[-1]
-                        values.extend([float(line[13 * i:13 * (i + 1)]) for i in range(len(line) // 13) if line[13 * i:13 * (i + 1)]!='             '])
-                elif ((dset['ord_data_type'] == 4) or (dset['ord_data_type'] == 6)) and (dset['abscissa_spacing'] == 1):
-                    for line in split_data:  # '4E20.12'
-                        values.extend([float(line[20 * i:20 * (i + 1)]) for i in range(len(line) // 20)])
-                elif (dset['ord_data_type'] == 4) and (dset['abscissa_spacing'] == 0):
-                    for line in split_data:  # 2(E13.5,E20.12)
-                        values.extend(
-                            [float(line[13 * (i + j) + 20 * (i):13 * (i + 1) + 20 * (i + j)]) \
-                                for i in range(len(line) // 33) for j in [0, 1]])
-                elif (dset['ord_data_type'] == 6) and (dset['abscissa_spacing'] == 0):
-                    for line in split_data:  # 1E13.5,2E20.12
-                        values.extend([float(line[0:13]), float(line[13:33]), float(line[33:53])])
-                else:
-                    raise Exception('Error reading data-set #58b; not proper data case.')
-
-                values = np.asarray(values)
-                # values = np.asarray([float(str) for str in split_data],'d')
+                values = _ascii_values(block_data[header_end:], dset['ord_data_type'],
+                                       dset['abscissa_spacing'])
             if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 4):
                 # Non-complex ordinate data
                 if (dset['abscissa_spacing'] == 0):

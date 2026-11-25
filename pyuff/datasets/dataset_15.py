@@ -1,7 +1,8 @@
 from os import write
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, _write_record, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, _write_record, check_dict_for_none, _column_arrays
+from .._vector_text import format_rows
 
 def get_structure_15(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -44,10 +45,10 @@ def _write15(fh, dset):
         # write strings to the file
         _write_record(fh, [-1, 15], formats=['6.0f', '6.0f'], multiline=True)
         
-        for ii in range(0, n):
-            _write_record(fh, 
-                values=[dset['node_nums'][ii], dset['def_cs'][ii], dset['disp_cs'][ii], dset['color'][ii], dset['x'][ii], dset['y'][ii], dset['z'][ii]], 
-                formats=FORMATS[0])
+        columns = _column_arrays(n, dset['node_nums'], dset['def_cs'], dset['disp_cs'], dset['color'],
+                                 dset['x'], dset['y'], dset['z'])
+        # the same as _write_record with FORMATS[0] (numbers are right-aligned)
+        fh.write(format_rows([('%' + f, c) for f, c in zip(FORMATS[0], columns)] + ['\n'], n))
 
         _write_record(fh, -1, '6.0f')
     except KeyError as msg:
@@ -63,7 +64,7 @@ def _extract15(block_data):
         # Body
         split_data = block_data.splitlines()
         split_data = ''.join(split_data[2:]).split()
-        split_data = [float(_) for _ in split_data]
+        split_data = np.array(split_data, dtype=float).tolist()
 
         dset['node_nums'] = split_data[::7]
         dset['def_cs'] = split_data[1::7]

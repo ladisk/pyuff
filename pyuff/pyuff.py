@@ -61,6 +61,15 @@ from .datasets.dataset_2420 import _write2420, _extract2420, get_structure_2420
 from .datasets.dataset_2429 import _write2429, _extract2429, get_structure_2429
 from .datasets.dataset_2467 import _write2467, _extract2467, get_structure_2467
 
+_WRITERS = {15: _write15, 18: _write18, 55: _write55, 58: _write58, 82: _write82, 151: _write151,
+            164: _write164, 1858: _write1858, 2400: _write2400, 2411: _write2411, 2412: _write2412,
+            2414: _write2414, 2420: _write2420, 2429: _write2429, 2467: _write2467}
+
+_EXTRACTORS = {15: _extract15, 18: _extract18, 55: _extract55, 82: _extract82, 151: _extract151,
+               164: _extract164, 1858: _extract1858, 2400: _extract2400, 2411: _extract2411,
+               2412: _extract2412, 2414: _extract2414, 2420: _extract2420, 2429: _extract2429,
+               2467: _extract2467}
+
 _SUPPORTED_SETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
@@ -323,8 +332,10 @@ class UFF:
             else:
                 read_range = setn
         try:
-            for ii in read_range:
-                dset.append(self._read_set(ii, header_only=header_only))
+            # one file handle for all data-sets read
+            with open(self._filename, 'rb') as fh:
+                for ii in read_range:
+                    dset.append(self._read_set(ii, header_only=header_only, fh=fh))
         except Exception as msg:
             if hasattr(msg, 'value'):
                 raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
@@ -374,20 +385,28 @@ class UFF:
         if n_sets < 1:
             raise Exception('Nothing to write')
         if mode.lower() == 'overwrite':
-            # overwrite mode; first set is written in the overwrite mode, others
-            # in add mode
-            self._write_set(dsets[0], 'overwrite', force_double=force_double)
-            for ii in range(1, n_sets):
-                self._write_set(dsets[ii], 'add', force_double=force_double)
+            open_mode = 'wt'
         elif mode.lower() == 'add':
-            # add mode; all the sets are written in the add mode
-            for ii in range(0, n_sets):
-                self._write_set(dsets[ii], 'add', force_double=force_double)
+            open_mode = 'at'
         else:
             raise Exception('Unknown mode: ' + mode)
+        # one file handle for all data-sets (opening/closing per data-set dominated
+        # the time of writing many small data-sets)
+        try:
+            # newline='\n': the same file (LF line ends) on every platform
+            fh = open(self._filename, open_mode, encoding='utf-8', newline='\n')
+        except:
+            raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
+        try:
+            for ii in range(0, n_sets):
+                # the first data-set of 'overwrite' starts the file, the others are added
+                self._write_dset(fh, dsets[ii], mode if ii == 0 else 'add', force_double=force_double)
+        finally:
+            fh.close()
+            self._refreshed = False
         self.refresh()
 
-    def _read_set(self, n, header_only=False):
+    def _read_set(self, n, header_only=False, fh=None):
         """
         Reads n-th set from UFF file. 
 
@@ -399,72 +418,47 @@ class UFF:
 
         :param header_only: False (default), if True header is read, only
                 This usefull for large files.    
+        :param fh: optional file handle (opened in 'rb' mode) of the file; if None,
+                the file is opened and closed here.
         """
-        
-        dset = {}
-        if not self.file_exists():
-            raise Exception('Cannot read from a non-existing file: ' + self._filename)
+        if fh is None:
+            if not self.file_exists():
+                raise Exception('Cannot read from a non-existing file: ' + self._filename)
         if not self._refreshed:
             if not self.refresh():
                 raise Exception('Cannot read from the file: ' + self._filename + '. The file cannot be refreshed.')
         if (n > self._n_sets - 1) or (n < 0):
-            raise Exception('Cannot read data-set: ' + str(int(n)) + \
-                               '. Data-set number to high or to low.')
+            raise Exception('Cannot read data-set: ' + str(int(n)) +
+                            '. Data-set number to high or to low.')
+        set_type = int(self._set_types[int(n)])
         # Read n-th data-set data (one block)
-        try:
-            fh = open(self._filename, 'rb')
-        except:
-            raise Exception('Cannot access the file: ' + self._filename + ' to read from.')
-        else:
+        own_fh = fh is None
+        if own_fh:
             try:
-                si = self._block_ind[n][0]  # start offset
-                ei = self._block_ind[n][1]  # end offset
-                fh.seek(si)
-                if self._set_types[int(n)] == 58:
-                    block_data = fh.read(ei - si + 1)  # decoding is handled later in _extract58
-                else:
-                    block_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
+                fh = open(self._filename, 'rb')
             except:
-                fh.close()
-                raise Exception('Error reading data-set #: ' + str(int(n)))
+                raise Exception('Cannot access the file: ' + self._filename + ' to read from.')
+        try:
+            si = self._block_ind[n][0]  # start offset
+            ei = self._block_ind[n][1]  # end offset
+            fh.seek(si)
+            if set_type == 58:
+                block_data = fh.read(ei - si + 1)  # decoding is handled later in _extract58
             else:
+                block_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
+        except:
+            raise Exception('Error reading data-set #: ' + str(int(n)))
+        finally:
+            if own_fh:
                 fh.close()
         # Extracts the dset
-        if self._set_types[int(n)] == 15:
-            dset = _extract15(block_data)
-        elif self._set_types[int(n)] == 18:
-            dset = _extract18(block_data)
-        elif self._set_types[int(n)] == 55:
-            dset = _extract55(block_data)
-        elif self._set_types[int(n)] == 58:
-            dset = _extract58(block_data, header_only=header_only)
-        elif self._set_types[int(n)] == 82:
-            dset = _extract82(block_data)
-        elif self._set_types[int(n)] == 151:
-            dset = _extract151(block_data)
-        elif self._set_types[int(n)] == 164:
-            dset = _extract164(block_data)
-        elif self._set_types[int(n)] == 1858:
-            dset = _extract1858(block_data)
-        elif self._set_types[int(n)] == 2400:
-            dset = _extract2400(block_data)
-        elif self._set_types[int(n)] == 2411:
-            dset = _extract2411(block_data)  # TEMP ADD
-        elif self._set_types[int(n)] == 2412:
-            dset = _extract2412(block_data)
-        elif self._set_types[int(n)] == 2414:
-            dset = _extract2414(block_data) 
-        elif self._set_types[int(n)] == 2420:
-            dset = _extract2420(block_data)
-        elif self._set_types[int(n)] == 2429:
-            dset = _extract2429(block_data)
-        elif self._set_types[int(n)] == 2467:
-            dset = _extract2467(block_data)
-        else:
-            dset['type'] = self._set_types[int(n)]
-            # Unsupported data-set - do nothing
-            pass
-        return dset
+        if set_type == 58:
+            return _extract58(block_data, header_only=header_only)
+        extract = _EXTRACTORS.get(set_type)
+        if extract is not None:
+            return extract(block_data)
+        # Unsupported data-set - do nothing
+        return {'type': self._set_types[int(n)]}
 
     def _write_set(self, dset, mode='add', force_double=True):
         """
@@ -485,76 +479,52 @@ class UFF:
         if mode.lower() == 'overwrite':
             # overwrite mode
             try:
-                fh = open(self._filename, 'wt', encoding='utf-8')
+                fh = open(self._filename, 'wt', encoding='utf-8', newline='\n')
             except:
                 raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         elif mode.lower() == 'add':
             # add (append) mode
             try:
-                fh = open(self._filename, 'at', encoding='utf-8')
+                fh = open(self._filename, 'at', encoding='utf-8', newline='\n')
             except:
                 raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         else:
             raise Exception('Unknown mode: ' + mode)
         try:
-            # Actual writing
-            try:
-                set_type = dset['type']
-            except:
-                fh.close()
-                raise Exception('Data-set\'s dictionary is missing the required \'type\' key')
-            # handle nan or inf
-            if 'data' in dset.keys():
-                data = np.asarray(dset['data'])
-                if np.issubdtype(data.dtype, np.inexact):
-                    n_not_finite = np.count_nonzero(~np.isfinite(data))
-                    if n_not_finite:
-                        warnings.warn('Data-set %s: %i of %i data values are NaN or infinite; '
-                                      'NaN is written as 0 and infinity as the largest finite '
-                                      'float.' % (set_type, n_not_finite, data.size), stacklevel=3)
-                dset['data'] = np.nan_to_num(dset['data'])
-
-            if set_type == 15:
-                _write15(fh, dset)
-            elif set_type == 18:
-                _write18(fh, dset)
-            elif set_type == 55:
-                _write55(fh, dset)
-            elif set_type == 58:
-                _write58(fh, dset, mode, force_double=force_double)
-            elif set_type == 82:
-                _write82(fh, dset)
-            elif set_type == 151:
-                _write151(fh, dset)
-            elif set_type == 164:
-                _write164(fh, dset)
-            elif set_type == 1858:
-                _write1858(fh, dset)
-            elif set_type == 2400:
-                _write2400(fh, dset)
-            elif set_type == 2411:
-                _write2411(fh, dset)
-            elif set_type == 2412:
-                _write2412(fh, dset)
-            elif set_type == 2414:
-                _write2414(fh, dset)
-            elif set_type == 2420:
-                _write2420(fh, dset)
-            elif set_type == 2429:
-                _write2429(fh, dset)
-            elif set_type == 2467:
-                _write2467(fh, dset)
-            else:
-                # Unsupported data-set - do nothing
-                pass
-        except:
-            fh.close()
-            raise  # re-raise the last exception
-        else:
+            self._write_dset(fh, dset, mode, force_double=force_double)
+        finally:
             fh.close()
         # the file has changed: its index of data-sets is rebuilt when it is
         # needed next, not after every data-set (write_sets writes many)
         self._refreshed = False
+
+    def _write_dset(self, fh, dset, mode='add', force_double=True):
+        """Writes one data-set to the open (text) file fh."""
+        # Actual writing
+        try:
+            set_type = dset['type']
+        except:
+            raise Exception("Data-set's dictionary is missing the required 'type' key")
+        # handle nan or inf
+        if 'data' in dset.keys():
+            data = np.asarray(dset['data'])
+            if np.issubdtype(data.dtype, np.inexact):
+                n_not_finite = np.count_nonzero(~np.isfinite(data))
+                if n_not_finite:
+                    warnings.warn('Data-set %s: %i of %i data values are NaN or infinite; '
+                                  'NaN is written as 0 and infinity as the largest finite '
+                                  'float.' % (set_type, n_not_finite, data.size), stacklevel=3)
+                    dset['data'] = np.nan_to_num(dset['data'])
+                else:
+                    dset['data'] = data
+            else:
+                dset['data'] = np.nan_to_num(dset['data'])
+        writer = _WRITERS.get(set_type)
+        if writer is _write58:
+            _write58(fh, dset, mode, force_double=force_double)
+        elif writer is not None:
+            writer(fh, dset)
+        # else: unsupported data-set - do nothing
 
 
 if __name__ == '__main__':

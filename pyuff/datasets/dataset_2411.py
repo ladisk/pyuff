@@ -1,6 +1,7 @@
 import numpy as np
 
-from ..tools import _opt_fields, _parse_header_line, check_dict_for_none
+from ..tools import _opt_fields, _parse_header_line, check_dict_for_none, _column_arrays
+from .._vector_text import format_rows
 
 def get_structure_2411(raw=False):
     """(source: https://www.ceas3.uc.edu/sdrluff/"""
@@ -36,11 +37,13 @@ def _write2411(fh, dset):
         dset = _opt_fields(dset, dict)
         fh.write('%6i\n%6i%74s\n' % (-1, 2411, ' '))
         
-        for node,node_id in enumerate(dset['node_nums']):
-            fh.write('%10i%10i%10i%10i\n' % (int(node_id), dset['def_cs'][node], dset['disp_cs'][node],
-                                            dset['color'][node]))
-
-            fh.write('%25.16e%25.16e%25.16e\n' % (dset['x'][node], dset['y'][node], dset['z'][node]))
+        n = len(dset['node_nums'])
+        node, def_cs, disp_cs, color, x, y, z = _column_arrays(
+            n, dset['node_nums'], dset['def_cs'], dset['disp_cs'], dset['color'], dset['x'], dset['y'], dset['z'])
+        if node.dtype.kind not in 'biuf':
+            node = [int(node_id) for node_id in node]
+        fh.write(format_rows([('%10i', node), ('%10i', def_cs), ('%10i', disp_cs), ('%10i', color), '\n',
+                              ('%25.16e', x), ('%25.16e', y), ('%25.16e', z), '\n'], n))
 
         fh.write('%6i\n' % -1)
 
@@ -55,9 +58,9 @@ def _extract2411(block_data):
         # Body
         split_data = block_data.splitlines(True)  # Keep the line breaks!
         split_data = ''.join(split_data[2:])  # ..as they are again needed
-        split_data = split_data.split()
+        split_data = split_data.replace("D", "E").replace("d", "E").split()
         # replace to support D or d notation as an exponential notation (typically form Unigraphics IDEAS)
-        values = np.asarray([float(str.replace("D", "E").replace("d", "E")) for str in split_data], 'd')
+        values = np.array(split_data, 'd')
         dset['node_nums'] = values[::7].copy()
         dset['def_cs'] = values[1::7].copy()
         dset['disp_cs'] = values[2::7].copy()
