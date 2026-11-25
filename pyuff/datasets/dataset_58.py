@@ -1615,9 +1615,10 @@ def prepare_58(
     if type(z_axis_axis_units_lab) != str and z_axis_axis_units_lab != None:
         raise TypeError('z_axis_axis_units_lab must be string')
     
-    if np.array(data).dtype != float and np.array(data).dtype != complex:
-        if data != None:
-            raise TypeError('data must be float')
+    # float or complex data of any precision (e.g. float32 for single precision);
+    # 'data != None' compared arrays element by element and raised ValueError
+    if data is not None and np.asarray(data).dtype.kind not in 'fc':
+        raise TypeError('data must be float')
     
 
 

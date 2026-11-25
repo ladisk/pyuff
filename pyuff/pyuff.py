@@ -426,7 +426,7 @@ class UFF:
                     block_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
             except:
                 fh.close()
-                raise Exception('Error reading data-set #: ' + int(n))
+                raise Exception('Error reading data-set #: ' + str(int(n)))
             else:
                 fh.close()
         # Extracts the dset
