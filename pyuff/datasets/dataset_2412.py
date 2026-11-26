@@ -171,7 +171,7 @@ def prepare_2412(
     This function prepares a single element. The data-set to write is a dictionary with the key
     ``'type'`` set to 2412 and, for each FE descriptor id in the model, an integer key with the
     list of the elements of that type, e.g. ``{'type': 2412, 21: [beam], 44: [quad1, quad2]}``.
-    :meth:`pyuff.UFF.read_sets` returns data-set 2412 in the same form; it additionally gives the
+    :meth:`pyuff.UFF.read_datasets` returns data-set 2412 in the same form; it additionally gives the
     elements with descriptors 41 and 44 under the keys ``'triangle'`` and ``'quad'``, which are
     ignored when writing.
 
@@ -225,7 +225,7 @@ def prepare_2412(
     -------
     dict
         One element. Put it in the list under its FE descriptor id in the data-set dictionary
-        (see above), which is written with :meth:`pyuff.UFF.write_sets`.
+        (see above), which is written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -244,7 +244,7 @@ def prepare_2412(
     ...         element_nums=3, fe_descriptor=94, phys_table=2, mat_table=1, color=8,
     ...         num_nodes=4, nodes_nums=[2, 3, 6, 5])]
     >>> elements = {'type': 2412, 21: [beam], 94: quads}
-    >>> pyuff.UFF('elements.uff').write_sets(elements, mode='overwrite')
+    >>> pyuff.UFF('elements.uff').write_datasets(elements, mode='overwrite')
     """
     if np.array(element_nums).dtype != int and element_nums != None:
         raise TypeError('element_nums must be integer')

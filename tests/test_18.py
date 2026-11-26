@@ -37,7 +37,7 @@ def test_prepare_18():
 
 def test_read_18():
     uff_file = pyuff.UFF('./data/TestLab 161 164 18 15 82.uff')
-    sets = uff_file.read_sets()
+    sets = uff_file.read_datasets()
     dset = [s for s in sets if s['type'] == 18][0]
 
     assert dset['cs_num'][0] == 1.0
@@ -69,10 +69,10 @@ def test_write_read_18():
         xz_point=[[0.0, 0.0, 1.0], [1.0, 2.0, 4.0]])
 
     uffwrite = pyuff.UFF(save_to_file)
-    uffwrite._write_set(dataset, 'add')
+    uffwrite._write_dataset(dataset, 'add')
 
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)

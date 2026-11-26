@@ -118,7 +118,7 @@ def prepare_2411(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -134,7 +134,7 @@ def prepare_2411(
     ...     x=np.array([0.0, 1.0, 1.0, 0.0]),
     ...     y=np.array([0.0, 0.0, 1.0, 1.0]),
     ...     z=np.zeros(4))
-    >>> pyuff.UFF('nodes.uff').write_sets(nodes, mode='overwrite')
+    >>> pyuff.UFF('nodes.uff').write_datasets(nodes, mode='overwrite')
     """
     # **Test prepare_2411**
     #>>> save_to_file = 'test_pyuff'
@@ -150,7 +150,7 @@ def prepare_2411(
     #>>>     if os.path.exists(save_to_file):
     #>>>         os.remove(save_to_file)
     #>>>     uffwrite = pyuff.UFF(save_to_file)
-    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>>     uffwrite.write_datasets(dataset, mode='add')
     #>>> dataset
 
     if np.array(node_nums).dtype != int and node_nums != None:

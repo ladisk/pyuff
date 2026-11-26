@@ -175,7 +175,7 @@ def prepare_151(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -185,7 +185,7 @@ def prepare_151(
     ...     description='Free-free steel beam',
     ...     db_app='pyuff',
     ...     program='pyuff')
-    >>> pyuff.UFF('beam_model.uff').write_sets(header, mode='overwrite')
+    >>> pyuff.UFF('beam_model.uff').write_datasets(header, mode='overwrite')
     """
     if type(model_name) != str and model_name != None:
         raise TypeError('model_name must be string')

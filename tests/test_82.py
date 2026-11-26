@@ -9,18 +9,18 @@ import pyuff
 def test_read_write_read_given_data():
     #read from file
     uff_read = pyuff.UFF('./data/Artemis export - Geometry RPBC_setup_05_14102016_105117.uff')
-    a = uff_read.read_sets(1)
+    a = uff_read.read_datasets(1)
 
     #write to file
     save_to_file = './data/trace_lines.uff'
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -38,18 +38,18 @@ def test_read_write_read_given_data2():
     datasets = [4, 5, 6]
     for ds in datasets:
         uff_read = pyuff.UFF('./data/TestLab 161 164 18 15 82.uff')
-        a = uff_read.read_sets(ds)
+        a = uff_read.read_datasets(ds)
 
         #write to file
         save_to_file = './data/trace_lines.uff'
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
         _ = pyuff.UFF(save_to_file)
-        _.write_sets(a, 'add')
+        _.write_datasets(a, 'add')
 
         #read back
         uff_read = pyuff.UFF(save_to_file)
-        b = uff_read.read_sets(0)
+        b = uff_read.read_datasets(0)
 
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
@@ -78,11 +78,11 @@ def test_write_read_test_data():
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
         uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
+        uffwrite._write_dataset(dataset, 'add')
     
     uff_dataset_origin = dataset_out
     uff_read = pyuff.UFF(save_to_file)
-    uff_dataset_read = uff_read.read_sets()
+    uff_dataset_read = uff_read.read_datasets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
 
@@ -122,9 +122,9 @@ def test_write_82_nodes_list(tmp_path):
     nodes = [1, 2, 2, 3, 0, 4, 5, 6, 7, 8, 9]
     dset = pyuff.prepare_82(trace_num=1, color=1, id='trace', nodes=nodes)
     fn = tmp_path / 'trace.uff'
-    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+    pyuff.UFF(fn).write_datasets(dset, mode='overwrite')
 
-    read = pyuff.UFF(fn).read_sets(0)
+    read = pyuff.UFF(fn).read_datasets(0)
     assert read['n_nodes'] == len(nodes)
     np.testing.assert_array_equal(read['nodes'], nodes)
     with open(fn) as f:

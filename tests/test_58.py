@@ -27,7 +27,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_do
     #read from file
     uff_read = pyuff.UFF(file)
 
-    a = uff_read.read_sets()
+    a = uff_read.read_datasets()
     if type(a)==list:
         a = [_ for _ in a if _['type']==58]
         a = a[0]
@@ -37,11 +37,11 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_do
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add', force_double=force_double)
+    _.write_datasets(a, 'add', force_double=force_double)
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(setn=0, header_only=header_only)
+    b = uff_read.read_datasets(dataset=0, header_only=header_only)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -119,11 +119,11 @@ def test_write_read_58():
         uff_datasets.append(data.copy())
         if save_to_file:
             uffwrite = pyuff.UFF(save_to_file)
-            uffwrite._write_set(data, 'add')
+            uffwrite._write_dataset(data, 'add')
     
     uff_dataset_origin = uff_datasets
     uff_read = pyuff.UFF(save_to_file)
-    uff_dataset_read = uff_read.read_sets()
+    uff_dataset_read = uff_read.read_datasets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
 
@@ -139,10 +139,10 @@ def test_write_read_58():
 
 def test_read_58b_binary_vs_58_ascii():
     uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
-    a = uff_ascii.read_sets(0)
+    a = uff_ascii.read_datasets(0)
     uff_bin = pyuff.UFF('./data/Sample_UFF58b_bin.uff')
-    b = uff_bin.read_sets(0)
-    #print(uff_ascii.read_sets(0)['id1'])
+    b = uff_bin.read_datasets(0)
+    #print(uff_ascii.read_datasets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],b['id1'])
     np.testing.assert_array_equal(a['rsp_dir'],b['rsp_dir'])
     np.testing.assert_array_equal(a['x'],b['x'])
@@ -150,7 +150,7 @@ def test_read_58b_binary_vs_58_ascii():
 
 def test_non_ascii_in_header():
     uff_ascii = pyuff.UFF('./data/Artemis export - data and dof 05_14102016_105117.uff')
-    a = uff_ascii.read_sets(0)
+    a = uff_ascii.read_datasets(0)
     np.testing.assert_string_equal(a['id1'], 'Channel 1 [20, -X]')
     np.testing.assert_almost_equal(a['x'][-1], 1.007999609375e+03)
     np.testing.assert_almost_equal(np.sum(a['data']), 172027.83668466809)
@@ -221,10 +221,10 @@ def test_prepare_58():
 def test_fix_58b():
     pyuff.fix_58b('./data/MPSTD#Set001_2024_10_08_10_27_07.uff')
     corrected_file = pyuff.UFF('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed.uff')
-    data_1 = corrected_file.read_sets(0)
+    data_1 = corrected_file.read_datasets(0)
 
     test_file = pyuff.UFF('./data/MPSTD#Set001_2024_10_08_10_27_07_fixed_test.uff')
-    data_2 = test_file.read_sets(0)
+    data_2 = test_file.read_datasets(0)
 
     np.testing.assert_array_almost_equal(data_1['data'], data_2['data'])
 
@@ -265,11 +265,11 @@ def test_write_read_func_type_0():
 
     # Write the dataset to a UFF file
     uff_writer = pyuff.UFF(save_to_file)
-    uff_writer.write_sets([dataset], mode='overwrite')
+    uff_writer.write_datasets([dataset], mode='overwrite')
 
     # Read the dataset back
     uff_reader = pyuff.UFF(save_to_file)
-    read_data = uff_reader.read_sets()
+    read_data = uff_reader.read_datasets()
 
     # Clean up the file
     if os.path.exists(save_to_file):
@@ -301,8 +301,8 @@ def test_write_read_all_func_types():
                                  ref_dir=1, data=data, x=x, abscissa_spacing=1, abscissa_spec_data_type=18,
                                  ordinate_spec_data_type=12, orddenom_spec_data_type=13)
                 for func_type in range(28) for binary in (0, 1)]
-    pyuff.UFF(save_to_file).write_sets(datasets, mode='add')
-    b = pyuff.UFF(save_to_file).read_sets()
+    pyuff.UFF(save_to_file).write_datasets(datasets, mode='add')
+    b = pyuff.UFF(save_to_file).read_datasets()
     os.remove(save_to_file)
 
     np.testing.assert_equal([d['func_type'] for d in b], [d['func_type'] for d in datasets])
@@ -334,10 +334,10 @@ def test_double_uneven_base(test_data=[1.0,2.0,2.0,4.0,1.0], test_x=[20.0,100,30
         if value is None:
             my_set[key] = 0
 
-    uffwrite._write_set(my_set,'add')
+    uffwrite._write_dataset(my_set,'add')
 
     uffread = pyuff.UFF(save_to_file)
-    read_data = uffread.read_sets()
+    read_data = uffread.read_datasets()
 
     # Clean up the file
     if os.path.exists(save_to_file):
@@ -386,10 +386,10 @@ def test_write_read_58_utf8_headers():
             orddenom_spec_data_type=13)
 
         uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
+        uffwrite._write_dataset(dataset, 'add')
 
         uff_read = pyuff.UFF(save_to_file)
-        b = uff_read.read_sets(0)
+        b = uff_read.read_datasets(0)
 
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
@@ -436,9 +436,9 @@ def test_write_58b_byte_count():
                                    data=data, x=x, abscissa_spacing=spacing, ord_data_type=ord_data_type,
                                    abscissa_spec_data_type=18, ordinate_spec_data_type=12,
                                    orddenom_spec_data_type=13)
-        pyuff.UFF(save_to_file).write_sets(dataset, 'add', force_double=force_double)
+        pyuff.UFF(save_to_file).write_datasets(dataset, 'add', force_double=force_double)
         n_bytes, n_written = _58b_byte_count(save_to_file)
-        b = pyuff.UFF(save_to_file).read_sets(0)
+        b = pyuff.UFF(save_to_file).read_datasets(0)
         os.remove(save_to_file)
 
         np.testing.assert_equal(n_written, len(x) * bytes_per_point)
@@ -453,7 +453,7 @@ def test_read_58b_written_by_older_pyuff():
     x_uneven = np.array([1., 2., 4., 8., 16.])
     real = np.array([1., -2., 3., -4., 5.])
     cplx = real + 1j * real[::-1]
-    sets = pyuff.UFF('./data/58b_pyuff_2.5.8_byte_count.uff').read_sets()
+    sets = pyuff.UFF('./data/58b_pyuff_2.5.8_byte_count.uff').read_datasets()
     np.testing.assert_equal([s['n_bytes'] for s in sets], [40, 40, 40, 40])
     for b, (data, x) in zip(sets, [(real, x_even), (cplx, x_even), (real, x_uneven), (cplx, x_uneven)]):
         np.testing.assert_array_equal(b['data'], data)
@@ -470,9 +470,9 @@ def test_write_58b_overwrite():
                                  abscissa_spec_data_type=17, ordinate_spec_data_type=12,
                                  orddenom_spec_data_type=0) for i in range(2)]
     uff = pyuff.UFF(save_to_file)
-    uff.write_sets(datasets[0], mode='overwrite')
-    uff.write_sets(datasets, mode='overwrite')
-    b = pyuff.UFF(save_to_file).read_sets()
+    uff.write_datasets(datasets[0], mode='overwrite')
+    uff.write_datasets(datasets, mode='overwrite')
+    b = pyuff.UFF(save_to_file).read_datasets()
     os.remove(save_to_file)
 
     np.testing.assert_equal(len(b), 2)
@@ -491,8 +491,8 @@ def test_write_read_58_single_point(tmp_path, binary, abscissa_spacing, data):
                             x=np.array([10.0]), data=data, id1='one point', rsp_ent_name='pt', ref_ent_name='pt',
                             abscissa_spec_data_type=18, ordinate_spec_data_type=12, orddenom_spec_data_type=13)
     path = tmp_path / 'one.uff'
-    pyuff.UFF(path).write_sets(dset, 'overwrite')
-    b = pyuff.UFF(path).read_sets(0)
+    pyuff.UFF(path).write_datasets(dset, 'overwrite')
+    b = pyuff.UFF(path).read_datasets(0)
 
     np.testing.assert_array_equal(b['x'], [10.0])
     np.testing.assert_array_equal(b['data'], data)
@@ -516,9 +516,9 @@ def test_write_58b_closes_the_file(tmp_path, abscissa_spacing):
     path = tmp_path / 'b.uff'
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter('always', ResourceWarning)
-        pyuff.UFF(path).write_sets([dset, dset], 'overwrite')
+        pyuff.UFF(path).write_datasets([dset, dset], 'overwrite')
         gc.collect()
     assert not [w for w in caught if issubclass(w.category, ResourceWarning)]
     with open(path, 'rb') as fh:
         assert fh.read().endswith(b'    -1\n')
-    assert len(pyuff.UFF(path).read_sets()) == 2
+    assert len(pyuff.UFF(path).read_datasets()) == 2

@@ -81,7 +81,7 @@ def test_write_2467():
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     with open(save_to_file, 'r') as f:
         written_data = f.read()
@@ -106,8 +106,8 @@ Two
 
 def test_read_2467():
     uff_ascii = pyuff.UFF('./data/groups_test.uff')
-    sets = uff_ascii.get_set_types()
-    a = uff_ascii.read_sets(4)
+    sets = uff_ascii.get_dataset_types()
+    a = uff_ascii.read_datasets(4)
 
     assert a['type'] == 2467
     assert len(a['groups']) == 3
@@ -128,7 +128,7 @@ def test_read_2467():
     np.testing.assert_array_equal(a['groups'][1]['entity_tag'], np.array([168, 190, 191, 192]))
 
 def test_read_2467_prints_nothing(capsys):
-    pyuff.UFF('./data/groups_test.uff').read_sets(4)
+    pyuff.UFF('./data/groups_test.uff').read_datasets(4)
     assert capsys.readouterr().out == ''
 
 def test_write_read_2467():
@@ -168,10 +168,10 @@ def test_write_read_2467():
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     uff_ascii = pyuff.UFF(save_to_file)
-    groups_read = uff_ascii.read_sets(0)['groups']
+    groups_read = uff_ascii.read_datasets(0)['groups']
 
     for group, group_read in zip(groups, groups_read):
         for key in group.keys():
@@ -193,8 +193,8 @@ def test_prepare_group_active_sets(tmp_path):
         assert group[key] == value
 
     fn = tmp_path / 'groups.uff'
-    pyuff.UFF(fn).write_sets(pyuff.prepare_2467([group]), mode='overwrite')
-    read = pyuff.UFF(fn).read_sets(0)['groups'][0]
+    pyuff.UFF(fn).write_datasets(pyuff.prepare_2467([group]), mode='overwrite')
+    read = pyuff.UFF(fn).read_datasets(0)['groups'][0]
     for key, value in active.items():
         assert read[key] == value
 
@@ -204,13 +204,13 @@ def test_write_2467_without_active_sets(tmp_path):
     group = {'group_number': 1, 'group_name': 'g', 'entity_type_code': [8], 'entity_tag': [1],
              'entity_node_leaf_id': [0], 'entity_component_id': [0]}
     fn = tmp_path / 'groups.uff'
-    pyuff.UFF(fn).write_sets(pyuff.prepare_2467([group]), mode='overwrite')
-    read = pyuff.UFF(fn).read_sets(0)['groups'][0]
+    pyuff.UFF(fn).write_datasets(pyuff.prepare_2467([group]), mode='overwrite')
+    read = pyuff.UFF(fn).read_datasets(0)['groups'][0]
     assert read['active_temperature_set_no_for_group'] == 0
     np.testing.assert_array_equal(read['entity_tag'], [1])
 
 
 def test_prepare_2467_read_groups():
     # groups read from a file pass the checks of prepare_2467
-    groups = pyuff.UFF('./data/groups_test.uff').read_sets(4)['groups']
+    groups = pyuff.UFF('./data/groups_test.uff').read_datasets(4)['groups']
     assert len(pyuff.prepare_2467(groups)['groups']) == 3

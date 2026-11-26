@@ -83,8 +83,8 @@ Its records and the dictionary keys of their fields:
 Dictionaries
 ------------
 
-:meth:`pyuff.UFF.read_sets` returns one dictionary for each data-set, and
-:meth:`pyuff.UFF.write_sets` writes such dictionaries:
+:meth:`pyuff.UFF.read_datasets` returns one dictionary for each data-set, and
+:meth:`pyuff.UFF.write_datasets` writes such dictionaries:
 
 - the key ``type`` is the data-set type (an integer, e.g. ``58``);
 - the other keys are the fields of the data-set, named as the parameters of the
@@ -249,5 +249,5 @@ Precision of data-set 58
 The ordinate data type (``ord_data_type``) of data-set 58 gives whether the data are real or
 complex, in single or double precision: 2 real single, 4 real double, 5 complex single, 6
 complex double. pyuff writes in double precision by default
-(:meth:`~pyuff.UFF.write_sets` with ``force_double=True``), also if the data were read in single
+(:meth:`~pyuff.UFF.write_datasets` with ``force_double=True``), also if the data were read in single
 precision; with ``force_double=False``, the precision is given by ``ord_data_type``.

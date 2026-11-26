@@ -20,37 +20,37 @@ def test_write_sets_indexes_the_file_once(tmp_path, monkeypatch):
         return original_refresh(self)
 
     monkeypatch.setattr(pyuff.UFF, 'refresh', counting_refresh)
-    uff.write_sets([_prepare_frf(node) for node in range(1, 6)], 'add')
+    uff.write_datasets([_prepare_frf(node) for node in range(1, 6)], 'add')
 
     assert len(n_refresh) == 1
     assert uff.get_status()
-    assert uff.get_n_sets() == 5
-    np.testing.assert_array_equal(uff.get_set_types(), [58] * 5)
+    assert uff.get_n_datasets() == 5
+    np.testing.assert_array_equal(uff.get_dataset_types(), [58] * 5)
 
 
 def test_read_after_writing_single_sets(tmp_path):
     uff = pyuff.UFF(tmp_path / 'frf.uff')
     for node in range(1, 4):
-        uff._write_set(_prepare_frf(node), 'add')
+        uff._write_dataset(_prepare_frf(node), 'add')
 
-    sets = uff.read_sets()
+    sets = uff.read_datasets()
     assert [dset['rsp_node'] for dset in sets] == [1, 2, 3]
-    assert uff.read_sets(2)['rsp_node'] == 3
+    assert uff.read_datasets(2)['rsp_node'] == 3
 
 
-def test_set_formats(tmp_path):
+def test_dataset_formats(tmp_path):
     uff = pyuff.UFF(tmp_path / 'frf.uff')
-    uff.write_sets([_prepare_frf(1, binary=0), _prepare_frf(2, binary=1), _prepare_frf(3, binary=0)], 'add')
+    uff.write_datasets([_prepare_frf(1, binary=0), _prepare_frf(2, binary=1), _prepare_frf(3, binary=0)], 'add')
 
-    np.testing.assert_array_equal(uff.get_set_formats(), [0, 1, 0])
-    np.testing.assert_array_equal(pyuff.UFF(tmp_path / 'frf.uff').get_set_formats(), [0, 1, 0])
-    np.testing.assert_array_equal(pyuff.UFF('./data/Sample_UFF58b_bin.uff').get_set_formats(), [1])
+    np.testing.assert_array_equal(uff.get_dataset_formats(), [0, 1, 0])
+    np.testing.assert_array_equal(pyuff.UFF(tmp_path / 'frf.uff').get_dataset_formats(), [0, 1, 0])
+    np.testing.assert_array_equal(pyuff.UFF('./data/Sample_UFF58b_bin.uff').get_dataset_formats(), [1])
 
 
 def test_write_sets_writes_lf_line_ends(tmp_path):
     # the same file on every platform
     fn = tmp_path / 'frf.uff'
-    pyuff.UFF(fn).write_sets([_prepare_frf(node) for node in range(1, 4)], 'overwrite')
+    pyuff.UFF(fn).write_datasets([_prepare_frf(node) for node in range(1, 4)], 'overwrite')
     data = fn.read_bytes()
     assert b'\r' not in data
     assert data.endswith(b'    -1\n')
@@ -59,10 +59,10 @@ def test_write_sets_writes_lf_line_ends(tmp_path):
 def test_read_sets_in_any_order():
     # the data-sets read at once (with one file handle) are those read one by one
     uff = pyuff.UFF('./data/beam.uff')
-    n_sets = uff.get_n_sets()
-    one_by_one = [uff.read_sets(i) for i in range(n_sets)]
-    at_once = uff.read_sets(list(range(n_sets))[::-1])[::-1]
-    assert len(at_once) == n_sets
+    n_datasets = uff.get_n_datasets()
+    one_by_one = [uff.read_datasets(i) for i in range(n_datasets)]
+    at_once = uff.read_datasets(list(range(n_datasets))[::-1])[::-1]
+    assert len(at_once) == n_datasets
     for single, dset in zip(one_by_one, at_once):
         assert single.keys() == dset.keys()
         for key in dset:

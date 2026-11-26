@@ -142,7 +142,7 @@ def prepare_164(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Notes
     -----
@@ -160,7 +160,7 @@ def prepare_164(
     ...     force=1.0,
     ...     temp=1.0,
     ...     temp_offset=273.15)
-    >>> pyuff.UFF('units.uff').write_sets(units, mode='overwrite')
+    >>> pyuff.UFF('units.uff').write_datasets(units, mode='overwrite')
     """
 
     if units_code not in np.arange(10) and units_code != None:

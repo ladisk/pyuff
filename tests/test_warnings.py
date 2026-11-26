@@ -44,9 +44,9 @@ def test_write_nan_inf_warns():
                                data=data, x=x, abscissa_spacing=1, abscissa_spec_data_type=18,
                                ordinate_spec_data_type=12, orddenom_spec_data_type=13)
     with pytest.warns(UserWarning, match='Data-set 58: 2 of 5 data values are NaN or infinite') as record:
-        pyuff.UFF(save_to_file).write_sets(dataset, mode='add')
+        pyuff.UFF(save_to_file).write_datasets(dataset, mode='add')
     assert record[0].filename == __file__
-    b = pyuff.UFF(save_to_file).read_sets(0)
+    b = pyuff.UFF(save_to_file).read_datasets(0)
     os.remove(save_to_file)
 
     np.testing.assert_array_equal(b['data'][[0, 1, 2, 4]], np.array([1., 0., 3., 5.]) * (1 + 1j))

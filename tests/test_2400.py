@@ -37,7 +37,7 @@ def test_prepare_2400():
 
 def test_read_2400():
     uff_file = pyuff.UFF('./data/NX simulation output.uff')
-    sets = uff_file.read_sets()
+    sets = uff_file.read_datasets()
     dset = [s for s in sets if s['type'] == 2400][0]
 
     assert dset['model_uid'] == 13
@@ -71,10 +71,10 @@ def test_write_read_2400():
         optimization_switches=3)
 
     uffwrite = pyuff.UFF(save_to_file)
-    uffwrite._write_set(dataset, 'add')
+    uffwrite._write_dataset(dataset, 'add')
 
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)

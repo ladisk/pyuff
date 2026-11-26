@@ -166,7 +166,7 @@ def prepare_2400(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -177,7 +177,7 @@ def prepare_2400(
     ...     part_number='PART-001',
     ...     date='27-FEB-26',
     ...     time='12:00:00')
-    >>> pyuff.UFF('model_header.uff').write_sets(header, mode='overwrite')
+    >>> pyuff.UFF('model_header.uff').write_datasets(header, mode='overwrite')
     """
     if np.array(model_uid).dtype != int and model_uid != None:
         raise TypeError('model_uid must be integer')

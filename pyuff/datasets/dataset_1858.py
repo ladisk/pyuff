@@ -357,7 +357,7 @@ def prepare_1858(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -396,7 +396,7 @@ def prepare_1858(
     ...     abscissa_spacing=1, abscissa_spec_data_type=18,
     ...     ordinate_spec_data_type=12, orddenom_spec_data_type=13,
     ...     data=np.ones(len(freq), dtype=complex), x=freq)
-    >>> pyuff.UFF('frf_1858.uff').write_sets([qualifiers, frf], mode='overwrite')
+    >>> pyuff.UFF('frf_1858.uff').write_datasets([qualifiers, frf], mode='overwrite')
     """
 
     if np.array(record_num).dtype != int and record_num is not None:

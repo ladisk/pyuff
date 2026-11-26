@@ -7,8 +7,8 @@ import pyuff
 
 def test_read_58_non_ascii():
     uff_ascii = pyuff.UFF('./data/non_ascii_header.uff')
-    a = uff_ascii.read_sets(0)
-    #print(uff_ascii.read_sets(0)['id1'])
+    a = uff_ascii.read_datasets(0)
+    #print(uff_ascii.read_datasets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],'ref6_23_Mar')
     np.testing.assert_array_equal(a['rsp_dir'],0)
     length = a['num_pts']
@@ -22,8 +22,8 @@ def test_read_58_non_ascii():
 
 def test_read_58_ascii():
     uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
-    a = uff_ascii.read_sets(0)
-    #print(uff_ascii.read_sets(0)['id1'])
+    a = uff_ascii.read_datasets(0)
+    #print(uff_ascii.read_datasets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],'Mic 01.0Scalar')
     np.testing.assert_array_equal(a['rsp_dir'],1)
     length = a['num_pts']
@@ -36,10 +36,10 @@ def test_read_58_ascii():
 
 def test_read_58b_binary_vs_58_ascii():
     uff_ascii = pyuff.UFF('./data/Sample_UFF58_ascii.uff')
-    a = uff_ascii.read_sets(0)
+    a = uff_ascii.read_datasets(0)
     uff_bin = pyuff.UFF('./data/Sample_UFF58b_bin.uff')
-    b = uff_bin.read_sets(0)
-    #print(uff_ascii.read_sets(0)['id1'])
+    b = uff_bin.read_datasets(0)
+    #print(uff_ascii.read_datasets(0)['id1'])
     np.testing.assert_string_equal(a['id1'],b['id1'])
     np.testing.assert_array_equal(a['rsp_dir'],b['rsp_dir'])
     np.testing.assert_array_equal(a['x'],b['x'])

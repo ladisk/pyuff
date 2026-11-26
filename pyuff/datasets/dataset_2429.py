@@ -255,7 +255,7 @@ def prepare_group(
     ...     entity_type_code=[7, 7, 7],
     ...     entity_tag=[1, 2, 3])
     >>> groups = pyuff.prepare_2429([sensors])
-    >>> pyuff.UFF('sensor_group.uff').write_sets(groups, mode='overwrite')
+    >>> pyuff.UFF('sensor_group.uff').write_datasets(groups, mode='overwrite')
     """
 
     if type(group_number) != int:
@@ -325,7 +325,7 @@ def prepare_2429(
     The data-set holds named groups of entities of the model, e.g. the nodes of the measurement
     points on one part of a structure or the elements of a substructure. Each group is a
     dictionary, prepared with :func:`pyuff.prepare_group` or returned by
-    :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
+    :meth:`pyuff.UFF.read_datasets`, with the keys ``'group_number'``, ``'group_name'``,
     ``'entity_type_code'``, ``'entity_tag'`` and the six ``'active_..._set_no_for_group'`` keys
     (see :func:`pyuff.prepare_group`); the active set numbers are optional (default 0). The entities of a group are written as pairs of entity
     type code and entity tag (the label of the node, element, ...), 4 pairs per line.
@@ -347,7 +347,7 @@ def prepare_2429(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -359,7 +359,7 @@ def prepare_2429(
     >>> plate = pyuff.prepare_group(
     ...     group_number=2, group_name='Plate', entity_type_code=[8, 8], entity_tag=[2, 3])
     >>> groups = pyuff.prepare_2429([sensors, plate])
-    >>> pyuff.UFF('groups.uff').write_sets(groups, mode='overwrite')
+    >>> pyuff.UFF('groups.uff').write_datasets(groups, mode='overwrite')
     """
     # **Test prepare_2429**
     #>>> save_to_file = 'test_pyuff'
@@ -375,7 +375,7 @@ def prepare_2429(
     #>>>     if os.path.exists(save_to_file):
     #>>>         os.remove(save_to_file)
     #>>>     uffwrite = pyuff.UFF(save_to_file)
-    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>>     uffwrite.write_datasets(dataset, mode='add')
     #>>> dataset
 
     if type(groups) != list:

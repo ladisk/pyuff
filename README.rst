@@ -42,17 +42,17 @@ Open a file and check which data-sets it contains:
     import pyuff
 
     uff_file = pyuff.UFF('data/beam.uff')
-    uff_file.get_n_sets()      # 7
-    uff_file.get_set_types()   # array([ 151,  164, 2420, 2411,   58,   58,   58])
-    uff_file.get_set_formats() # 0 for ASCII, 1 for binary data-sets
+    uff_file.get_n_datasets()       # 7
+    uff_file.get_dataset_types()    # array([ 151,  164, 2420, 2411,   58,   58,   58])
+    uff_file.get_dataset_formats()  # 0 for ASCII, 1 for binary data-sets
 
 Read all data-sets (a list of dictionaries), or only some of them:
 
 .. code:: python
 
-    data = uff_file.read_sets()          # all data-sets
-    header = uff_file.read_sets(0)       # one data-set: a dictionary
-    frfs = uff_file.read_sets([4, 5, 6]) # selected data-sets: a list
+    data = uff_file.read_datasets()           # all data-sets
+    header = uff_file.read_datasets(0)        # one data-set: a dictionary
+    frfs = uff_file.read_datasets([4, 5, 6])  # selected data-sets: a list
 
 Each data-set is a dictionary; its ``type`` key gives the data-set number. For a function in
 data-set 58, ``x`` holds the abscissa (e.g. frequency) and ``data`` the ordinate (e.g. a complex
@@ -75,7 +75,7 @@ Writing a file
 --------------
 
 Each ``prepare_*`` function (e.g. ``prepare_58`` for data-set 58) checks the given values and returns
-the dictionary of a data-set. ``write_sets`` writes one dictionary or a list of them; ``mode='add'``
+the dictionary of a data-set. ``write_datasets`` writes one dictionary or a list of them; ``mode='add'``
 appends to the file and ``mode='overwrite'`` starts a new file.
 
 Measured FRFs (data-set 58)
@@ -102,10 +102,10 @@ Measured FRFs (data-set 58)
             orddenom_spec_data_type=13))  # excitation force
 
     uff_file = pyuff.UFF('measurement.uff')
-    uff_file.write_sets(datasets, mode='overwrite')
+    uff_file.write_datasets(datasets, mode='overwrite')
 
 Data-set 58 is written in ASCII with double precision by default. Use ``prepare_58(..., binary=1)``
-for the binary form (58b), and ``write_sets(..., force_double=False)`` for single precision.
+for the binary form (58b), and ``write_datasets(..., force_double=False)`` for single precision.
 
 Geometry and mode shapes (data-sets 2411, 2412 and 55)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,7 +131,7 @@ Geometry and mode shapes (data-sets 2411, 2412 and 55)
         node_nums=node_nums,
         r1=np.zeros(4), r2=np.zeros(4), r3=np.array([0.1, 0.2, 0.2, 0.1]))  # X, Y and Z
 
-    pyuff.UFF('model.uff').write_sets([nodes, elements, mode_shape], mode='overwrite')
+    pyuff.UFF('model.uff').write_datasets([nodes, elements, mode_shape], mode='overwrite')
 
 Data-set 55 is written with as many values per node as response arrays are given: ``r1`` for scalar
 data, ``r1`` to ``r3`` for translations, ``r1`` to ``r6`` for translations and rotations. Complex
@@ -160,7 +160,7 @@ Data-set   Name                                  Prepare function
 2467       Permanent groups                      ``prepare_2467``
 =========  ====================================  =============================
 
-Other data-sets in a file are skipped when reading: ``read_sets`` returns only their ``type``.
+Other data-sets in a file are skipped when reading: ``read_datasets`` returns only their ``type``.
 The fields of each data-set are described in the docstrings of the ``prepare_*`` functions and in
 the `documentation <https://pyuff.readthedocs.io/en/latest/Supported_datasets.html>`_; the
 description of a data-set from the specification is printed by e.g.
@@ -174,6 +174,16 @@ Notes on writing
   finite float, with a warning.
 - Data-set 58 is written in double precision by default, also if it was read in single precision;
   use ``force_double=False`` for single precision.
+
+Names before pyuff 2.8.0
+------------------------
+
+In pyuff 2.8.0 the methods of ``UFF`` were renamed after data-sets: ``read_sets`` is now
+``read_datasets`` (its argument ``setn`` is now ``dataset``), ``write_sets`` is ``write_datasets``,
+``get_n_sets`` is ``get_n_datasets``, ``get_set_types`` is ``get_dataset_types``,
+``get_set_formats`` is ``get_dataset_formats`` and ``get_supported_sets`` is
+``get_supported_datasets``. The old names still work, with a ``DeprecationWarning``, and will be
+removed in pyuff 3.0.
 
 Documentation
 -------------

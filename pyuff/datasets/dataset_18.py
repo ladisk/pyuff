@@ -171,7 +171,7 @@ def prepare_18(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -185,7 +185,7 @@ def prepare_18(
     ...     ref_o=[[1.0, 0.0, 0.0]],
     ...     x_point=[[1.0, 1.0, 0.0]],
     ...     xz_point=[[1.0, 0.0, 1.0]])
-    >>> pyuff.UFF('coordinate_systems.uff').write_sets(systems, mode='overwrite')
+    >>> pyuff.UFF('coordinate_systems.uff').write_datasets(systems, mode='overwrite')
     """
     dataset = {
         'type': 18,

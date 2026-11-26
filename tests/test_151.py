@@ -14,7 +14,7 @@ def test_read_write_read_given_data_base(file=''):
     #read from file
     uff_read = pyuff.UFF(file)
 
-    a = uff_read.read_sets()
+    a = uff_read.read_datasets()
     if type(a)==list:
         types = np.array([_['type'] for _ in a])
         a = a[np.argwhere(types==151)[0][0]]
@@ -24,11 +24,11 @@ def test_read_write_read_given_data_base(file=''):
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -75,11 +75,11 @@ def test_write_read_151():
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
         uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
+        uffwrite._write_dataset(dataset, 'add')
     
     a = dataset_out
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets()
+    b = uff_read.read_datasets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
 
@@ -150,11 +150,11 @@ def test_write_151_file_written(tmp_path):
     dset = pyuff.prepare_151(model_name='m', description='d', db_app='a', program='p',
                              date_db_written='29-Jan-16', time_db_written='14:38:17')
     fn = tmp_path / 'header.uff'
-    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
-    read = pyuff.UFF(fn).read_sets(0)
+    pyuff.UFF(fn).write_datasets(dset, mode='overwrite')
+    read = pyuff.UFF(fn).read_datasets(0)
     assert (read['date_file_written'], read['time_file_written']) == ('29-Jan-16', '14:38:17')
 
     # a data-set read from a file is written with its own values
-    pyuff.UFF(fn).write_sets(read, mode='overwrite')
-    again = pyuff.UFF(fn).read_sets(0)
+    pyuff.UFF(fn).write_datasets(read, mode='overwrite')
+    again = pyuff.UFF(fn).read_datasets(0)
     assert (again['date_file_written'], again['time_file_written']) == ('29-Jan-16', '14:38:17')

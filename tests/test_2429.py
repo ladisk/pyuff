@@ -48,8 +48,8 @@ def test_write_read_2429_groups(tmp_path):
     # groups with 1 to 9 entities: full lines of 4 pairs and partial last lines
     groups = [_group(n, n) for n in range(1, 10)]
     path = tmp_path / 'groups.unv'
-    pyuff.UFF(path).write_sets(pyuff.prepare_2429(groups), 'add')
-    dset = pyuff.UFF(path).read_sets(0)
+    pyuff.UFF(path).write_datasets(pyuff.prepare_2429(groups), 'add')
+    dset = pyuff.UFF(path).read_datasets(0)
 
     assert len(dset['groups']) == 9
     for group, read in zip(groups, dset['groups']):
@@ -61,7 +61,7 @@ def test_write_read_2429_groups(tmp_path):
 
     # a data-set read from a file is written back unchanged
     path_2 = tmp_path / 'groups_2.unv'
-    pyuff.UFF(path_2).write_sets(dset, 'add')
+    pyuff.UFF(path_2).write_datasets(dset, 'add')
     assert open(path_2).read() == open(path).read()
 
 
@@ -70,10 +70,10 @@ def test_write_2429_single_group(tmp_path):
     group = _group(1, 5)
     group['type'] = 2429
     path = tmp_path / 'group.unv'
-    pyuff.UFF(path).write_sets(group, 'add')
+    pyuff.UFF(path).write_datasets(group, 'add')
 
     assert open(path).read().splitlines()[5] == '%10i%10i' % (8, 5)
-    np.testing.assert_array_equal(pyuff.UFF(path).read_sets(0)['groups'][0]['entity_tag'], [1, 2, 3, 4, 5])
+    np.testing.assert_array_equal(pyuff.UFF(path).read_datasets(0)['groups'][0]['entity_tag'], [1, 2, 3, 4, 5])
 
 
 def test_prepare_group_active_sets(tmp_path):
@@ -86,8 +86,8 @@ def test_prepare_group_active_sets(tmp_path):
         assert group[key] == value
 
     fn = tmp_path / 'groups.uff'
-    pyuff.UFF(fn).write_sets(pyuff.prepare_2429([group]), mode='overwrite')
-    read = pyuff.UFF(fn).read_sets(0)['groups'][0]
+    pyuff.UFF(fn).write_datasets(pyuff.prepare_2429([group]), mode='overwrite')
+    read = pyuff.UFF(fn).read_datasets(0)['groups'][0]
     for key, value in active.items():
         assert read[key] == value
 

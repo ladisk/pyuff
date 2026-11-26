@@ -220,7 +220,7 @@ def prepare_group(
     ...     entity_node_leaf_id=[0, 0, 0],
     ...     entity_component_id=[0, 0, 0])
     >>> groups = pyuff.prepare_2467([sensors])
-    >>> pyuff.UFF('sensor_group_2467.uff').write_sets(groups, mode='overwrite')
+    >>> pyuff.UFF('sensor_group_2467.uff').write_datasets(groups, mode='overwrite')
     """
 
     if type(group_number) != int:
@@ -303,7 +303,7 @@ def prepare_2467(
 
     Each group is a dictionary, prepared with
     :func:`pyuff.datasets.dataset_2467.prepare_group` or returned by
-    :meth:`pyuff.UFF.read_sets`, with the keys ``'group_number'``, ``'group_name'``,
+    :meth:`pyuff.UFF.read_datasets`, with the keys ``'group_number'``, ``'group_name'``,
     ``'entity_type_code'``, ``'entity_tag'``, ``'entity_node_leaf_id'``,
     ``'entity_component_id'`` and the six ``'active_..._set_no_for_group'`` keys. The active set
     numbers are optional (default 0); groups from ``pyuff.prepare_group`` (data-set 2429) cannot
@@ -321,7 +321,7 @@ def prepare_2467(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -334,7 +334,7 @@ def prepare_2467(
     ...     entity_type_code=[7, 7, 7], entity_tag=[1, 2, 3],
     ...     entity_node_leaf_id=[0, 0, 0], entity_component_id=[0, 0, 0])
     >>> groups = pyuff.prepare_2467([sensors])
-    >>> pyuff.UFF('groups_2467.uff').write_sets(groups, mode='overwrite')
+    >>> pyuff.UFF('groups_2467.uff').write_datasets(groups, mode='overwrite')
     """
     # **Test prepare_2467**
     #>>> save_to_file = 'test_pyuff'
@@ -350,7 +350,7 @@ def prepare_2467(
     #>>>     if os.path.exists(save_to_file):
     #>>>         os.remove(save_to_file)
     #>>>     uffwrite = pyuff.UFF(save_to_file)
-    #>>>     uffwrite.write_sets(dataset, mode='add')
+    #>>>     uffwrite.write_datasets(dataset, mode='add')
     #>>> dataset
 
     if type(groups) != list:

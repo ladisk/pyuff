@@ -1269,7 +1269,7 @@ def prepare_58(
     written as data-set 58b: the same text header followed by the values in binary form,
     which is more compact and faster to read and write.
 
-    Values are written in double precision by default; ``write_sets(...,
+    Values are written in double precision by default; ``write_datasets(...,
     force_double=False)`` writes the precision given by ``ord_data_type``. The function
     identification number (record 6, field 2) and the axis labels (field 5 of records 8 to
     11) are not parameters of this function; they can be added to the returned dictionary
@@ -1361,7 +1361,7 @@ def prepare_58(
     ord_data_type : {2, 4, 5, 6}, optional
         Ordinate data type (record 7, field 1): 2 real single precision, 4 real double
         precision, 5 complex single precision, 6 complex double precision. With the
-        default ``write_sets(..., force_double=True)`` any given value is ignored and set
+        default ``write_datasets(..., force_double=True)`` any given value is ignored and set
         from ``data``: 4 for real and 6 for complex data. With ``force_double=False`` it
         is required and selects the precision; it must match ``data`` (2 or 4 for real,
         5 or 6 for complex data), which is not checked.
@@ -1507,7 +1507,7 @@ def prepare_58(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -1535,8 +1535,8 @@ def prepare_58(
     ...     orddenom_axis_units_lab='N',
     ...     data=h,
     ...     x=freq)
-    >>> pyuff.UFF('frf.uff').write_sets(frf, mode='overwrite')
-    >>> pyuff.UFF('frf.uff').read_sets()['func_type']
+    >>> pyuff.UFF('frf.uff').write_datasets(frf, mode='overwrite')
+    >>> pyuff.UFF('frf.uff').read_datasets()['func_type']
     4
     """
 

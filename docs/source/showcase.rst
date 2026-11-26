@@ -16,9 +16,9 @@ Create a :class:`~pyuff.UFF` object for the file and check which data-sets it co
     import pyuff
 
     uff_file = pyuff.UFF('data/beam.uff')
-    uff_file.get_n_sets()       # 7
-    uff_file.get_set_types()    # array([ 151,  164, 2420, 2411,   58,   58,   58])
-    uff_file.get_set_formats()  # 0 for an ASCII and 1 for a binary data-set
+    uff_file.get_n_datasets()       # 7
+    uff_file.get_dataset_types()    # array([ 151,  164, 2420, 2411,   58,   58,   58])
+    uff_file.get_dataset_formats()  # 0 for an ASCII and 1 for a binary data-set
 
 The file has a header (151), units (164), coordinate systems (2420), nodes (2411) and three
 measured functions (58). Read all data-sets into a list of dictionaries, or only some of
@@ -26,9 +26,9 @@ them:
 
 .. code-block:: python
 
-    data = uff_file.read_sets()           # all data-sets: a list
-    units = uff_file.read_sets(1)         # one data-set: a dictionary
-    frfs = uff_file.read_sets([4, 5, 6])  # selected data-sets: a list
+    data = uff_file.read_datasets()           # all data-sets: a list
+    units = uff_file.read_datasets(1)         # one data-set: a dictionary
+    frfs = uff_file.read_datasets([4, 5, 6])  # selected data-sets: a list
 
 Each dictionary has the key ``type`` with the data-set number; the other keys are the fields
 of the data-set (see :doc:`conventions`):
@@ -61,14 +61,14 @@ the response degree of freedom, ``ref_node`` and ``ref_dir`` the reference (exci
     :alt: Magnitude of the three FRFs in beam.uff, up to 2000 Hz
 
 To read only the description of large data-sets 58, without their values, use
-``read_sets(header_only=True)``.
+``read_datasets(header_only=True)``.
 
 Writing measured functions
 --------------------------
 
 A data-set is written from a dictionary. The ``prepare_*`` functions (e.g.
 :func:`pyuff.prepare_58` for data-set 58) build the dictionary, check the given values and
-document every field (see :doc:`Supported_datasets`). :meth:`~pyuff.UFF.write_sets` writes one
+document every field (see :doc:`Supported_datasets`). :meth:`~pyuff.UFF.write_datasets` writes one
 dictionary or a list of them.
 
 The following example writes three measured accelerances, one for each excitation point:
@@ -93,7 +93,7 @@ The following example writes three measured accelerances, one for each excitatio
             orddenom_spec_data_type=13))  # ordinate denominator: excitation force
 
     uff_file = pyuff.UFF('measurement.uff')
-    uff_file.write_sets(datasets, mode='overwrite')
+    uff_file.write_datasets(datasets, mode='overwrite')
 
 ``mode='overwrite'`` starts a new file; ``mode='add'`` (default) appends the data-sets to an
 existing file.
@@ -102,7 +102,7 @@ Data-set 58 is written in ASCII with double precision by default:
 
 - ``prepare_58(..., binary=1)`` writes the binary form (58b), which is smaller and faster to
   read;
-- ``write_sets(..., force_double=False)`` writes single precision, as given by
+- ``write_datasets(..., force_double=False)`` writes single precision, as given by
   ``ord_data_type`` (2 for real and 5 for complex data).
 
 Writing a geometry and mode shapes
@@ -141,7 +141,7 @@ by their type (``fe_descriptor``):
         r2=np.zeros(4),                       # Y
         r3=np.array([0.1, 0.2, 0.2, 0.1]))    # Z
 
-    pyuff.UFF('model.uff').write_sets([nodes, elements, mode_shape], mode='overwrite')
+    pyuff.UFF('model.uff').write_datasets([nodes, elements, mode_shape], mode='overwrite')
 
 Data-set 55 is written with as many values per node as response arrays are given: ``r1`` for
 scalar data, ``r1`` to ``r3`` for translations, ``r1`` to ``r6`` for translations and
@@ -155,7 +155,7 @@ of its values:
 
 .. code-block:: python
 
-    data = pyuff.UFF('data/beam.uff').read_sets()
+    data = pyuff.UFF('data/beam.uff').read_datasets()
     for frf in data[4:]:
         frf['id1'] = 'Beam accelerance'
-    pyuff.UFF('beam_copy.uff').write_sets(data, mode='overwrite')
+    pyuff.UFF('beam_copy.uff').write_datasets(data, mode='overwrite')

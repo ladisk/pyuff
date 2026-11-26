@@ -17,11 +17,11 @@ writes such dictionaries back to a file. The numerical data are NumPy arrays.
     import pyuff
 
     uff_file = pyuff.UFF('data/beam.uff')
-    uff_file.get_set_types()   # array([ 151,  164, 2420, 2411,   58,   58,   58])
+    uff_file.get_dataset_types()   # array([ 151,  164, 2420, 2411,   58,   58,   58])
 
-    frf = uff_file.read_sets(4)   # the first data-set 58: a dictionary
-    frf['x']                      # frequency
-    frf['data']                   # complex FRF
+    frf = uff_file.read_datasets(4)  # the first data-set 58: a dictionary
+    frf['x']                         # frequency
+    frf['data']                      # complex FRF
 
 Installation
 ------------

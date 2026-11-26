@@ -70,13 +70,13 @@ _EXTRACTORS = {15: _extract15, 18: _extract18, 55: _extract55, 82: _extract82, 1
                2412: _extract2412, 2414: _extract2414, 2420: _extract2420, 2429: _extract2429,
                2467: _extract2467}
 
-_SUPPORTED_SETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
+_SUPPORTED_DATASETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
 _BLANKS_74 = b' ' * 74
 
 
-def _is_set_number(line):
+def _is_dataset_number(line):
     """True if the line gives a data-set number: I6, optionally followed by 'b' (58b)."""
     return line[:6].strip(b' ').isdigit() and line[6:7] in (b'', b' ', b'b', b'B')
 
@@ -115,12 +115,30 @@ def _find_dataset_tags(data):
             # the line after a start tag gives the data-set number ('b' after it marks
             # a binary data-set); as in refresh(), it is within 200 bytes of the tag
             lines = data[ind:ind + 200].splitlines()
-            if len(lines) < 2 or not _is_set_number(lines[1]):
+            if len(lines) < 2 or not _is_dataset_number(lines[1]):
                 continue
             in_dataset = True
             binary = lines[1][6:7].lower() == b'b'
         tags.append(ind)
     return tags
+
+
+def _deprecated(old, new):
+    """Warns that UFF.old is deprecated (it is removed in pyuff 3.0) and UFF.new is to be used."""
+    warnings.warn('UFF.%s is deprecated and will be removed in pyuff 3.0; use UFF.%s instead.'
+                  % (old, new), DeprecationWarning, stacklevel=3)
+
+
+def _deprecated_attribute(old, new):
+    """A property that gives the attribute new under its old name, with a warning."""
+    def fget(self):
+        _deprecated(old, new)
+        return getattr(self, new)
+
+    def fset(self, value):
+        _deprecated(old, new)
+        setattr(self, new, value)
+    return property(fget, fset, doc='Deprecated alias of ``%s``; it will be removed in pyuff 3.0.' % new)
 
 
 class UFF:
@@ -147,9 +165,9 @@ class UFF:
     --------
     >>> import pyuff
     >>> uff_file = pyuff.UFF('data/beam.uff')
-    >>> uff_file.get_n_sets()
+    >>> uff_file.get_n_datasets()
     7
-    >>> data = uff_file.read_sets()
+    >>> data = uff_file.read_datasets()
     >>> data[0]['type']
     151
     """
@@ -169,26 +187,13 @@ class UFF:
         
         self._dataset_ind = []  # start and end offsets of the data-sets, one pair per row
         self._refreshed = False
-        self._n_sets = 0  # number of sets found in file
-        self._set_types = np.array(())  # list of set-type numbers
-        self._set_formats = np.array(())  # list of set-format numbers (0=ascii,1=binary)
+        self._n_datasets = 0  # number of data-sets found in the file
+        self._dataset_types = np.array(())  # data-set types
+        self._dataset_formats = np.array(())  # data-set formats (0=ascii, 1=binary)
         # Refresh
         self.refresh()
 
-    @property
-    def _block_ind(self):
-        """Deprecated alias of ``_dataset_ind``; it will be removed in pyuff 3.0."""
-        warnings.warn('UFF._block_ind is deprecated and will be removed in pyuff 3.0; '
-                      'use UFF._dataset_ind instead.', FutureWarning, stacklevel=2)
-        return self._dataset_ind
-
-    @_block_ind.setter
-    def _block_ind(self, value):
-        warnings.warn('UFF._block_ind is deprecated and will be removed in pyuff 3.0; '
-                      'use UFF._dataset_ind instead.', FutureWarning, stacklevel=2)
-        self._dataset_ind = value
-
-    def get_supported_sets(self):
+    def get_supported_datasets(self):
         """
         Return the data-set types that can be read and written.
 
@@ -197,9 +202,9 @@ class UFF:
         list of str
             Data-set types, e.g. ``'58'``; ``'58b'`` is the binary form of data-set 58.
         """
-        return _SUPPORTED_SETS
+        return _SUPPORTED_DATASETS
 
-    def get_n_sets(self):
+    def get_n_datasets(self):
         """
         Return the number of data-sets in the file.
 
@@ -210,9 +215,9 @@ class UFF:
         """
         if not self._refreshed:
             self.refresh()
-        return self._n_sets
+        return self._n_datasets
 
-    def get_set_types(self):
+    def get_dataset_types(self):
         """
         Return the type of each data-set in the file.
 
@@ -224,9 +229,9 @@ class UFF:
         """
         if not self._refreshed:
             self.refresh()
-        return self._set_types
+        return self._dataset_types
 
-    def get_set_formats(self):
+    def get_dataset_formats(self):
         """
         Return the format of each data-set in the file.
 
@@ -238,7 +243,7 @@ class UFF:
         """
         if not self._refreshed:
             self.refresh()
-        return self._set_formats
+        return self._dataset_formats
 
     def get_file_name(self):
         """Return the name of the file, as given when the object was created."""
@@ -311,19 +316,19 @@ class UFF:
                 # Go through all the data-sets and extract data-set
                 # type and the property whether the data-set is in binary
                 # or ascii format
-                self._n_sets = n_datasets
-                self._set_types = np.zeros(n_datasets).astype(int)
-                self._set_formats = np.zeros(n_datasets)
-                for ii in range(0, self._n_sets):
+                self._n_datasets = n_datasets
+                self._dataset_types = np.zeros(n_datasets).astype(int)
+                self._dataset_formats = np.zeros(n_datasets)
+                for ii in range(0, self._n_datasets):
                     si = self._dataset_ind[ii, 0]
                     ei = self._dataset_ind[ii, 1]
                     try:
                         # only the second line (data-set type, 'b' for binary) is
                         # needed; it follows the '    -1' line within 200 bytes
                         type_line = data[si:min(si + 200, ei + 1)].splitlines()[1]
-                        self._set_types[ii] = int(type_line[0:6])
+                        self._dataset_types[ii] = int(type_line[0:6])
                         if type_line[6:7].lower() == b'b':
-                            self._set_formats[ii] = 1
+                            self._dataset_formats[ii] = 1
                     except:
                         # Some non-valid data-sets found; ignore the exception
                         pass
@@ -336,13 +341,13 @@ class UFF:
                 fh.close()
                 return self._refreshed
 
-    def read_sets(self, setn=None, header_only=False):
+    def read_datasets(self, dataset=None, header_only=False):
         """
         Read data-sets from the file.
 
         Parameters
         ----------
-        setn : int or list of int, optional
+        dataset : int or list of int, optional
             Index of the data-set to read (0 for the first one), or a list of indices.
             If None (default), all data-sets are read.
         header_only : bool, optional
@@ -359,8 +364,8 @@ class UFF:
         --------
         >>> import pyuff
         >>> uff_file = pyuff.UFF('data/beam.uff')
-        >>> header = uff_file.read_sets(0)
-        >>> frfs = uff_file.read_sets([4, 5, 6])
+        >>> header = uff_file.read_datasets(0)
+        >>> frfs = uff_file.read_datasets([4, 5, 6])
         >>> len(frfs)
         3
         """
@@ -370,18 +375,18 @@ class UFF:
         if not self._refreshed:
             if not self.refresh():
                 raise Exception('Cannot read from the file: ' + self._filename)
-        if setn is None:
-            read_range = range(0, self._n_sets)
+        if dataset is None:
+            read_range = range(0, self._n_datasets)
         else:
-            if (not type(setn).__name__ == 'list'):
-                read_range = [setn]
+            if (not type(dataset).__name__ == 'list'):
+                read_range = [dataset]
             else:
-                read_range = setn
+                read_range = dataset
         try:
             # one file handle for all data-sets read
             with open(self._filename, 'rb') as fh:
                 for ii in read_range:
-                    dset.append(self._read_set(ii, header_only=header_only, fh=fh))
+                    dset.append(self._read_dataset(ii, header_only=header_only, fh=fh))
         except Exception as msg:
             if hasattr(msg, 'value'):
                 raise Exception('Error when reading ' + str(ii) + '-th data-set: ' + msg.value)
@@ -391,12 +396,12 @@ class UFF:
             dset = dset[0]
         return dset
 
-    def write_sets(self, dsets, mode='add', force_double=True):
+    def write_datasets(self, datasets, mode='add', force_double=True):
         """
         Write data-sets to the file.
 
         The data-sets are dictionaries, as returned by the ``prepare_*`` functions (e.g.
-        :func:`pyuff.prepare_58`) or by :meth:`read_sets`. Optional fields that are missing
+        :func:`pyuff.prepare_58`) or by :meth:`read_datasets`. Optional fields that are missing
         or None get their default values; the dictionaries are updated with them.
 
         Text longer than its field is truncated, with a warning. NaN and infinite values
@@ -404,7 +409,7 @@ class UFF:
 
         Parameters
         ----------
-        dsets : dict or list of dict
+        datasets : dict or list of dict
             The data-sets to write.
         mode : {'add', 'overwrite'}, optional
             ``'add'`` (default) appends the data-sets to the file; ``'overwrite'`` starts a
@@ -423,12 +428,12 @@ class UFF:
         ...     data=np.ones(5, dtype=complex), x=np.arange(5.0), abscissa_spacing=1,
         ...     abscissa_spec_data_type=18, ordinate_spec_data_type=12,
         ...     orddenom_spec_data_type=13)
-        >>> pyuff.UFF('frf.uff').write_sets([frf], mode='overwrite')
+        >>> pyuff.UFF('frf.uff').write_datasets([frf], mode='overwrite')
         """
-        if (not type(dsets).__name__ == 'list'):
-            dsets = [dsets]
-        n_sets = len(dsets)
-        if n_sets < 1:
+        if (not type(datasets).__name__ == 'list'):
+            datasets = [datasets]
+        n_datasets = len(datasets)
+        if n_datasets < 1:
             raise Exception('Nothing to write')
         if mode.lower() == 'overwrite':
             open_mode = 'wt'
@@ -444,19 +449,19 @@ class UFF:
         except:
             raise Exception('Cannot access the file: ' + self._filename + ' to write to.')
         try:
-            for ii in range(0, n_sets):
+            for ii in range(0, n_datasets):
                 # the first data-set of 'overwrite' starts the file, the others are added
-                self._write_dset(fh, dsets[ii], mode.lower() if ii == 0 else 'add', force_double=force_double)
+                self._write_dset(fh, datasets[ii], mode.lower() if ii == 0 else 'add', force_double=force_double)
         finally:
             fh.close()
             self._refreshed = False
         self.refresh()
 
-    def _read_set(self, n, header_only=False, fh=None):
+    def _read_dataset(self, n, header_only=False, fh=None):
         """
-        Reads n-th set from UFF file. 
+        Reads n-th data-set from UFF file. 
 
-        n can be an integer between 0 and n_sets-1. 
+        n can be an integer between 0 and n_datasets-1. 
         
         User must be sure that, since the last reading/writing/refreshing, 
         the data has not changed by some other means than through the
@@ -473,10 +478,10 @@ class UFF:
         if not self._refreshed:
             if not self.refresh():
                 raise Exception('Cannot read from the file: ' + self._filename + '. The file cannot be refreshed.')
-        if (n > self._n_sets - 1) or (n < 0):
+        if (n > self._n_datasets - 1) or (n < 0):
             raise Exception('Cannot read data-set: ' + str(int(n)) +
                             '. Data-set number to high or to low.')
-        set_type = int(self._set_types[int(n)])
+        set_type = int(self._dataset_types[int(n)])
         # Read n-th data-set data
         own_fh = fh is None
         if own_fh:
@@ -504,9 +509,9 @@ class UFF:
         if extract is not None:
             return extract(dataset_data)
         # Unsupported data-set - do nothing
-        return {'type': self._set_types[int(n)]}
+        return {'type': self._dataset_types[int(n)]}
 
-    def _write_set(self, dset, mode='add', force_double=True):
+    def _write_dataset(self, dset, mode='add', force_double=True):
         """
         Writes UFF data (UFF data-sets) to the file.  The mode can be
         either 'add' (default) or 'overwrite'. The dset is a
@@ -541,7 +546,7 @@ class UFF:
         finally:
             fh.close()
         # the file has changed: its index of data-sets is rebuilt when it is
-        # needed next, not after every data-set (write_sets writes many)
+        # needed next, not after every data-set (write_datasets writes many)
         self._refreshed = False
 
     def _write_dset(self, fh, dset, mode='add', force_double=True):
@@ -567,6 +572,54 @@ class UFF:
         elif writer is not None:
             writer(fh, dset)
         # else: unsupported data-set - do nothing
+
+
+    # Deprecated names; they will be removed in pyuff 3.0.
+
+    def read_sets(self, setn=None, header_only=False):
+        """Deprecated alias of :meth:`read_datasets`; it will be removed in pyuff 3.0."""
+        _deprecated('read_sets', 'read_datasets')
+        return self.read_datasets(setn, header_only=header_only)
+
+    def write_sets(self, dsets, mode='add', force_double=True):
+        """Deprecated alias of :meth:`write_datasets`; it will be removed in pyuff 3.0."""
+        _deprecated('write_sets', 'write_datasets')
+        return self.write_datasets(dsets, mode=mode, force_double=force_double)
+
+    def get_supported_sets(self):
+        """Deprecated alias of :meth:`get_supported_datasets`; it will be removed in pyuff 3.0."""
+        _deprecated('get_supported_sets', 'get_supported_datasets')
+        return self.get_supported_datasets()
+
+    def get_n_sets(self):
+        """Deprecated alias of :meth:`get_n_datasets`; it will be removed in pyuff 3.0."""
+        _deprecated('get_n_sets', 'get_n_datasets')
+        return self.get_n_datasets()
+
+    def get_set_types(self):
+        """Deprecated alias of :meth:`get_dataset_types`; it will be removed in pyuff 3.0."""
+        _deprecated('get_set_types', 'get_dataset_types')
+        return self.get_dataset_types()
+
+    def get_set_formats(self):
+        """Deprecated alias of :meth:`get_dataset_formats`; it will be removed in pyuff 3.0."""
+        _deprecated('get_set_formats', 'get_dataset_formats')
+        return self.get_dataset_formats()
+
+    def _read_set(self, n, header_only=False, fh=None):
+        """Deprecated alias of ``_read_dataset``; it will be removed in pyuff 3.0."""
+        _deprecated('_read_set', '_read_dataset')
+        return self._read_dataset(n, header_only=header_only, fh=fh)
+
+    def _write_set(self, dset, mode='add', force_double=True):
+        """Deprecated alias of ``_write_dataset``; it will be removed in pyuff 3.0."""
+        _deprecated('_write_set', '_write_dataset')
+        return self._write_dataset(dset, mode=mode, force_double=force_double)
+
+    _block_ind = _deprecated_attribute('_block_ind', '_dataset_ind')
+    _n_sets = _deprecated_attribute('_n_sets', '_n_datasets')
+    _set_types = _deprecated_attribute('_set_types', '_dataset_types')
+    _set_formats = _deprecated_attribute('_set_formats', '_dataset_formats')
 
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ import pyuff
 
 def test_1858():
     uff_file = pyuff.UFF('./data/1858.uff')
-    uff_file.read_sets()
+    uff_file.read_datasets()
 
 def test_prepare_1858():
     dict_1858 = pyuff.prepare_1858(return_full_dict=True)
@@ -51,8 +51,8 @@ def test_prepare_1858():
 def test_write_1858():
     # Read dataset 1858 in test file
     uff_ascii = pyuff.UFF('./data/1858.uff')
-    a = uff_ascii.read_sets(0)
-    b = uff_ascii.read_sets(1)
+    a = uff_ascii.read_datasets(0)
+    b = uff_ascii.read_datasets(1)
     # Test
     np.testing.assert_array_equal(a['measurement_run'], 1)
     np.testing.assert_array_equal(a['window_type'], 4)
@@ -67,11 +67,11 @@ def test_write_1858():
 
     # Write dataset 1858
     uff_write = pyuff.UFF('./data/tmp.uff')
-    uff_write.write_sets([a, b], 'overwrite')
+    uff_write.write_datasets([a, b], 'overwrite')
 
     # Read dataset 1858 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
-    c = uff_ascii.read_sets(0)
+    c = uff_ascii.read_datasets(0)
     # Test
     np.testing.assert_array_equal(a['measurement_run'], c['measurement_run'])
     np.testing.assert_array_equal(a['window_type'], c['window_type'])
@@ -81,7 +81,7 @@ def test_write_1858():
     np.testing.assert_string_equal(a['response_direction'], c['response_direction'])
     np.testing.assert_string_equal(a['reference_direction'], c['reference_direction'])
 
-    d = uff_ascii.read_sets(1)
+    d = uff_ascii.read_datasets(1)
     np.testing.assert_array_equal(b['measurement_run'], d['measurement_run'])
     np.testing.assert_array_equal(b['octave_format'], d['octave_format'])
     np.testing.assert_string_equal(b['response_direction'], d['response_direction'])
@@ -93,12 +93,12 @@ if __name__ == '__main__':
 
 def test_write_1858_record_1(tmp_path):
     # record 1 is written in 12-character fields (6I12), as read
-    dset = pyuff.UFF('./data/1858.uff').read_sets(0)
+    dset = pyuff.UFF('./data/1858.uff').read_datasets(0)
     dset.update({'record_num': 1, 'octave_format': 3, 'measurement_run': 1234567890})
     fn = tmp_path / 'record_1.uff'
-    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+    pyuff.UFF(fn).write_datasets(dset, mode='overwrite')
 
     with open(fn) as f:
         assert f.read().splitlines()[2] == '%12i%12i%12i%12i%12i%12i' % (1, 3, 1234567890, 0, 0, 0)
-    read = pyuff.UFF(fn).read_sets(0)
+    read = pyuff.UFF(fn).read_datasets(0)
     assert (read['record_num'], read['octave_format'], read['measurement_run']) == (1, 3, 1234567890)

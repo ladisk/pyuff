@@ -703,7 +703,7 @@ def prepare_55(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -729,7 +729,7 @@ def prepare_55(
     ...         r2=phi[i, 1],
     ...         r3=phi[i, 2])
     ...     for i in range(len(freqs))]
-    >>> pyuff.UFF('mode_shapes.uff').write_sets(mode_shapes, mode='overwrite')
+    >>> pyuff.UFF('mode_shapes.uff').write_datasets(mode_shapes, mode='overwrite')
     """
 
     if type(id1) != str and id1 != None:

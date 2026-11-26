@@ -7,19 +7,19 @@ import pyuff
 
 def test_read_2414():
     uff_ascii = pyuff.UFF('./data/DS2414_disp_file.uff')
-    a = uff_ascii.read_sets(3)
+    a = uff_ascii.read_datasets(3)
     np.testing.assert_array_equal(a['frequency'], np.array([100]))
     np.testing.assert_array_equal(a['x'][3], np.array([3.33652e-09-1j*9.17913e-13]))
 
     uff_ascii = pyuff.UFF('./data/NX simulation output.uff')
-    a = uff_ascii.read_sets(7)
+    a = uff_ascii.read_datasets(7)
     np.testing.assert_array_equal(a['data_at_node'][-1], np.array([5.34055E-02, -0.00000E+00, -1.58675E+00,  0.00000E+00, -8.87909E-18,  0.00000E+00]))
 
 def test_read_2414_general():
     # Reading a universal file as exported by Siemens Simcenter3D (tested in release 2023)
     # set 3 is a nodal displacement result.
     uff_ascii = pyuff.UFF('./data/simcenter_exported_result.uff')
-    a = uff_ascii.read_sets(3)
+    a = uff_ascii.read_datasets(3)
     # verify first 10 node numbers
     np.testing.assert_array_equal(a['node_nums'][0:10], np.array(range(1,11)))
     # verify last 10 node numbers
@@ -30,7 +30,7 @@ def test_read_2414_general():
     # Reading a universal file generated to imported by Simcenter3D (tested in release 2023)
     # set 0 is an elemental result (element thickness).
     uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.uff')
-    a = uff_ascii.read_sets(0)
+    a = uff_ascii.read_datasets(0)
     # verify first 10 element numbers
     np.testing.assert_array_equal(a['element_nums'][0:10], np.array(range(1,11)))
     # verify last 10 element numbers
@@ -40,7 +40,7 @@ def test_read_2414_general():
     np.testing.assert_array_equal(a['data_at_element'][2], np.array([18]))
 
     # set 1 is a data at nodes on elements result (element thickness at nodes on elements).
-    a = uff_ascii.read_sets(1)
+    a = uff_ascii.read_datasets(1)
     # verify first 10 element numbers
     np.testing.assert_array_equal(a['element_nums'][0:10], np.array(range(1,11)))
     # verify last 10 element numbers
@@ -56,18 +56,18 @@ def test_read_2414_general():
 def test_write_2414():
     # Read dataset 2414 in test file
     uff_ascii = pyuff.UFF('./data/DS2414_disp_file.uff')
-    a = uff_ascii.read_sets(3)
+    a = uff_ascii.read_datasets(3)
     # Test
     np.testing.assert_array_equal(a['frequency'], np.array([100]))
     np.testing.assert_array_equal(a['x'][3], np.array([3.33652e-09-1j*9.17913e-13]))
     
     # Write dataset 2414
     uff_write = pyuff.UFF('./data/tmp.uff')
-    uff_write._write_set(a,'overwrite')
+    uff_write._write_dataset(a,'overwrite')
 
     # Read dataset 2414 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
-    b = uff_ascii.read_sets(0)
+    b = uff_ascii.read_datasets(0)
     if os.path.exists(uff_ascii._filename):
         os.remove(uff_ascii._filename)
     # Test
@@ -79,15 +79,15 @@ def test_write_2414_general():
     # Reading a universal file generated to imported by Simcenter3D (tested in release 2023)
     # set 1 is a data at nodes on elements result (element thickness at nodes on elements).
     uff_ascii = pyuff.UFF('./data/Simcenter_nxopen_thickness.uff')
-    a = uff_ascii.read_sets(1)
+    a = uff_ascii.read_datasets(1)
 
     # Write dataset 2414
     uff_write = pyuff.UFF('./data/tmp.uff')
-    uff_write._write_set(a,'overwrite')
+    uff_write._write_dataset(a,'overwrite')
 
     # Read dataset 2414 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
-    b = uff_ascii.read_sets(0) # only wrote the 1 dataset, so now index 0
+    b = uff_ascii.read_datasets(0) # only wrote the 1 dataset, so now index 0
     if os.path.exists(uff_ascii._filename):
        os.remove(uff_ascii._filename)
 
@@ -102,16 +102,16 @@ def test_write_2414_general():
 def test_write_2414_data_at_node():
     # Reading a universal file generated from unknown FEM-software
     uff_ascii = pyuff.UFF('./data/heat_engine_housing.uff')
-    original_data_sets = uff_ascii.read_sets()
+    original_data_sets = uff_ascii.read_datasets()
     # model_info, unit_info, node_info, element_info, temperature_of_nodes
 
     # Write dataset 2414
     uff_write = pyuff.UFF('./data/tmp.uff')
-    uff_write.write_sets(original_data_sets, 'overwrite')
+    uff_write.write_datasets(original_data_sets, 'overwrite')
 
     # Read dataset 2414 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
-    data_sets_after_write = uff_ascii.read_sets() # only wrote the 1 dataset, so now index 0
+    data_sets_after_write = uff_ascii.read_datasets() # only wrote the 1 dataset, so now index 0
     if os.path.exists(uff_ascii._filename):
        os.remove(uff_ascii._filename)
 
@@ -189,15 +189,15 @@ if __name__ == '__main__':
 
 def test_write_read_2414_negative_values(tmp_path):
     # negative values in records 12 and 13 keep the 13-character fields
-    dset = pyuff.UFF('./data/DS2414_disp_file.uff').read_sets(3)
+    dset = pyuff.UFF('./data/DS2414_disp_file.uff').read_datasets(3)
     assert dset['analysis_type'] == 5
     values = {'eigenvalue': -5.0, 'modal_mass': -1.5, 'viscous_damping': -0.25,
               'real_part_eigenvalue': -12.5, 'imaginary_part_of_modal_A_or_modal_mass': -3.0}
     dset.update(values)
     fn = tmp_path / 'negative.uff'
-    pyuff.UFF(fn).write_sets(dset, mode='overwrite')
+    pyuff.UFF(fn).write_datasets(dset, mode='overwrite')
 
-    read = pyuff.UFF(fn).read_sets(0)
+    read = pyuff.UFF(fn).read_datasets(0)
     for key, value in values.items():
         assert read[key] == value
     np.testing.assert_array_equal(read['x'], dset['x'])

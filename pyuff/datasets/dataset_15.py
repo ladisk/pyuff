@@ -127,7 +127,7 @@ def prepare_15(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -138,7 +138,7 @@ def prepare_15(
     ...     x=np.array([0.0, 0.5, 1.0, 1.5]),
     ...     y=np.zeros(4),
     ...     z=np.zeros(4))
-    >>> pyuff.UFF('beam_nodes.uff').write_sets(nodes, mode='overwrite')
+    >>> pyuff.UFF('beam_nodes.uff').write_datasets(nodes, mode='overwrite')
     """
 
     if type(node_nums) not in (list, tuple, np.ndarray) and node_nums != None:

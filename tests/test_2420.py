@@ -28,7 +28,7 @@ def test_prepare_2420():
 
 def test_read_2420():
     uff_ascii = pyuff.UFF('./data/beam.uff')
-    a = uff_ascii.read_sets(2)
+    a = uff_ascii.read_datasets(2)
     print(a)
     assert a['type'] == 2420
     assert a['Part_UID'] == 1
@@ -53,11 +53,11 @@ def test_write_2420():
             return_full_dict=True)
     # -- Write dataset 2420
     uff_write = pyuff.UFF('./data/tmp.uff')
-    uff_write._write_set(a, 'overwrite')
+    uff_write._write_dataset(a, 'overwrite')
 
     # -- Read dataset 2420 in written file
     uff_ascii = pyuff.UFF('./data/tmp.uff')
-    b = uff_ascii.read_sets(0)
+    b = uff_ascii.read_datasets(0)
 
     # -- Test equality
     for key in ['type', 'Part_UID', 'Part_Name', 'CS_sys_labels', 'CS_types', 'CS_colors', 'CS_names']:

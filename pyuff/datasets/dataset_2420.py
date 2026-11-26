@@ -153,7 +153,7 @@ def prepare_2420(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -170,7 +170,7 @@ def prepare_2420(
     ...     CS_names=['Global', 'Cylindrical'],
     ...     CS_matrices=[np.vstack([np.eye(3), [0.0, 0.0, 0.0]]),
     ...                  np.vstack([np.eye(3), [0.0, 0.0, 0.5]])])
-    >>> pyuff.UFF('coordinate_systems.uff').write_sets(coordinate_systems, mode='overwrite')
+    >>> pyuff.UFF('coordinate_systems.uff').write_datasets(coordinate_systems, mode='overwrite')
     """
     # **Test prepare_2420**
     #save_to_file = 'test_pyuff'
@@ -195,7 +195,7 @@ def prepare_2420(
     #    if os.path.exists(save_to_file):
     #        os.remove(save_to_file)
     #    uffwrite = pyuff.UFF(save_to_file)
-    #    uffwrite.write_sets(dataset, mode='add')
+    #    uffwrite.write_datasets(dataset, mode='add')
     #dataset
 
     if np.array(Part_UID).dtype != int and Part_UID != None:

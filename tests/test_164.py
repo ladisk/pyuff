@@ -14,7 +14,7 @@ def test_read_write_read_given_data_base(file=''):
     #read from file
     uff_read = pyuff.UFF(file)
 
-    a = uff_read.read_sets()
+    a = uff_read.read_datasets()
     if type(a)==list:
         types = np.array([_['type'] for _ in a])
         a = a[np.argwhere(types==164)[0][0]]
@@ -24,11 +24,11 @@ def test_read_write_read_given_data_base(file=''):
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -65,11 +65,11 @@ def test_write_read_164():
         if os.path.exists(save_to_file):
             os.remove(save_to_file)
         uffwrite = pyuff.UFF(save_to_file)
-        uffwrite._write_set(dataset, 'add')
+        uffwrite._write_dataset(dataset, 'add')
     
     a = dataset_out
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets()
+    b = uff_read.read_datasets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
 

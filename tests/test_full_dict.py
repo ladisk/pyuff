@@ -40,8 +40,8 @@ def test_write_full_dict(tmp_path, prepare):
     # the optional fields of the full dictionary are None and get their default values
     full = prepare(return_full_dict=True)
     assert any(value is None for value in full.values())
-    pyuff.UFF(tmp_path / 'full.uff').write_sets(full, 'add')
-    pyuff.UFF(tmp_path / 'part.uff').write_sets(prepare(), 'add')
+    pyuff.UFF(tmp_path / 'full.uff').write_datasets(full, 'add')
+    pyuff.UFF(tmp_path / 'part.uff').write_datasets(prepare(), 'add')
 
     assert open(tmp_path / 'full.uff', 'rb').read() == open(tmp_path / 'part.uff', 'rb').read()
 
@@ -50,5 +50,5 @@ def test_write_full_dict_58b(tmp_path):
     # single precision: ord_data_type is required
     for name, dset in (('full', _58(binary=1, ord_data_type=5, return_full_dict=True)),
                        ('part', _58(binary=1, ord_data_type=5))):
-        pyuff.UFF(tmp_path / (name + '.uff')).write_sets(dset, 'add', force_double=False)
+        pyuff.UFF(tmp_path / (name + '.uff')).write_datasets(dset, 'add', force_double=False)
     assert open(tmp_path / 'full.uff', 'rb').read() == open(tmp_path / 'part.uff', 'rb').read()

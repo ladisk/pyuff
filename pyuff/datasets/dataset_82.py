@@ -130,7 +130,7 @@ def prepare_82(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -142,7 +142,7 @@ def prepare_82(
     ...     trace_num=1,
     ...     id='Frame',
     ...     nodes=np.array([1, 2, 3, 4, 1, 0, 5, 6]))
-    >>> pyuff.UFF('trace_lines.uff').write_sets(line, mode='overwrite')
+    >>> pyuff.UFF('trace_lines.uff').write_datasets(line, mode='overwrite')
     """
 
     if np.array(trace_num).dtype != int and trace_num != None:

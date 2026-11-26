@@ -1,7 +1,6 @@
 """The '    -1' tags that start and end the data-sets."""
 import pytest
 
-import pyuff
 from pyuff.pyuff import _find_dataset_tags
 
 
@@ -48,12 +47,3 @@ def test_line_ends_and_80_column_tags(line_end):
     starts = [sum(len(line) + len(line_end) for line in lines[:i]) for i in [0, 2, 3, 6]]
     assert _find_dataset_tags(text) == starts
 
-
-def test_block_ind_is_a_deprecated_alias():
-    uff = pyuff.UFF('./data/beam.uff')
-    with pytest.warns(FutureWarning, match='_dataset_ind'):
-        block_ind = uff._block_ind
-    assert block_ind is uff._dataset_ind
-    with pytest.warns(FutureWarning, match='_dataset_ind'):
-        uff._block_ind = block_ind[:2]
-    assert len(uff._dataset_ind) == 2

@@ -907,7 +907,7 @@ def prepare_2414(
     ``'record10_field1'`` to ``'record13_field6'`` set them), and the data is not
     taken from ``x``, ``y``, ``z`` or ``d``: add the key ``'data_at_node'`` (a list
     with an array of real values for each node) to the returned dictionary, as
-    returned by :meth:`pyuff.UFF.read_sets`. Data on elements and at nodes on
+    returned by :meth:`pyuff.UFF.read_datasets`. Data on elements and at nodes on
     elements are written only from a dictionary read from a file.
 
     Parameters
@@ -1056,7 +1056,7 @@ def prepare_2414(
     Returns
     -------
     dict
-        The data-set, to be written with :meth:`pyuff.UFF.write_sets`.
+        The data-set, to be written with :meth:`pyuff.UFF.write_datasets`.
 
     Examples
     --------
@@ -1106,7 +1106,7 @@ def prepare_2414(
     ...     x=np.array([2.8e-9 + 1.7e-9j, 3.1e-9 + 1.2e-9j, 3.3e-9 + 6.1e-10j]),
     ...     y=np.array([-7.1e-10 + 6.5e-10j, -5.0e-10 + 8.1e-10j, -2.5e-10 + 9.1e-10j]),
     ...     z=np.array([4.3e-10 + 2.5e-10j, 4.7e-10 + 1.7e-10j, 4.9e-10 + 8.7e-11j]))
-    >>> pyuff.UFF('displacement.uff').write_sets(displacement, mode='overwrite')
+    >>> pyuff.UFF('displacement.uff').write_datasets(displacement, mode='overwrite')
     """
     if np.array(analysis_dataset_label).dtype != int and analysis_dataset_label != None:
         raise TypeError('analysis_dataset_label must be integer')

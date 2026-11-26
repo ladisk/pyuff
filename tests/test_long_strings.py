@@ -53,19 +53,19 @@ def test_write_long_string(file, set_type, field, width):
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     uff = pyuff.UFF(file)
-    n = list(uff.get_set_types()).index(set_type)
-    dset = uff.read_sets(n)
+    n = list(uff.get_dataset_types()).index(set_type)
+    dset = uff.read_datasets(n)
     _set_field(dset, field, 'ABCDEFGHIJ' * 10)
 
     name = 'group_name' if field == 'groups' else field
     with pytest.warns(UserWarning, match='Data-set %i: %s is longer than %i characters' % (set_type, name, width)) as record:
-        pyuff.UFF(save_to_file).write_sets(dset, mode='add')
+        pyuff.UFF(save_to_file).write_datasets(dset, mode='add')
     assert record[0].filename == __file__
     with open(save_to_file, 'rb') as f:
         lines = f.read().split(b'\n')
     if set_type == 58:
         lines = lines[:13]  # binary data may follow the header records
-    b = pyuff.UFF(save_to_file).read_sets(0)
+    b = pyuff.UFF(save_to_file).read_datasets(0)
     os.remove(save_to_file)
 
     assert max(len(line.rstrip(b'\r')) for line in lines) <= 80
@@ -83,8 +83,8 @@ def test_write_long_entity_name_58():
                                abscissa_spec_data_type=18, ordinate_spec_data_type=12,
                                orddenom_spec_data_type=13)
     with pytest.warns(UserWarning, match='rsp_ent_name'):
-        pyuff.UFF(save_to_file).write_sets(dataset, mode='add')
-    b = pyuff.UFF(save_to_file).read_sets(0)
+        pyuff.UFF(save_to_file).write_datasets(dataset, mode='add')
+    b = pyuff.UFF(save_to_file).read_datasets(0)
     os.remove(save_to_file)
 
     assert b['rsp_ent_name'] == 'Accelerome'
@@ -100,7 +100,7 @@ def test_write_long_group_name_2429():
                                return_full_dict=True)
     dset['type'] = 2429
     with pytest.warns(UserWarning, match='Data-set 2429: group_name is longer than 40 characters'):
-        pyuff.UFF(save_to_file).write_sets(dset, mode='add')
+        pyuff.UFF(save_to_file).write_datasets(dset, mode='add')
     with open(save_to_file) as f:
         lines = f.read().splitlines()
     os.remove(save_to_file)

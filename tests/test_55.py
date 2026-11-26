@@ -17,7 +17,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     #read from file
     uff_read = pyuff.UFF(file)
 
-    a = uff_read.read_sets()
+    a = uff_read.read_datasets()
     if type(a)==list:
         a = [_ for _ in a if _['type']==55]
         a = a[0]
@@ -27,11 +27,11 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None):
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
     _ = pyuff.UFF(save_to_file)
-    _.write_sets(a, 'add')
+    _.write_datasets(a, 'add')
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -91,11 +91,11 @@ def test_write_read_55():
         uff_datasets.append(data.copy())
         if save_to_file:
             uffwrite = pyuff.UFF(save_to_file)
-            uffwrite._write_set(data, 'add')
+            uffwrite._write_dataset(data, 'add')
     
     uff_dataset_origin = uff_datasets
     uff_read = pyuff.UFF(save_to_file)
-    uff_dataset_read = uff_read.read_sets()
+    uff_dataset_read = uff_read.read_datasets()
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
 
@@ -217,10 +217,10 @@ def test_write_read_55_complex_eigenvalues():
         modal_b=modal_b)
 
     uffwrite = pyuff.UFF(save_to_file)
-    uffwrite._write_set(data, 'add')
+    uffwrite._write_dataset(data, 'add')
 
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_sets(0)
+    b = uff_read.read_datasets(0)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
@@ -254,7 +254,7 @@ def _write_text(path, text):
 def test_read_55_one_value_per_node(tmp_path):
     nodes = [(1, 0.1), (2, 0.2), (3, 0.3)]
     text = _header_55(1, 2, 1) + ''.join('%10i\n%13.5e\n' % node for node in nodes) + '    -1\n'
-    dset = pyuff.UFF(_write_text(tmp_path / 'one.unv', text)).read_sets(0)
+    dset = pyuff.UFF(_write_text(tmp_path / 'one.unv', text)).read_datasets(0)
 
     np.testing.assert_array_equal(dset['node_nums'], [1, 2, 3])
     np.testing.assert_array_equal(dset['r1'], [0.1, 0.2, 0.3])
@@ -264,7 +264,7 @@ def test_read_55_one_value_per_node(tmp_path):
 def test_read_55_lines_filled_to_80_characters(tmp_path):
     # e.g. written by SDynPy: every line is filled with spaces up to 80 characters
     text = _header_55(2, 2, 3) + '%-80s\n%-80s\n' % ('%10i' % 1, '%13.5e%13.5e%13.5e' % (1., 2., 3.)) + '    -1\n'
-    dset = pyuff.UFF(_write_text(tmp_path / 'filled.unv', text)).read_sets(0)
+    dset = pyuff.UFF(_write_text(tmp_path / 'filled.unv', text)).read_datasets(0)
 
     np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], [[1.], [2.], [3.]])
 
@@ -274,7 +274,7 @@ def test_read_55_count_from_data_characteristic(tmp_path):
     values = np.arange(1, 7) / 4
     text = _header_55(2, 5, 1) + '%10i\n' % 1 + '%13.5e' * 6 % tuple(values) + '\n' + '    -1\n'
     with pytest.warns(UserWarning, match='record 6 gives 1 values per node'):
-        dset = pyuff.UFF(_write_text(tmp_path / 'count.unv', text)).read_sets(0)
+        dset = pyuff.UFF(_write_text(tmp_path / 'count.unv', text)).read_datasets(0)
 
     assert dset['n_data_per_node'] == 3
     np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], (values[0::2] + 1j * values[1::2])[:, None])
@@ -284,7 +284,7 @@ def test_read_55_double_precision(tmp_path):
     # real, double precision (4E20.12, Fortran exponent D)
     text = (_header_55(2, 4, 3) + '%10i\n%s\n' % (7, '  1.234567890123D+00 -2.000000000000D-01  3.000000000000D+02')
             + '    -1\n')
-    dset = pyuff.UFF(_write_text(tmp_path / 'real.unv', text)).read_sets(0)
+    dset = pyuff.UFF(_write_text(tmp_path / 'real.unv', text)).read_datasets(0)
     np.testing.assert_array_equal(dset['node_nums'], [7])
     np.testing.assert_array_equal([dset['r1'], dset['r2'], dset['r3']], [[1.234567890123], [-0.2], [300.]])
 
@@ -292,14 +292,14 @@ def test_read_55_double_precision(tmp_path):
     values = np.arange(1, 7) / 3
     text = (_header_55(2, 6, 3) + '%10i\n' % 7 + '%20.11e' * 4 % tuple(values[:4]) + '\n'
             + '%20.11e' * 2 % tuple(values[4:]) + '\n' + '    -1\n')
-    dset = pyuff.UFF(_write_text(tmp_path / 'complex.unv', text)).read_sets(0)
+    dset = pyuff.UFF(_write_text(tmp_path / 'complex.unv', text)).read_datasets(0)
     np.testing.assert_allclose([dset['r1'], dset['r2'], dset['r3']], (values[0::2] + 1j * values[1::2])[:, None], rtol=1e-11)
 
 
 def test_read_55_wrong_number_of_values(tmp_path):
     text = _header_55(2, 2, 3) + '%10i\n%13.5e%13.5e\n' % (1, 1., 2.) + '    -1\n'
     with pytest.raises(Exception) as error:
-        pyuff.UFF(_write_text(tmp_path / 'wrong.unv', text)).read_sets(0)
+        pyuff.UFF(_write_text(tmp_path / 'wrong.unv', text)).read_datasets(0)
     assert 'expected 3 values at each of the 1 nodes' in str(error.value.__cause__.__cause__)
 
 
@@ -315,8 +315,8 @@ def test_write_read_55_values_per_node(tmp_path, n_data_per_node, data_type):
     data = pyuff.prepare_55(model_type=1, analysis_type=2, data_ch=2, spec_data_type=8, data_type=data_type,
                             node_nums=np.arange(1, 6), load_case=1, mode_n=1, freq=10., **responses)
     path = tmp_path / 'values.uff'
-    pyuff.UFF(path).write_sets(data, 'add')
-    dset = pyuff.UFF(path).read_sets(0)
+    pyuff.UFF(path).write_datasets(data, 'add')
+    dset = pyuff.UFF(path).read_datasets(0)
 
     assert dset['data_type'] == data_type
     assert dset['n_data_per_node'] == n_data_per_node
@@ -333,8 +333,8 @@ def test_write_55_full_dict(tmp_path):
                             load_case=1, mode_n=1, freq=10., modal_m=0, modal_damp_vis=0., modal_damp_his=0.,
                             r1=np.ones(2), r2=np.ones(2), r3=np.ones(2), return_full_dict=True)
     path = tmp_path / 'full.uff'
-    pyuff.UFF(path).write_sets(data, 'add')
-    assert pyuff.UFF(path).read_sets(0)['n_data_per_node'] == 3
+    pyuff.UFF(path).write_datasets(data, 'add')
+    assert pyuff.UFF(path).read_datasets(0)['n_data_per_node'] == 3
 
 
 if __name__ == '__main__':

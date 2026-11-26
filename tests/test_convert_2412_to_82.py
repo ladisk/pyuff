@@ -10,7 +10,7 @@ from pyuff import tools
 
 geom_exp_path = "./data/mesh_set2412_to_convert.uff"
 file_geom = pyuff.UFF(geom_exp_path)
-sets_old = file_geom.read_sets()
+sets_old = file_geom.read_datasets()
 sets_new = tools.convert_dataset_2412_to_82(sets_old)
 
 #check manually few values; better testing required
