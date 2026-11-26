@@ -13,7 +13,7 @@ binary form, while the header-part is slightly different from 58 but still in th
 ascii format.
 
 An UFF file is a file that can have many data-sets of either ascii or binary
-data where data-set is a block of data between the start and end tags ``____-1``
+data where a data-set is the data between the start and end tags ``____-1``
 (``_`` representing the space character). Refer to [1]_ and [2]_ for
 more information about the UFF format.
 
@@ -81,7 +81,7 @@ def _is_set_number(line):
     return line[:6].strip(b' ').isdigit() and line[6:7] in (b'', b' ', b'b', b'B')
 
 
-def _find_block_tags(data):
+def _find_dataset_tags(data):
     """Returns the offsets of the '    -1' tags that start and end the data-sets.
 
     By the specification, a tag is a line '    -1' (a minus sign in column 5, a 1 in
@@ -92,7 +92,7 @@ def _find_block_tags(data):
     """
     data_len = len(data)
     tags = []
-    in_block = False
+    in_dataset = False
     binary = False
     ind = -1
     while True:
@@ -103,21 +103,21 @@ def _find_block_tags(data):
         if not (end == data_len or data[end] in (10, 13) or
                 (ind + 80 < data_len and data[end:ind + 80] == _BLANKS_74)):
             continue
-        if not (in_block and binary):
+        if not (in_dataset and binary):
             # the tag begins the line (the search for CR is limited to the line)
             last_lf = data.rfind(b'\n', 0, ind)
             line_start = max(last_lf, data.rfind(b'\r', last_lf + 1, ind)) + 1
             if ind != line_start:
                 continue
-        if in_block:
-            in_block = False
+        if in_dataset:
+            in_dataset = False
         else:
             # the line after a start tag gives the data-set number ('b' after it marks
             # a binary data-set); as in refresh(), it is within 200 bytes of the tag
             lines = data[ind:ind + 200].splitlines()
             if len(lines) < 2 or not _is_set_number(lines[1]):
                 continue
-            in_block = True
+            in_dataset = True
             binary = lines[1][6:7].lower() == b'b'
         tags.append(ind)
     return tags
@@ -167,13 +167,26 @@ class UFF:
         
 
         
-        self._block_ind = []  # an array of block indices: start-end pairs in rows
+        self._dataset_ind = []  # start and end offsets of the data-sets, one pair per row
         self._refreshed = False
         self._n_sets = 0  # number of sets found in file
         self._set_types = np.array(())  # list of set-type numbers
         self._set_formats = np.array(())  # list of set-format numbers (0=ascii,1=binary)
         # Refresh
         self.refresh()
+
+    @property
+    def _block_ind(self):
+        """Deprecated alias of ``_dataset_ind``; it will be removed in pyuff 3.0."""
+        warnings.warn('UFF._block_ind is deprecated and will be removed in pyuff 3.0; '
+                      'use UFF._dataset_ind instead.', FutureWarning, stacklevel=2)
+        return self._dataset_ind
+
+    @_block_ind.setter
+    def _block_ind(self, value):
+        warnings.warn('UFF._block_ind is deprecated and will be removed in pyuff 3.0; '
+                      'use UFF._dataset_ind instead.', FutureWarning, stacklevel=2)
+        self._dataset_ind = value
 
     def get_supported_sets(self):
         """
@@ -278,32 +291,32 @@ class UFF:
                 # Parses the entire file for '    -1' tags and extracts
                 # the corresponding indices
                 data = fh.read()
-                block_ind = np.asarray(_find_block_tags(data), dtype='int64')
+                dataset_ind = np.asarray(_find_dataset_tags(data), dtype='int64')
 
-                # Constructs block indices of start and end values; each pair
-                # points to start and end offset of the data-set (block) data,
+                # Constructs the data-set indices of start and end values; each pair
+                # points to start and end offset of the data-set data,
                 # but, the start '    -1' tag is included while the end one is
                 # excluded.
-                n_blocks = int(np.floor(len(block_ind) / 2.0))
-                if n_blocks == 0:
-                    # No valid blocks found but the file is still considered
+                n_datasets = int(np.floor(len(dataset_ind) / 2.0))
+                if n_datasets == 0:
+                    # No valid data-sets found but the file is still considered
                     # being refreshed
                     fh.close()
                     self._refreshed = True
                     return self._refreshed
-                self._block_ind = np.zeros((n_blocks, 2), dtype='int64')
-                self._block_ind[:, 0] = block_ind[:-1:2].copy()
-                self._block_ind[:, 1] = block_ind[1::2].copy() - 1
+                self._dataset_ind = np.zeros((n_datasets, 2), dtype='int64')
+                self._dataset_ind[:, 0] = dataset_ind[:-1:2].copy()
+                self._dataset_ind[:, 1] = dataset_ind[1::2].copy() - 1
 
-                # Go through all the data-sets (blocks) and extract data-set
+                # Go through all the data-sets and extract data-set
                 # type and the property whether the data-set is in binary
                 # or ascii format
-                self._n_sets = n_blocks
-                self._set_types = np.zeros(n_blocks).astype(int)
-                self._set_formats = np.zeros(n_blocks)
+                self._n_sets = n_datasets
+                self._set_types = np.zeros(n_datasets).astype(int)
+                self._set_formats = np.zeros(n_datasets)
                 for ii in range(0, self._n_sets):
-                    si = self._block_ind[ii, 0]
-                    ei = self._block_ind[ii, 1]
+                    si = self._dataset_ind[ii, 0]
+                    ei = self._dataset_ind[ii, 1]
                     try:
                         # only the second line (data-set type, 'b' for binary) is
                         # needed; it follows the '    -1' line within 200 bytes
@@ -312,9 +325,9 @@ class UFF:
                         if type_line[6:7].lower() == b'b':
                             self._set_formats[ii] = 1
                     except:
-                        # Some non-valid blocks found; ignore the exception
+                        # Some non-valid data-sets found; ignore the exception
                         pass
-                del block_ind
+                del dataset_ind
             except:
                 fh.close()
                 raise Exception('Error refreshing UFF file: ' + self._filename)
@@ -464,7 +477,7 @@ class UFF:
             raise Exception('Cannot read data-set: ' + str(int(n)) +
                             '. Data-set number to high or to low.')
         set_type = int(self._set_types[int(n)])
-        # Read n-th data-set data (one block)
+        # Read n-th data-set data
         own_fh = fh is None
         if own_fh:
             try:
@@ -472,13 +485,13 @@ class UFF:
             except:
                 raise Exception('Cannot access the file: ' + self._filename + ' to read from.')
         try:
-            si = self._block_ind[n][0]  # start offset
-            ei = self._block_ind[n][1]  # end offset
+            si = self._dataset_ind[n][0]  # start offset
+            ei = self._dataset_ind[n][1]  # end offset
             fh.seek(si)
             if set_type == 58:
-                block_data = fh.read(ei - si + 1)  # decoding is handled later in _extract58
+                dataset_data = fh.read(ei - si + 1)  # decoding is handled later in _extract58
             else:
-                block_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
+                dataset_data = fh.read(ei - si + 1).decode('utf-8', errors='replace')
         except:
             raise Exception('Error reading data-set #: ' + str(int(n)))
         finally:
@@ -486,10 +499,10 @@ class UFF:
                 fh.close()
         # Extracts the dset
         if set_type == 58:
-            return _extract58(block_data, header_only=header_only)
+            return _extract58(dataset_data, header_only=header_only)
         extract = _EXTRACTORS.get(set_type)
         if extract is not None:
-            return extract(block_data)
+            return extract(dataset_data)
         # Unsupported data-set - do nothing
         return {'type': self._set_types[int(n)]}
 

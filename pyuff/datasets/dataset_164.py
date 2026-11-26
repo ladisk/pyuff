@@ -67,11 +67,11 @@ def _write164(fh, dset):
         raise Exception('Error writing data-set #164')
 
 
-def _extract164(block_data):
+def _extract164(dataset_data):
     """Extract units data - data-set 164."""
     dset = {'type': 164}
     try:
-        split_data = block_data.splitlines(True)
+        split_data = dataset_data.splitlines(True)
         dset.update(_parse_header_line(split_data[2], 1, [10, 20, 10], [2, 1, 2],
                                             ['units_code', 'units_description', 'temp_mode']))
         split_data = ''.join(split_data[3:])

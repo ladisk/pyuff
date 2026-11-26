@@ -50,7 +50,7 @@ def test_read_error_message(tmp_path):
     fn = tmp_path / 'f.uff'
     pyuff.UFF(fn).write_sets(pyuff.prepare_82(trace_num=1, color=1, id='t', nodes=[1, 2, 0]), 'overwrite')
     uff = pyuff.UFF(fn)
-    uff._block_ind[0, 0] = -10  # seek to a negative offset fails
+    uff._dataset_ind[0, 0] = -10  # seek to a negative offset fails
     with pytest.raises(Exception, match='Error reading data-set #: 0'):
         uff._read_set(0)
 

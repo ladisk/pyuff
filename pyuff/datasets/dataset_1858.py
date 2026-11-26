@@ -167,11 +167,11 @@ def _write1858(fh, dset):
         raise Exception('Error writing data-set #1858')
 
 
-def _extract1858(block_data):
+def _extract1858(dataset_data):
     """Extract coordinate data - data-set 1858."""
     dset = {'type': 1858}
     try:
-        split_header = block_data.splitlines(True)[:8]
+        split_header = dataset_data.splitlines(True)[:8]
 
         dset.update(_parse_header_line(
             split_header[2],

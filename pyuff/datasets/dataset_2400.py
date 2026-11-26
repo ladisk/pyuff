@@ -79,11 +79,11 @@ def _write2400(fh, dset):
         raise Exception('Error writing data-set #2400')
 
 
-def _extract2400(block_data):
+def _extract2400(dataset_data):
     """Extract dset data - data-set 2400."""
     dset = {'type': 2400}
     try:
-        split_data = block_data.splitlines(True)
+        split_data = dataset_data.splitlines(True)
         dset.update(_parse_header_line(split_data[2], 4, [12, 6, 6, 12], [2, 2, 2, 2],
                                        ['model_uid', 'entity_type', 'entity_subtype', 'version_number']))
         dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['entity_name']))

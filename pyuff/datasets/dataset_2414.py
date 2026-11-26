@@ -705,14 +705,14 @@ def _write2414(fh, dset):
         raise Exception('Error writing data-set #2414')
 
 
-def _extract2414(block_data):
+def _extract2414(dataset_data):
     """Extract analysis data - data-set 2414."""
     dset = {'type': 2414}
     # Read data
     try:
         # Processing named records and fields
         binary = False
-        split_header = block_data.splitlines(True)[:15]  # Keep the line breaks!
+        split_header = dataset_data.splitlines(True)[:15]  # Keep the line breaks!
         dset.update(_parse_header_line(split_header[2], 1, [80], [2], ['analysis_dataset_label'])) #Loadcase number
         dset.update(_parse_header_line(split_header[3], 1, [80], [1], ['analysis_dataset_name'])) # usually with the frequency
         dset.update(_parse_header_line(split_header[4], 1, [80], [2], ['dataset_location']))
@@ -744,7 +744,7 @@ def _extract2414(block_data):
                                                 'real_part_of_modal_A_or_modal_mass', 'imaginary_part_of_modal_A_or_modal_mass', 
                                                 'real_part_of_modal_B_or_modal_mass', 'imaginary_part_of_modal_B_or_modal_mass']))
 
-            split_data = ''.join(block_data.splitlines(True)[15:])
+            split_data = ''.join(dataset_data.splitlines(True)[15:])
             split_data = split_data.split()
             # generic reading method
             n_skip = dset['number_of_data_values_for_the_data_component'] * 2 + 1 # x2 real/imag
@@ -782,7 +782,7 @@ def _extract2414(block_data):
                                             'record13_field5', 'record13_field6']))
             
             # The data and structure of Record 14 and 15 depend on the 'dataset_location'
-            split_data = ''.join(block_data.splitlines(True)[15:])
+            split_data = ''.join(dataset_data.splitlines(True)[15:])
             split_data = split_data.splitlines()
             if dset['dataset_location'] == 1:
                 # Data at nodes

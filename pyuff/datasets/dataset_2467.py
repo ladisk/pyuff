@@ -101,10 +101,10 @@ def _write2467(fh, dset):
     except:
         raise Exception('Error writing data-set #2467')
 
-def _extract2467(block_data):
+def _extract2467(dataset_data):
     '''Extract physical groups -- data-set 2467.'''
     dset = {'type': 2467, 'groups': []}
-    split_data = block_data.splitlines(True)[2:]
+    split_data = dataset_data.splitlines(True)[2:]
 
     lineIndex = 0
     while lineIndex < len(split_data):

@@ -75,11 +75,11 @@ def _write2420(fh, dset):
     except:
         raise Exception('Error writing data-set #2420')
 
-def _extract2420(block_data):
+def _extract2420(dataset_data):
     '''Extract local CS/transforms -- data-set 2420.'''
     dset = {'type': 2420}
     #        try:
-    split_data = block_data.splitlines(True)
+    split_data = dataset_data.splitlines(True)
 
     # -- Get Record 1
     dset['Part_UID'] = int(split_data[2])

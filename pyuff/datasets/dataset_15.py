@@ -56,12 +56,12 @@ def _write15(fh, dset):
         raise Exception('Error writing data-set #15')
 
 
-def _extract15(block_data):
+def _extract15(dataset_data):
     """Extract coordinate data - data-set 15."""
     dset = {'type': 15}
     try:
         # Body
-        split_data = block_data.splitlines()
+        split_data = dataset_data.splitlines()
         split_data = ''.join(split_data[2:]).split()
         split_data = [float(_) for _ in split_data]
 

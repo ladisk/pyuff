@@ -90,11 +90,11 @@ def _write151(fh, dset):
         raise Exception('Error writing data-set #151')
 
 
-def _extract151(block_data):
+def _extract151(dataset_data):
     """Extract dset data - data-set 151."""
     dset = {'type': 151}
     try:
-        split_data = block_data.splitlines(True)
+        split_data = dataset_data.splitlines(True)
         dset.update(_parse_header_line(split_data[2], 1, [80], [1], ['model_name']))
         dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['description']))
         dset.update(_parse_header_line(split_data[4], 1, [80], [1], ['db_app']))

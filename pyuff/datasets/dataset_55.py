@@ -449,7 +449,7 @@ def _write55(fh, dset):
         raise Exception('Error writing data-set #55') from msg
 
 
-def _extract55(block_data):
+def _extract55(dataset_data):
     """
     Extract data at nodes - data-set 55. Currently:
        - only normal mode (2)
@@ -459,7 +459,7 @@ def _extract55(block_data):
     """
     dset = {'type': 55}
     try:
-        split_data = block_data.splitlines(True)
+        split_data = dataset_data.splitlines(True)
         dset.update(_parse_header_line(split_data[2], 1, [80], [1], ['id1']))
         dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['id2']))
         dset.update(_parse_header_line(split_data[4], 1, [80], [1], ['id3']))

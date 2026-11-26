@@ -147,11 +147,11 @@ def _write_group(fh, group):
         fh.write('%10i' * len(pairs[i:i + 8]) % tuple(pairs[i:i + 8]) + '\n')
 
 
-def _extract2429(block_data):
+def _extract2429(dataset_data):
     """Extract  permanent groups data - data-set 2429."""
     dset = {'type': 2429, 'groups': []}
     try:
-        split_data = block_data.splitlines()
+        split_data = dataset_data.splitlines()
         
         # there can be multiple groups in the data-set, therefore need to loop.
         lineIndex = 2

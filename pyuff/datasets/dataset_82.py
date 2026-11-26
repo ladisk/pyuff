@@ -68,11 +68,11 @@ def _write82(fh, dset):
         raise Exception('Error writing data-set #82')
 
 
-def _extract82(block_data):
+def _extract82(dataset_data):
     """Extract line data - data-set 82."""
     dset = {'type': 82}
     try:
-        split_data = block_data.splitlines(True)
+        split_data = dataset_data.splitlines(True)
         dset.update(
             _parse_header_line(split_data[2], 3, [10, 10, 10], [2, 2, 2], ['trace_num', 'n_nodes', 'color']))
         dset.update(_parse_header_line(split_data[3], 1, [80], [1], ['id']))

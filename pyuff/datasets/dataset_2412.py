@@ -95,7 +95,7 @@ def _read_node_labels(split_data, i, num_nodes):
     return nodes, i
 
 
-def _extract2412(block_data):
+def _extract2412(dataset_data):
     """Extract element data - data-set 2412."""
     dset = {'type': 2412}
     # Define dictionary of possible elements types for legacy interface
@@ -103,7 +103,7 @@ def _extract2412(block_data):
 
     # Read data
     try:
-        split_data = block_data.splitlines()
+        split_data = dataset_data.splitlines()
         split_data = [a.split() for a in split_data][2:]
 
         # Extract Records

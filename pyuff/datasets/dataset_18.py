@@ -73,11 +73,11 @@ def _write18(fh, dset):
         raise Exception('Error writing data-set #18')
 
 
-def _extract18(block_data):
+def _extract18(dataset_data):
     '''Extract local CS definitions -- data-set 18.'''
     dset = {'type': 18}
     try:
-        split_data = block_data.splitlines()
+        split_data = dataset_data.splitlines()
 
         # -- Get Record 1
         rec_1 = np.array(list(map(float, ''.join(split_data[2::4]).split())))

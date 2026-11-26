@@ -48,12 +48,12 @@ def _write2411(fh, dset):
         raise Exception('Error writing data-set #2411')
 
 
-def _extract2411(block_data):
+def _extract2411(dataset_data):
     """Extract coordinate data - data-set 2411."""
     dset = {'type': 2411}
     try:
         # Body
-        split_data = block_data.splitlines(True)  # Keep the line breaks!
+        split_data = dataset_data.splitlines(True)  # Keep the line breaks!
         split_data = ''.join(split_data[2:])  # ..as they are again needed
         split_data = split_data.split()
         # replace to support D or d notation as an exponential notation (typically form Unigraphics IDEAS)
