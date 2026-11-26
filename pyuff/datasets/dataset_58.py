@@ -1,5 +1,4 @@
 import numpy as np
-import struct
 import sys
 import os
 
@@ -1038,6 +1037,20 @@ def _write58(fh, dset, mode='add', force_double=True):
         raise Exception('Error writing data-set #58')
 
 
+def _header_end(block_data, n_lines):
+    """Returns the offset just after the first n_lines lines of block_data (bytes).
+
+    Equal to ``len(b''.join(block_data.splitlines(True)[:n_lines]))``, but only the
+    beginning of the block is split into lines (the block can hold megabytes of data).
+    """
+    head = block_data[:max(8192, 100 * n_lines)]
+    lines = head.splitlines(True)
+    if len(lines) <= n_lines:
+        # the header is longer than head (or the block has no data): split it all
+        lines = block_data.splitlines(True)
+    return sum(len(line) for line in lines[:n_lines])
+
+
 def _extract58(block_data, header_only=False):
     """
     Extract function at nodal DOF - data-set 58. 
@@ -1053,7 +1066,8 @@ def _extract58(block_data, header_only=False):
     dset = {'type': 58, 'binary': 0}
     try:
         binary = False
-        split_header = b''.join(block_data.splitlines(True)[:13]).decode('utf-8',  errors='replace').splitlines(True)
+        header_end = _header_end(block_data, 13)
+        split_header = block_data[:header_end].decode('utf-8',  errors='replace').splitlines(True)
         if len(split_header[1]) >= 7:
             if split_header[1][6].lower() == 'b':
                 # Read some addititional fields from the header section
@@ -1101,7 +1115,7 @@ def _extract58(block_data, header_only=False):
         else:
             if binary:
                 try:     
-                    split_data = b''.join(block_data.splitlines(True)[13:])
+                    split_data = memoryview(block_data)[header_end:]
                     if dset['byte_ordering'] == 1:
                         bo = '<'
                     else:
@@ -1109,7 +1123,7 @@ def _extract58(block_data, header_only=False):
                     if (dset['ord_data_type'] == 2) or (dset['ord_data_type'] == 5):
                         # single precision - 4 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 4
-                        values = np.asarray(struct.unpack('%c%sf' % (bo, int(len(split_data) / 4)), split_data[:(len(split_data) // 4)*4]), 'd')
+                        values = np.frombuffer(split_data[:(len(split_data) // 4)*4], bo + 'f').astype('d')
                     elif (dset['abscissa_spacing'] == 0) and \
                             (len(split_data) < dset['num_pts'] * (8 + 8 * (1 if dset['ord_data_type'] == 4 else 2))):
                         # double precision, uneven abscissa: the abscissa is real single precision
@@ -1122,7 +1136,7 @@ def _extract58(block_data, header_only=False):
                     else:
                         # double precision - 8 bytes, note: sometimes split_data wrongly contains CR/LF and 
                         # therefore the length of split_data is not divisible by 8
-                        values = np.asarray(struct.unpack('%c%sd' % (bo, int(len(split_data) / 8)), split_data[:(len(split_data) // 8)*8]), 'd')
+                        values = np.frombuffer(split_data[:(len(split_data) // 8)*8], bo + 'd').astype('d')
                 except:
                     raise Exception('Potentially wrong data format (common with binary files from some commercial softwares). Try using pyuff.fix_58b() to fix your file. For more information, see https://github.com/ladisk/pyuff/issues/61')
             else:

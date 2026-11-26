@@ -45,3 +45,25 @@ def test_set_formats(tmp_path):
     np.testing.assert_array_equal(uff.get_set_formats(), [0, 1, 0])
     np.testing.assert_array_equal(pyuff.UFF(tmp_path / 'frf.uff').get_set_formats(), [0, 1, 0])
     np.testing.assert_array_equal(pyuff.UFF('./data/Sample_UFF58b_bin.uff').get_set_formats(), [1])
+
+
+def test_write_sets_writes_lf_line_ends(tmp_path):
+    # the same file on every platform
+    fn = tmp_path / 'frf.uff'
+    pyuff.UFF(fn).write_sets([_prepare_frf(node) for node in range(1, 4)], 'overwrite')
+    data = fn.read_bytes()
+    assert b'\r' not in data
+    assert data.endswith(b'    -1\n')
+
+
+def test_read_sets_in_any_order():
+    # the data-sets read at once (with one file handle) are those read one by one
+    uff = pyuff.UFF('./data/beam.uff')
+    n_sets = uff.get_n_sets()
+    one_by_one = [uff.read_sets(i) for i in range(n_sets)]
+    at_once = uff.read_sets(list(range(n_sets))[::-1])[::-1]
+    assert len(at_once) == n_sets
+    for single, dset in zip(one_by_one, at_once):
+        assert single.keys() == dset.keys()
+        for key in dset:
+            np.testing.assert_equal(dset[key], single[key])
