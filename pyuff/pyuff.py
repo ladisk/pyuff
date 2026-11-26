@@ -64,6 +64,56 @@ from .datasets.dataset_2467 import _write2467, _extract2467, get_structure_2467
 _SUPPORTED_SETS = ['15', '18', '55', '58', '58b', '82', '151', '164', '1858', '2400', '2411', '2412', '2414', '2420', '2429', '2467']
 
 
+_BLANKS_74 = b' ' * 74
+
+
+def _is_set_number(line):
+    """True if the line gives a data-set number: I6, optionally followed by 'b' (58b)."""
+    return line[:6].strip(b' ').isdigit() and line[6:7] in (b'', b' ', b'b', b'B')
+
+
+def _find_block_tags(data):
+    """Returns the offsets of the '    -1' tags that start and end the data-sets.
+
+    By the specification, a tag is a line '    -1' (a minus sign in column 5, a 1 in
+    column 6, the rest of the line blank), and a start tag is followed by a line with
+    the data-set number. The only exception is the end tag of a binary data-set (58b):
+    it immediately follows the binary data, so it can be anywhere in a line. A '-1' at
+    the end of a record (e.g. an I10 field) is a value, not a tag.
+    """
+    data_len = len(data)
+    tags = []
+    in_block = False
+    binary = False
+    ind = -1
+    while True:
+        ind = data.find(b'    -1', ind + 1)
+        if ind == -1:
+            break
+        end = ind + 6
+        if not (end == data_len or data[end] in (10, 13) or
+                (ind + 80 < data_len and data[end:ind + 80] == _BLANKS_74)):
+            continue
+        if not (in_block and binary):
+            # the tag begins the line (the search for CR is limited to the line)
+            last_lf = data.rfind(b'\n', 0, ind)
+            line_start = max(last_lf, data.rfind(b'\r', last_lf + 1, ind)) + 1
+            if ind != line_start:
+                continue
+        if in_block:
+            in_block = False
+        else:
+            # the line after a start tag gives the data-set number ('b' after it marks
+            # a binary data-set); as in refresh(), it is within 200 bytes of the tag
+            lines = data[ind:ind + 200].splitlines()
+            if len(lines) < 2 or not _is_set_number(lines[1]):
+                continue
+            in_block = True
+            binary = lines[1][6:7].lower() == b'b'
+        tags.append(ind)
+    return tags
+
+
 class UFF:
     """
     A universal file (UFF/UNV), for reading and writing its data-sets.
@@ -219,24 +269,7 @@ class UFF:
                 # Parses the entire file for '    -1' tags and extracts
                 # the corresponding indices
                 data = fh.read()
-                data_len = len(data)
-                ind = -1
-                block_ind = []
-                while True:
-                    ind = data.find(b'    -1', ind + 1)
-                    if ind == -1:
-                        break
-                    if ind+6 == data_len:
-                        block_ind.append(ind)
-                    # Check if the block is valid and ends with LF or CR
-                    elif ind+6 < data_len and data[ind+6] in [10, 13]:
-                        block_ind.append(ind)
-                    # Check the line continues with blanks up to character 80
-                    elif ind+80 < data_len and data[ind+6:ind+80] == \
-                        b'                                                                          ':
-                        block_ind.append(ind)
-                    
-                block_ind = np.asarray(block_ind, dtype='int64')
+                block_ind = np.asarray(_find_block_tags(data), dtype='int64')
 
                 # Constructs block indices of start and end values; each pair
                 # points to start and end offset of the data-set (block) data,
