@@ -31,7 +31,7 @@ def test_read_sets_with_setn():
     uff = pyuff.UFF('./data/beam.uff')
     with pytest.warns(DeprecationWarning):
         result = uff.read_sets(setn=[4, 5], header_only=True)
-    assert _equal(result, uff.read_datasets(dataset=[4, 5], header_only=True))
+    assert _equal(result, uff.read_datasets(index=[4, 5], header_only=True))
     with pytest.warns(DeprecationWarning):
         result = uff._read_set(4)
     assert _equal(result, uff._read_dataset(4))

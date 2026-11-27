@@ -341,13 +341,13 @@ class UFF:
                 fh.close()
                 return self._refreshed
 
-    def read_datasets(self, dataset=None, header_only=False):
+    def read_datasets(self, index=None, header_only=False):
         """
         Read data-sets from the file.
 
         Parameters
         ----------
-        dataset : int or list of int, optional
+        index : int or list of int, optional
             Index of the data-set to read (0 for the first one), or a list of indices.
             If None (default), all data-sets are read.
         header_only : bool, optional
@@ -375,13 +375,13 @@ class UFF:
         if not self._refreshed:
             if not self.refresh():
                 raise Exception('Cannot read from the file: ' + self._filename)
-        if dataset is None:
+        if index is None:
             read_range = range(0, self._n_datasets)
         else:
-            if (not type(dataset).__name__ == 'list'):
-                read_range = [dataset]
+            if (not type(index).__name__ == 'list'):
+                read_range = [index]
             else:
-                read_range = dataset
+                read_range = index
         try:
             # one file handle for all data-sets read
             with open(self._filename, 'rb') as fh:
@@ -579,7 +579,7 @@ class UFF:
     def read_sets(self, setn=None, header_only=False):
         """Deprecated alias of :meth:`read_datasets`; it will be removed in pyuff 3.0."""
         _deprecated('read_sets', 'read_datasets')
-        return self.read_datasets(setn, header_only=header_only)
+        return self.read_datasets(index=setn, header_only=header_only)
 
     def write_sets(self, dsets, mode='add', force_double=True):
         """Deprecated alias of :meth:`write_datasets`; it will be removed in pyuff 3.0."""

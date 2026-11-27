@@ -179,7 +179,7 @@ Names before pyuff 2.8.0
 ------------------------
 
 In pyuff 2.8.0 the methods of ``UFF`` were renamed after data-sets: ``read_sets`` is now
-``read_datasets`` (its argument ``setn`` is now ``dataset``), ``write_sets`` is ``write_datasets``,
+``read_datasets`` (its argument ``setn`` is now ``index``), ``write_sets`` is ``write_datasets``,
 ``get_n_sets`` is ``get_n_datasets``, ``get_set_types`` is ``get_dataset_types``,
 ``get_set_formats`` is ``get_dataset_formats`` and ``get_supported_sets`` is
 ``get_supported_datasets``. The old names still work, with a ``DeprecationWarning``, and will be

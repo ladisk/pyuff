@@ -41,7 +41,7 @@ def test_read_write_read_given_data_base(file='', data_at_the_end=None, force_do
 
     #read back
     uff_read = pyuff.UFF(save_to_file)
-    b = uff_read.read_datasets(dataset=0, header_only=header_only)
+    b = uff_read.read_datasets(index=0, header_only=header_only)
 
     if os.path.exists(save_to_file):
         os.remove(save_to_file)
